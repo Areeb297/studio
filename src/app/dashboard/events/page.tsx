@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { suggestHallSize, SuggestHallSizeInput } from '@/ai/flows/suggest-hall-size';
@@ -45,12 +45,13 @@ export default function EventsPage() {
   const [bookedEvents, setBookedEvents] = useState(getInitialBookedEvents);
   
   const getBookingsForDate = (d: Date) => {
-    return bookedEvents.filter(event => format(event.date, 'yyyy-MM-dd') === format(d, 'yyyy-MM-dd'));
+    if (!isValid(d)) return [];
+    return bookedEvents.filter(event => isValid(event.date) && format(event.date, 'yyyy-MM-dd') === format(d, 'yyyy-MM-dd'));
   }
 
   const bookedDates = bookedEvents.map(event => event.date);
   const partiallyBookedDates = bookedEvents.reduce((acc, event) => {
-    const dateStr = format(event.date, 'yyyy-MM-dd');
+    if (!isValid(event.date)) return acc;
     const bookingsOnDate = getBookingsForDate(event.date);
     if (bookingsOnDate.length > 0 && bookingsOnDate.length < availableHalls.length) {
        acc.push(event.date);
@@ -59,7 +60,7 @@ export default function EventsPage() {
   }, [] as Date[]);
   
   const fullyBookedDates = bookedEvents.reduce((acc, event) => {
-    const dateStr = format(event.date, 'yyyy-MM-dd');
+    if (!isValid(event.date)) return acc;
     const bookingsOnDate = getBookingsForDate(event.date);
     if (bookingsOnDate.length === availableHalls.length) {
        acc.push(event.date);
