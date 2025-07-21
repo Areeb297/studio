@@ -334,7 +334,7 @@ export default function EventsPage() {
                             modifiersStyles={{
                                 partiallyBooked: {
                                     backgroundColor: 'hsl(var(--accent))',
-                                    color: 'hsl(var(--accent-foreground))',
+                                    color: 'hsl(var(--card-foreground))',
                                     opacity: 0.7
                                 },
                                 fullyBooked: {
@@ -343,7 +343,7 @@ export default function EventsPage() {
                                 },
                                 completed: {
                                     backgroundColor: 'hsl(var(--muted))',
-                                    color: 'hsl(var(--muted-foreground))',
+                                    color: 'hsl(var(--foreground))',
                                     opacity: 0.5
                                 }
                             }}
