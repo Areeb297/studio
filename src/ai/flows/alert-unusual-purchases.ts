@@ -78,7 +78,7 @@ Example:
 
 {
   "isUnusual": true,
-  "reason": "The purchase rate ($1.20) is significantly higher than the agreed rate ($1.00), indicating a potential overpayment.",
+  "reason": "The purchase rate (PKR 320) is significantly higher than the agreed rate (PKR 300), indicating a potential overpayment.",
   "recommendation": "Investigate the purchase to ensure the agreed rate was applied correctly and identify any unauthorized purchases."
 }
 

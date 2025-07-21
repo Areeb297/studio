@@ -43,11 +43,11 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const transactions = [
-    { id: "TRX001", customer: "John Doe", item: "Chicken Biryani", amount: 15.00, status: "Completed" },
-    { id: "TRX002", customer: "Jane Smith", item: "Mutton Karahi", amount: 25.50, status: "Completed" },
-    { id: "TRX003", customer: "Sam Wilson", item: "BBQ Platter", amount: 45.00, status: "Pending" },
-    { id: "TRX004", customer: "Alice Brown", item: "Seekh Kebab", amount: 12.75, status: "Completed" },
-    { id: "TRX005", customer: "Bob Johnson", item: "Nihari", amount: 18.00, status: "Cancelled" },
+    { id: "TRX001", customer: "John Doe", item: "Chicken Biryani", amount: 4500.00, status: "Completed" },
+    { id: "TRX002", customer: "Jane Smith", item: "Mutton Karahi", amount: 7550.50, status: "Completed" },
+    { id: "TRX003", customer: "Sam Wilson", item: "BBQ Platter", amount: 12500.00, status: "Pending" },
+    { id: "TRX004", customer: "Alice Brown", item: "Seekh Kebab", amount: 3275.00, status: "Completed" },
+    { id: "TRX005", customer: "Bob Johnson", item: "Nihari", amount: 5000.00, status: "Cancelled" },
 ]
 
 export default function Dashboard() {
@@ -57,10 +57,10 @@ export default function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground font-bold">PKR</span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">4,523,189</div>
             <p className="text-xs text-muted-foreground">+20.1% from last month</p>
           </CardContent>
         </Card>
@@ -116,7 +116,7 @@ export default function Dashboard() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={10}
-                    tickFormatter={(value) => `$${value/1000}k`}
+                    tickFormatter={(value) => `PKR ${value/1000}k`}
                 />
                 <ChartTooltip
                   cursor={false}
@@ -132,7 +132,7 @@ export default function Dashboard() {
             <div className="grid gap-2">
                 <CardTitle className="flex items-center gap-2"><BrainCircuit className="w-5 h-5 text-primary" /> AI-Powered Insights</CardTitle>
                 <CardDescription>
-                Suggestions, analysis and recommendations from Raha24 AI.
+                Suggestions, analysis and recommendations from Rahah24 AI.
                 </CardDescription>
             </div>
             <Button asChild size="sm" className="ml-auto gap-1">
@@ -149,7 +149,7 @@ export default function Dashboard() {
               </p>
               <div className="font-semibold">Pricing Suggestion</div>
               <p className="text-muted-foreground">
-                The cost of mutton has increased. Consider increasing the price of <span className="font-medium text-foreground">Mutton Karahi</span> from $25.50 to $26.99 to maintain a 2.5x gross profit multiplier.
+                The cost of mutton has increased. Consider increasing the price of <span className="font-medium text-foreground">Mutton Karahi</span> from PKR 7550.50 to PKR 7799.00 to maintain a 2.5x gross profit multiplier.
               </p>
               <div className="font-semibold">Staffing Alert</div>
               <p className="text-muted-foreground">
@@ -191,7 +191,7 @@ export default function Dashboard() {
                         transaction.status === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "bg-red-500/20 text-red-700 border-red-500/30"
                     }>{transaction.status}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">${transaction.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">PKR {transaction.amount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

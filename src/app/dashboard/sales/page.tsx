@@ -22,12 +22,12 @@ import {
 
 
 const salesData = [
-  { id: "TRX001", customer: "John Doe", item: "Chicken Biryani", amount: 15.00, status: "Completed", date: "2024-07-28" },
-  { id: "TRX002", customer: "Jane Smith", item: "Mutton Karahi", amount: 25.50, status: "Completed", date: "2024-07-28" },
-  { id: "TRX003", customer: "Sam Wilson", item: "BBQ Platter", amount: 45.00, status: "Pending", date: "2024-07-27" },
-  { id: "TRX004", customer: "Alice Brown", item: "Seekh Kebab", amount: 12.75, status: "Completed", date: "2024-07-27" },
-  { id: "TRX005", customer: "Bob Johnson", item: "Nihari", amount: 18.00, status: "Cancelled", date: "2024-07-26" },
-  { id: "TRX006", customer: "Charlie Davis", item: "Haleem", amount: 16.50, status: "Completed", date: "2024-07-26" },
+  { id: "TRX001", customer: "John Doe", item: "Chicken Biryani", amount: 4500.00, status: "Completed", date: "2024-07-28" },
+  { id: "TRX002", customer: "Jane Smith", item: "Mutton Karahi", amount: 7550.50, status: "Completed", date: "2024-07-28" },
+  { id: "TRX003", customer: "Sam Wilson", item: "BBQ Platter", amount: 12500.00, status: "Pending", date: "2024-07-27" },
+  { id: "TRX004", customer: "Alice Brown", item: "Seekh Kebab", amount: 3275.00, status: "Completed", date: "2024-07-27" },
+  { id: "TRX005", customer: "Bob Johnson", item: "Nihari", amount: 5000.00, status: "Cancelled", date: "2024-07-26" },
+  { id: "TRX006", customer: "Charlie Davis", item: "Haleem", amount: 4650.00, status: "Completed", date: "2024-07-26" },
 ];
 
 const menuItems = [
@@ -91,9 +91,9 @@ export default function SalesPage() {
               </div>
                <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="amount" className="text-right">
-                  Amount
+                  Amount (PKR)
                 </Label>
-                <Input id="amount" type="number" placeholder="15.00" className="col-span-3" />
+                <Input id="amount" type="number" placeholder="4500.00" className="col-span-3" />
               </div>
             </div>
             <DialogFooter>
@@ -138,7 +138,7 @@ export default function SalesPage() {
                         sale.status === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "bg-red-500/20 text-red-700 border-red-500/30"
                     }>{sale.status}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">${sale.amount.toFixed(2)}</TableCell>
+                  <TableCell className="text-right">PKR {sale.amount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
