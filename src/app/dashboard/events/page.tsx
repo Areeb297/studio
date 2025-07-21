@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isValid } from "date-fns";
+import { format, isValid, getMonth, getYear } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { suggestHallSize, SuggestHallSizeInput } from '@/ai/flows/suggest-hall-size';
@@ -45,6 +45,8 @@ export default function EventsPage() {
   const [eventType, setEventType] = useState('');
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [monthlyBookingCount, setMonthlyBookingCount] = useState(0);
   
   const [bookedEvents, setBookedEvents] = useState(getInitialBookedEvents);
   
@@ -80,6 +82,15 @@ export default function EventsPage() {
 
     return { partiallyBookedDates: partially, fullyBookedDates: fully };
   }, [bookedEvents]);
+
+  useEffect(() => {
+    const count = bookedEvents.filter(event => 
+      isValid(event.date) &&
+      getMonth(event.date) === getMonth(currentMonth) &&
+      getYear(event.date) === getYear(currentMonth)
+    ).length;
+    setMonthlyBookingCount(count);
+  }, [currentMonth, bookedEvents]);
 
 
   const handleGetSuggestion = async () => {
@@ -166,10 +177,10 @@ export default function EventsPage() {
                             <SelectValue placeholder="Select event type" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="wedding">Wedding</SelectItem>
-                            <SelectItem value="birthday">Birthday Party</SelectItem>
-                            <SelectItem value="conference">Conference</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="Wedding">Wedding</SelectItem>
+                            <SelectItem value="Birthday">Birthday Party</SelectItem>
+                            <SelectItem value="Conference">Conference</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                         </Select>
                     </div>
@@ -264,14 +275,21 @@ export default function EventsPage() {
 
         <Card className="lg:col-span-1">
             <CardHeader>
-                <CardTitle>Events Calendar</CardTitle>
-                <CardDescription>View hall availability at a glance.</CardDescription>
+                <div className='flex justify-between items-start'>
+                    <div>
+                        <CardTitle>Events Calendar</CardTitle>
+                        <CardDescription>View hall availability at a glance.</CardDescription>
+                    </div>
+                    <Badge variant="secondary">{monthlyBookingCount} bookings this month</Badge>
+                </div>
             </CardHeader>
             <CardContent>
                 <Calendar
                     mode="single"
                     selected={date}
                     onSelect={setDate}
+                    month={currentMonth}
+                    onMonthChange={setCurrentMonth}
                     className="p-0"
                     disabled={{ before: new Date() }}
                     modifiers={{ 
@@ -328,3 +346,5 @@ export default function EventsPage() {
     </div>
   );
 }
+
+    
