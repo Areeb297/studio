@@ -28,17 +28,19 @@ type InventoryItem = {
   category: string;
   currentStock: number;
   unit: string;
-  reorderLevel: number;
+  minStock: number;
+  maxStock: number;
+  shelfLife: string;
   unitCost: number;
 };
 
 const initialInventory: InventoryItem[] = [
-  { id: 'inv-1', name: 'Basmati Rice', category: 'Grains', currentStock: 50, unit: 'kg', reorderLevel: 20, unitCost: 400 },
-  { id: 'inv-2', name: 'Chicken', category: 'Meat', currentStock: 15, unit: 'kg', reorderLevel: 25, unitCost: 600 },
-  { id: 'inv-3', name: 'Tomatoes', category: 'Vegetables', currentStock: 30, unit: 'kg', reorderLevel: 10, unitCost: 120 },
-  { id: 'inv-4', name: 'Onions', category: 'Vegetables', currentStock: 40, unit: 'kg', reorderLevel: 15, unitCost: 80 },
-  { id: 'inv-5', name: 'Cooking Oil', category: 'Pantry', currentStock: 5, unit: 'liters', reorderLevel: 10, unitCost: 550 },
-  { id: 'inv-6', name: 'Spices Mix', category: 'Pantry', currentStock: 8, unit: 'kg', reorderLevel: 5, unitCost: 1200 },
+  { id: 'inv-1', name: 'Basmati Rice', category: 'Grains', currentStock: 50, unit: 'kg', minStock: 20, maxStock: 100, shelfLife: '1 year', unitCost: 400 },
+  { id: 'inv-2', name: 'Chicken', category: 'Meat', currentStock: 15, unit: 'kg', minStock: 25, maxStock: 50, shelfLife: '3 days', unitCost: 600 },
+  { id: 'inv-3', name: 'Tomatoes', category: 'Vegetables', currentStock: 30, unit: 'kg', minStock: 10, maxStock: 40, shelfLife: '5 days', unitCost: 120 },
+  { id: 'inv-4', name: 'Onions', category: 'Vegetables', currentStock: 40, unit: 'kg', minStock: 15, maxStock: 60, shelfLife: '2 weeks', unitCost: 80 },
+  { id: 'inv-5', name: 'Cooking Oil', category: 'Pantry', currentStock: 5, unit: 'liters', minStock: 10, maxStock: 25, shelfLife: '6 months', unitCost: 550 },
+  { id: 'inv-6', name: 'Spices Mix', category: 'Pantry', currentStock: 8, unit: 'kg', minStock: 5, maxStock: 15, shelfLife: '1 year', unitCost: 1200 },
 ];
 
 const vendors = [
@@ -49,7 +51,7 @@ const vendors = [
 
 const getStockStatus = (item: InventoryItem): { status: 'In Stock' | 'Low Stock' | 'Out of Stock', variant: 'default' | 'secondary' | 'destructive' } => {
   if (item.currentStock <= 0) return { status: 'Out of Stock', variant: 'destructive' };
-  if (item.currentStock <= item.reorderLevel) return { status: 'Low Stock', variant: 'secondary' };
+  if (item.currentStock <= item.minStock) return { status: 'Low Stock', variant: 'secondary' };
   return { status: 'In Stock', variant: 'default' };
 };
 
@@ -60,7 +62,7 @@ export default function InventoryPage() {
   const [isAlertLoading, setIsAlertLoading] = useState(false);
 
   const totalInventoryValue = inventoryItems.reduce((acc, item) => acc + item.currentStock * item.unitCost, 0);
-  const lowStockItems = inventoryItems.filter(item => item.currentStock <= item.reorderLevel).length;
+  const lowStockItems = inventoryItems.filter(item => item.currentStock <= item.minStock).length;
 
   const handleCheckPurchase = async () => {
     setIsAlertLoading(true);
@@ -181,9 +183,10 @@ export default function InventoryPage() {
                             <TableHead>Item Name</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead className="text-center">Current Stock</TableHead>
-                            <TableHead className="text-center">Reorder Level</TableHead>
+                            <TableHead className="text-center">Min Stock</TableHead>
+                            <TableHead className="text-center">Max Stock</TableHead>
+                            <TableHead className="text-center">Shelf Life</TableHead>
                             <TableHead className="text-right">Unit Cost</TableHead>
-                            <TableHead className="text-right">Total Value</TableHead>
                             <TableHead className="text-center">Status</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -198,9 +201,10 @@ export default function InventoryPage() {
                                     <TableCell className="font-medium">{item.name}</TableCell>
                                     <TableCell>{item.category}</TableCell>
                                     <TableCell className="text-center">{item.currentStock} {item.unit}</TableCell>
-                                    <TableCell className="text-center">{item.reorderLevel} {item.unit}</TableCell>
+                                    <TableCell className="text-center">{item.minStock} {item.unit}</TableCell>
+                                    <TableCell className="text-center">{item.maxStock} {item.unit}</TableCell>
+                                    <TableCell className="text-center">{item.shelfLife}</TableCell>
                                     <TableCell className="text-right">PKR {item.unitCost.toFixed(2)}</TableCell>
-                                    <TableCell className="text-right font-medium">PKR {(item.currentStock * item.unitCost).toLocaleString()}</TableCell>
                                     <TableCell className="text-center">
                                         <Badge variant={variant} className={statusClassName}>{status}</Badge>
                                     </TableCell>
