@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,9 @@ const getInitialBookedEvents = () => {
     ];
 };
 
+type TimeSlot = 'Day' | 'Night' | 'Full Day';
+const timeSlots: TimeSlot[] = ['Day', 'Night', 'Full Day'];
+
 
 export default function EventsPage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -44,29 +47,38 @@ export default function EventsPage() {
   
   const [bookedEvents, setBookedEvents] = useState(getInitialBookedEvents);
   
-  const getBookingsForDate = (d: Date) => {
-    if (!isValid(d)) return [];
+  const getBookingsForDate = (d: Date | undefined) => {
+    if (!d || !isValid(d)) return [];
     return bookedEvents.filter(event => isValid(event.date) && format(event.date, 'yyyy-MM-dd') === format(d, 'yyyy-MM-dd'));
   }
 
-  const bookedDates = bookedEvents.map(event => event.date);
-  const partiallyBookedDates = bookedEvents.reduce((acc, event) => {
-    if (!isValid(event.date)) return acc;
-    const bookingsOnDate = getBookingsForDate(event.date);
-    if (bookingsOnDate.length > 0 && bookingsOnDate.length < availableHalls.length) {
-       acc.push(event.date);
-    }
-    return acc;
-  }, [] as Date[]);
-  
-  const fullyBookedDates = bookedEvents.reduce((acc, event) => {
-    if (!isValid(event.date)) return acc;
-    const bookingsOnDate = getBookingsForDate(event.date);
-    if (bookingsOnDate.length === availableHalls.length) {
-       acc.push(event.date);
-    }
-    return acc;
-  }, [] as Date[]);
+  const { partiallyBookedDates, fullyBookedDates } = useMemo(() => {
+    const bookingsByDate: { [key: string]: number } = {};
+
+    bookedEvents.forEach(event => {
+        if (isValid(event.date)) {
+            const dateStr = format(event.date, 'yyyy-MM-dd');
+            if (!bookingsByDate[dateStr]) {
+                bookingsByDate[dateStr] = 0;
+            }
+            bookingsByDate[dateStr]++;
+        }
+    });
+
+    const partially: Date[] = [];
+    const fully: Date[] = [];
+
+    Object.keys(bookingsByDate).forEach(dateStr => {
+        const date = new Date(dateStr + 'T00:00:00'); // Ensure correct date object creation
+        if (bookingsByDate[dateStr] >= availableHalls.length) {
+            fully.push(date);
+        } else if (bookingsByDate[dateStr] > 0) {
+            partially.push(date);
+        }
+    });
+
+    return { partiallyBookedDates: partially, fullyBookedDates: fully };
+  }, [bookedEvents]);
 
 
   const handleGetSuggestion = async () => {
@@ -116,6 +128,24 @@ export default function EventsPage() {
     }
     return null;
   };
+  
+  const selectedDateBookings = getBookingsForDate(date);
+  const getAvailableSlots = () => {
+    if (!date) return [];
+    
+    // For simplicity, let's assume a hall is booked for a time slot means that time slot is unavailable.
+    // A more complex logic could check per-hall availability.
+    const bookedSlots = new Set(selectedDateBookings.map(b => b.time));
+    
+    // If a 'Full Day' is booked, both 'Day' and 'Night' are implicitly booked.
+    if(bookedSlots.has('Full Day')) {
+        bookedSlots.add('Day');
+        bookedSlots.add('Night');
+    }
+
+    return timeSlots.filter(slot => !bookedSlots.has(slot));
+  }
+  const availableSlots = getAvailableSlots();
 
   return (
     <div className="space-y-6">
@@ -239,6 +269,8 @@ export default function EventsPage() {
             <CardContent>
                 <Calendar
                     mode="single"
+                    selected={date}
+                    onSelect={setDate}
                     className="p-0"
                     disabled={{ before: new Date() }}
                     modifiers={{ 
@@ -260,6 +292,22 @@ export default function EventsPage() {
                         DayContent: dayContent
                     }}
                 />
+                 {date && (
+                    <div className='mt-4 space-y-2'>
+                        <h4 className='font-semibold text-sm'>
+                            Availability for {format(date, "PPP")}
+                        </h4>
+                        {availableSlots.length > 0 ? (
+                             <div className='flex flex-wrap gap-2'>
+                                {availableSlots.map(slot => (
+                                    <Badge key={slot} variant='secondary' className='border-green-500/30 bg-green-500/20 text-green-800'>{slot}</Badge>
+                                ))}
+                            </div>
+                        ) : (
+                             <p className='text-sm text-muted-foreground'>No available slots on this day.</p>
+                        )}
+                    </div>
+                 )}
             </CardContent>
              <CardFooter>
                 <div className="w-full space-y-2 text-sm text-muted-foreground">
@@ -279,3 +327,5 @@ export default function EventsPage() {
     </div>
   );
 }
+
+    
