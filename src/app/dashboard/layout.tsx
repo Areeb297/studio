@@ -36,6 +36,7 @@ import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/user-nav";
 import Logo from "@/components/logo";
 import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function DashboardLayout({
   children,
@@ -102,7 +103,8 @@ export default function DashboardLayout({
         <div className="flex flex-col flex-1 w-full">
           <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b shrink-0 bg-background/80 backdrop-blur-lg sm:px-6">
             <SidebarTrigger className="md:hidden"/>
-            <div className="flex items-center gap-4 ml-auto">
+            <div className="flex items-center gap-2 ml-auto">
+              <ThemeToggle />
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Bell className="h-5 w-5" />
                 <span className="sr-only">Toggle notifications</span>

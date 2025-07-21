@@ -334,7 +334,7 @@ export default function EventsPage() {
                             modifiersStyles={{
                                 partiallyBooked: {
                                     backgroundColor: 'hsl(var(--accent))',
-                                    color: 'hsl(var(--card-foreground))',
+                                    color: 'hsl(var(--accent-foreground))',
                                     opacity: 0.7
                                 },
                                 fullyBooked: {
@@ -359,7 +359,7 @@ export default function EventsPage() {
                                 {availableSlots.length > 0 ? (
                                     <div className='flex flex-wrap gap-2'>
                                         {availableSlots.map(slot => (
-                                            <Badge key={slot} variant='secondary' className='border-green-500/30 bg-green-500/20 text-green-800'>{slot}</Badge>
+                                            <Badge key={slot} variant='secondary' className='border-green-500/30 bg-green-500/20 text-green-800 dark:text-green-300 dark:border-green-500/50 dark:bg-green-500/10'>{slot}</Badge>
                                         ))}
                                     </div>
                                 ) : (
@@ -422,7 +422,7 @@ export default function EventsPage() {
                                     <TableCell className="font-medium">{summary.month}</TableCell>
                                     <TableCell className="text-center">{summary.bookedEvents}</TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant={parseFloat(summary.occupancyRate) > 50 ? "default" : "secondary"} className={parseFloat(summary.occupancyRate) > 50 ? "bg-green-500/20 text-green-700" : ""}>
+                                        <Badge variant={parseFloat(summary.occupancyRate) > 50 ? "default" : "secondary"} className={parseFloat(summary.occupancyRate) > 50 ? "bg-green-500/20 text-green-700 dark:text-green-300 dark:border-green-500/50 dark:bg-green-500/10" : ""}>
                                             {summary.occupancyRate}
                                         </Badge>
                                     </TableCell>

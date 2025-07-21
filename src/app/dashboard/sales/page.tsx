@@ -134,8 +134,8 @@ export default function SalesPage() {
                     <Badge variant={
                         sale.status === "Completed" ? "default" : sale.status === "Pending" ? "secondary" : "destructive"
                     } className={
-                        sale.status === "Completed" ? "bg-green-500/20 text-green-700 border-green-500/30" :
-                        sale.status === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "bg-red-500/20 text-red-700 border-red-500/30"
+                        sale.status === "Completed" ? "bg-green-500/20 text-green-700 dark:text-green-300 dark:border-green-500/50 dark:bg-green-500/10" :
+                        sale.status === "Pending" ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 dark:border-yellow-500/50 dark:bg-yellow-500/10" : "bg-red-500/20 text-red-700 dark:text-red-300 dark:border-red-500/50 dark:bg-red-500/10"
                     }>{sale.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">PKR {sale.amount.toFixed(2)}</TableCell>

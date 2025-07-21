@@ -187,8 +187,8 @@ export default function Dashboard() {
                     <Badge variant={
                         transaction.status === "Completed" ? "default" : transaction.status === "Pending" ? "secondary" : "destructive"
                     } className={
-                        transaction.status === "Completed" ? "bg-green-500/20 text-green-700 border-green-500/30" :
-                        transaction.status === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "bg-red-500/20 text-red-700 border-red-500/30"
+                        transaction.status === "Completed" ? "bg-green-500/20 text-green-700 dark:text-green-300 dark:border-green-500/50 dark:bg-green-500/10" :
+                        transaction.status === "Pending" ? "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 dark:border-yellow-500/50 dark:bg-yellow-500/10" : "bg-red-500/20 text-red-700 dark:text-red-300 dark:border-red-500/50 dark:bg-red-500/10"
                     }>{transaction.status}</Badge>
                   </TableCell>
                   <TableCell className="text-right">PKR {transaction.amount.toFixed(2)}</TableCell>
