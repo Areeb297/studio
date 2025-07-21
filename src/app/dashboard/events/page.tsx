@@ -15,6 +15,7 @@ import { format, isValid } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { suggestHallSize, SuggestHallSizeInput } from '@/ai/flows/suggest-hall-size';
+import { Badge } from '@/components/ui/badge';
 
 const availableHalls = [
   { id: 'hall-a', name: 'Grand Ballroom (Hall A)', capacity: 500, rate: 'PKR 250,000' },
@@ -327,5 +328,3 @@ export default function EventsPage() {
     </div>
   );
 }
-
-    
