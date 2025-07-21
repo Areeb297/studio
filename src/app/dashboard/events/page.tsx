@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -343,8 +344,8 @@ export default function EventsPage() {
                                 },
                                 completed: {
                                     backgroundColor: 'hsl(var(--muted))',
-                                    color: 'hsl(var(--foreground))',
-                                    opacity: 0.5
+                                    color: 'hsl(var(--muted-foreground))',
+                                    opacity: 0.8
                                 }
                             }}
                             components={{
