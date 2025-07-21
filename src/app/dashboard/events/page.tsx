@@ -9,13 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Sparkles } from "lucide-react";
+import { CalendarIcon, Sparkles, TrendingUp, TrendingDown } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isValid, getMonth, getYear } from "date-fns";
+import { format, isValid, getMonth, getYear, isBefore, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { suggestHallSize, SuggestHallSizeInput } from '@/ai/flows/suggest-hall-size';
+import { summarizeEventBookings, SummarizeEventBookingsInput, SummarizeEventBookingsOutput } from '@/ai/flows/summarize-event-bookings';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const availableHalls = [
   { id: 'hall-a', name: 'Grand Ballroom (Hall A)', capacity: 500, rate: 'PKR 250,000' },
@@ -25,7 +29,15 @@ const availableHalls = [
 
 const getInitialBookedEvents = () => {
     const today = new Date();
+    const currentYear = getYear(today);
     return [
+        // Past Completed Events
+        { date: new Date(currentYear, 4, 15), hallId: 'hall-a', time: 'Day', eventType: 'Wedding' }, // May
+        { date: new Date(currentYear, 4, 20), hallId: 'hall-b', time: 'Night', eventType: 'Conference' },
+        { date: new Date(currentYear, 5, 5), hallId: 'hall-c', time: 'Day', eventType: 'Birthday' }, // June
+        { date: new Date(currentYear, 5, 12), hallId: 'hall-a', time: 'Full Day', eventType: 'Wedding' },
+
+        // Future Booked Events
         { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5), hallId: 'hall-a', time: 'Day', eventType: 'Wedding' },
         { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 8), hallId: 'hall-b', time: 'Night', eventType: 'Conference' },
         { date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 8), hallId: 'hall-c', time: 'Day', eventType: 'Birthday' },
@@ -50,37 +62,45 @@ export default function EventsPage() {
   
   const [bookedEvents, setBookedEvents] = useState(getInitialBookedEvents);
   
+  const [yearlySummary, setYearlySummary] = useState<SummarizeEventBookingsOutput | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+
   const getBookingsForDate = (d: Date | undefined) => {
     if (!d || !isValid(d)) return [];
     return bookedEvents.filter(event => isValid(event.date) && format(event.date, 'yyyy-MM-dd') === format(d, 'yyyy-MM-dd'));
   }
 
-  const { partiallyBookedDates, fullyBookedDates } = useMemo(() => {
-    const bookingsByDate: { [key: string]: number } = {};
+  const { partiallyBookedDates, fullyBookedDates, completedDates } = useMemo(() => {
+    const bookingsByDate: { [key: string]: { count: number, isPast: boolean } } = {};
+    const today = startOfDay(new Date());
 
     bookedEvents.forEach(event => {
         if (isValid(event.date)) {
             const dateStr = format(event.date, 'yyyy-MM-dd');
             if (!bookingsByDate[dateStr]) {
-                bookingsByDate[dateStr] = 0;
+                bookingsByDate[dateStr] = { count: 0, isPast: isBefore(startOfDay(event.date), today) };
             }
-            bookingsByDate[dateStr]++;
+            bookingsByDate[dateStr].count++;
         }
     });
 
     const partially: Date[] = [];
     const fully: Date[] = [];
+    const completed: Date[] = [];
 
     Object.keys(bookingsByDate).forEach(dateStr => {
         const date = new Date(dateStr + 'T00:00:00'); // Ensure correct date object creation
-        if (bookingsByDate[dateStr] >= availableHalls.length) {
+        if (bookingsByDate[dateStr].isPast) {
+            completed.push(date);
+        }
+        if (bookingsByDate[dateStr].count >= availableHalls.length) {
             fully.push(date);
-        } else if (bookingsByDate[dateStr] > 0) {
+        } else if (bookingsByDate[dateStr].count > 0) {
             partially.push(date);
         }
     });
 
-    return { partiallyBookedDates: partially, fullyBookedDates: fully };
+    return { partiallyBookedDates: partially, fullyBookedDates: fully, completedDates: completed };
   }, [bookedEvents]);
 
   useEffect(() => {
@@ -115,6 +135,24 @@ export default function EventsPage() {
     }
   };
 
+  const handleGenerateSummary = async () => {
+    setIsSummaryLoading(true);
+    setYearlySummary(null);
+    try {
+        const input: SummarizeEventBookingsInput = {
+            year: getYear(new Date()),
+            bookings: JSON.stringify(bookedEvents.map(e => ({ date: format(e.date, 'yyyy-MM-dd'), eventType: e.eventType, time: e.time }))),
+            totalHalls: availableHalls.length
+        };
+        const result = await summarizeEventBookings(input);
+        setYearlySummary(result);
+    } catch (error) {
+        console.error("Failed to generate yearly summary:", error);
+    } finally {
+        setIsSummaryLoading(false);
+    }
+  }
+
   const dayContent = (day: Date) => {
     const bookings = getBookingsForDate(day);
     if (bookings.length > 0) {
@@ -145,11 +183,8 @@ export default function EventsPage() {
   const getAvailableSlots = () => {
     if (!date) return [];
     
-    // For simplicity, let's assume a hall is booked for a time slot means that time slot is unavailable.
-    // A more complex logic could check per-hall availability.
     const bookedSlots = new Set(selectedDateBookings.map(b => b.time));
     
-    // If a 'Full Day' is booked, both 'Day' and 'Night' are implicitly booked.
     if(bookedSlots.has('Full Day')) {
         bookedSlots.add('Day');
         bookedSlots.add('Night');
@@ -161,190 +196,260 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Events Booking</h1>
-       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Create a New Event Booking</CardTitle>
-                <CardDescription>Fill out the form below to book an event. All fields are required.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="event-type">Event Type</Label>
-                        <Select onValueChange={setEventType}>
-                        <SelectTrigger id="event-type">
-                            <SelectValue placeholder="Select event type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Wedding">Wedding</SelectItem>
-                            <SelectItem value="Birthday">Birthday Party</SelectItem>
-                            <SelectItem value="Conference">Conference</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="persons">Number of Persons</Label>
-                        <Input id="persons" type="number" placeholder="e.g., 150" value={numberOfGuests} onChange={(e) => setNumberOfGuests(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="date">Event Date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <Button
-                                variant={"outline"}
-                                className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !date && "text-muted-foreground"
-                                )}
-                            >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {date ? format(date, "PPP") : <span>Pick a date</span>}
-                            </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                initialFocus
-                                disabled={{ before: new Date() }}
-                            />
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Available Venues/Halls</Label>
-                        <div className="space-y-4 rounded-md border p-4">
-                            <RadioGroup defaultValue="hall-a">
-                            {availableHalls.map((hall) => (
-                                <div key={hall.id} className="flex items-center justify-between">
-                                    <div className='flex items-center space-x-2'>
-                                        <RadioGroupItem value={hall.id} id={hall.id} />
-                                        <Label htmlFor={hall.id} className="font-normal">
-                                            {hall.name} (Capacity: {hall.capacity})
-                                        </Label>
-                                    </div>
-                                    <span className="text-sm font-medium">{hall.rate}</span>
-                                </div>
-                            ))}
-                            </RadioGroup>
-                            <div className="flex items-start gap-4 pt-4">
-                                <Button variant="outline" size="sm" onClick={handleGetSuggestion} disabled={isLoading}>
-                                    <Sparkles className="mr-2 h-4 w-4" /> {isLoading ? 'Getting Suggestion...' : 'Get AI Suggestion'}
+        <h1 className="text-3xl font-bold font-headline">Events Booking</h1>
+        <div className="grid lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>Create a New Event Booking</CardTitle>
+                    <CardDescription>Fill out the form below to book an event. All fields are required.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="event-type">Event Type</Label>
+                            <Select onValueChange={setEventType}>
+                            <SelectTrigger id="event-type">
+                                <SelectValue placeholder="Select event type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Wedding">Wedding</SelectItem>
+                                <SelectItem value="Birthday">Birthday Party</SelectItem>
+                                <SelectItem value="Conference">Conference</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="persons">Number of Persons</Label>
+                            <Input id="persons" type="number" placeholder="e.g., 150" value={numberOfGuests} onChange={(e) => setNumberOfGuests(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="date">Event Date</Label>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !date && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
                                 </Button>
-                                {aiSuggestion && <p className="text-sm text-muted-foreground pt-1.5">{aiSuggestion}</p>}
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={date}
+                                    onSelect={setDate}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Available Venues/Halls</Label>
+                            <div className="space-y-4 rounded-md border p-4">
+                                <RadioGroup defaultValue="hall-a">
+                                {availableHalls.map((hall) => (
+                                    <div key={hall.id} className="flex items-center justify-between">
+                                        <div className='flex items-center space-x-2'>
+                                            <RadioGroupItem value={hall.id} id={hall.id} />
+                                            <Label htmlFor={hall.id} className="font-normal">
+                                                {hall.name} (Capacity: {hall.capacity})
+                                            </Label>
+                                        </div>
+                                        <span className="text-sm font-medium">{hall.rate}</span>
+                                    </div>
+                                ))}
+                                </RadioGroup>
+                                <div className="flex items-start gap-4 pt-4">
+                                    <Button variant="outline" size="sm" onClick={handleGetSuggestion} disabled={isLoading}>
+                                        <Sparkles className="mr-2 h-4 w-4" /> {isLoading ? 'Getting Suggestion...' : 'Get AI Suggestion'}
+                                    </Button>
+                                    {aiSuggestion && <p className="text-sm text-muted-foreground pt-1.5">{aiSuggestion}</p>}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="menu-details">Menu Details & Special Requests</Label>
-                    <Textarea id="menu-details" placeholder="e.g., Buffet style with Pakistani & Chinese cuisine. Special request for a live BBQ station." rows={4} />
-                </div>
-                
-                <div className="grid md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                        <Label htmlFor="price-quoted">Price Quoted (PKR)</Label>
-                        <Input id="price-quoted" type="number" placeholder="e.g., 500000" />
+                        <Label htmlFor="menu-details">Menu Details & Special Requests</Label>
+                        <Textarea id="menu-details" placeholder="e.g., Buffet style with Pakistani & Chinese cuisine. Special request for a live BBQ station." rows={4} />
                     </div>
+                    
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="price-quoted">Price Quoted (PKR)</Label>
+                            <Input id="price-quoted" type="number" placeholder="e.g., 500000" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="discount">Discount (PKR)</Label>
+                            <Input id="discount" type="number" placeholder="e.g., 25000" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="advance">Advance Payment (PKR)</Label>
+                            <Input id="advance" type="number" placeholder="e.g., 200000" />
+                        </div>
+                    </div>
+
                     <div className="space-y-2">
-                        <Label htmlFor="discount">Discount (PKR)</Label>
-                        <Input id="discount" type="number" placeholder="e.g., 25000" />
+                        <Label htmlFor="terms">Specific Terms & Conditions</Label>
+                        <Textarea id="terms" placeholder="e.g., Full payment required 7 days before the event. No outside food or drinks allowed." rows={3} />
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="advance">Advance Payment (PKR)</Label>
-                        <Input id="advance" type="number" placeholder="e.g., 200000" />
-                    </div>
-                </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="terms">Specific Terms & Conditions</Label>
-                    <Textarea id="terms" placeholder="e.g., Full payment required 7 days before the event. No outside food or drinks allowed." rows={3} />
-                </div>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-2">
+                    <Button variant="outline">Cancel</Button>
+                    <Button>Save Booking</Button>
+                </CardFooter>
+            </Card>
 
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
-                <Button>Save Booking</Button>
-            </CardFooter>
-        </Card>
+            <div className="lg:col-span-1 space-y-6">
+                <Card>
+                    <CardHeader>
+                        <div className='flex justify-between items-start'>
+                            <div>
+                                <CardTitle>Events Calendar</CardTitle>
+                                <CardDescription>View hall availability at a glance.</CardDescription>
+                            </div>
+                            <Badge variant="secondary">{monthlyBookingCount} bookings this month</Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={setDate}
+                            month={currentMonth}
+                            onMonthChange={setCurrentMonth}
+                            className="p-0"
+                            modifiers={{ 
+                                partiallyBooked: partiallyBookedDates,
+                                fullyBooked: fullyBookedDates,
+                                completed: completedDates
+                            }}
+                            modifiersStyles={{
+                                partiallyBooked: {
+                                    backgroundColor: 'hsl(var(--accent))',
+                                    color: 'hsl(var(--accent-foreground))',
+                                    opacity: 0.7
+                                },
+                                fullyBooked: {
+                                    backgroundColor: 'hsl(var(--destructive))',
+                                    color: 'hsl(var(--destructive-foreground))',
+                                },
+                                completed: {
+                                    backgroundColor: 'hsl(var(--muted))',
+                                    color: 'hsl(var(--muted-foreground))',
+                                    opacity: 0.5
+                                }
+                            }}
+                            components={{
+                                DayContent: dayContent
+                            }}
+                        />
+                        {date && !isBefore(startOfDay(date), startOfDay(new Date())) && (
+                            <div className='mt-4 space-y-2'>
+                                <h4 className='font-semibold text-sm'>
+                                    Availability for {format(date, "PPP")}
+                                </h4>
+                                {availableSlots.length > 0 ? (
+                                    <div className='flex flex-wrap gap-2'>
+                                        {availableSlots.map(slot => (
+                                            <Badge key={slot} variant='secondary' className='border-green-500/30 bg-green-500/20 text-green-800'>{slot}</Badge>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className='text-sm text-muted-foreground'>No available slots on this day.</p>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                    <CardFooter>
+                        <div className="w-full space-y-2 text-sm text-muted-foreground">
+                             <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: 'hsl(var(--muted))', opacity: 0.5 }} />
+                                <span>Completed Event</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))', opacity: 0.7 }} />
+                                <span>Partially Booked</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: 'hsl(var(--destructive))' }} />
+                                <span>Fully Booked</span>
+                            </div>
+                            <p className="pt-2 text-xs">* Hover over a booked date to see details.</p>
+                        </div>
+                    </CardFooter>
+                </Card>
+            </div>
+        </div>
 
-        <Card className="lg:col-span-1">
+        <Card>
             <CardHeader>
-                <div className='flex justify-between items-start'>
-                    <div>
-                        <CardTitle>Events Calendar</CardTitle>
-                        <CardDescription>View hall availability at a glance.</CardDescription>
-                    </div>
-                    <Badge variant="secondary">{monthlyBookingCount} bookings this month</Badge>
-                </div>
+                <CardTitle>Yearly Booking Summary</CardTitle>
+                <CardDescription>AI-generated summary of event booking performance for the current year.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    month={currentMonth}
-                    onMonthChange={setCurrentMonth}
-                    className="p-0"
-                    disabled={{ before: new Date() }}
-                    modifiers={{ 
-                        partiallyBooked: partiallyBookedDates,
-                        fullyBooked: fullyBookedDates 
-                    }}
-                    modifiersStyles={{
-                        partiallyBooked: {
-                            backgroundColor: 'hsl(var(--accent))',
-                            color: 'hsl(var(--accent-foreground))',
-                            opacity: 0.7
-                        },
-                        fullyBooked: {
-                            backgroundColor: 'hsl(var(--destructive))',
-                            color: 'hsl(var(--destructive-foreground))',
-                        }
-                    }}
-                    components={{
-                        DayContent: dayContent
-                    }}
-                />
-                 {date && (
-                    <div className='mt-4 space-y-2'>
-                        <h4 className='font-semibold text-sm'>
-                            Availability for {format(date, "PPP")}
-                        </h4>
-                        {availableSlots.length > 0 ? (
-                             <div className='flex flex-wrap gap-2'>
-                                {availableSlots.map(slot => (
-                                    <Badge key={slot} variant='secondary' className='border-green-500/30 bg-green-500/20 text-green-800'>{slot}</Badge>
+                {isSummaryLoading ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-8 w-1/4" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-full" />
+                            <Skeleton className="h-6 w-full" />
+                            <Skeleton className="h-6 w-5/6" />
+                        </div>
+                    </div>
+                ) : yearlySummary ? (
+                    <div className="space-y-4">
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Month</TableHead>
+                                    <TableHead className="text-center">Bookings</TableHead>
+                                    <TableHead className="text-center">Occupancy</TableHead>
+                                    <TableHead>Popular Event</TableHead>
+                                    <TableHead>AI Insight</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {yearlySummary.yearlySummary.map((summary) => (
+                                <TableRow key={summary.month}>
+                                    <TableCell className="font-medium">{summary.month}</TableCell>
+                                    <TableCell className="text-center">{summary.bookedEvents}</TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant={parseFloat(summary.occupancyRate) > 50 ? "default" : "secondary"} className={parseFloat(summary.occupancyRate) > 50 ? "bg-green-500/20 text-green-700" : ""}>
+                                            {summary.occupancyRate}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell>{summary.popularEventType || 'N/A'}</TableCell>
+                                    <TableCell className="text-muted-foreground">{summary.insight}</TableCell>
+                                </TableRow>
                                 ))}
-                            </div>
-                        ) : (
-                             <p className='text-sm text-muted-foreground'>No available slots on this day.</p>
-                        )}
+                            </TableBody>
+                        </Table>
+                        <div className="pt-4">
+                            <h4 className="font-semibold">Overall Yearly Insight</h4>
+                            <p className="text-muted-foreground">{yearlySummary.overallInsight}</p>
+                        </div>
                     </div>
-                 )}
+                ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                        <p>Click the button to generate the yearly performance summary.</p>
+                    </div>
+                )}
             </CardContent>
-             <CardFooter>
-                <div className="w-full space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))', opacity: 0.7 }} />
-                        <span>Partially Booked</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: 'hsl(var(--destructive))' }} />
-                        <span>Fully Booked</span>
-                    </div>
-                    <p className="pt-2 text-xs">* Hover over a booked date to see details.</p>
-                </div>
+            <CardFooter className="flex justify-center">
+                <Button onClick={handleGenerateSummary} disabled={isSummaryLoading}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {isSummaryLoading ? 'Generating Summary...' : 'Generate AI Yearly Summary'}
+                </Button>
             </CardFooter>
         </Card>
-      </div>
     </div>
   );
 }
-
-    
