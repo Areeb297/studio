@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +23,7 @@ export default function LoginPage() {
             <Logo />
           </div>
           <CardTitle className="text-2xl font-bold font-headline">
-            Welcome to Raha24
+            Welcome to Rahah24
           </CardTitle>
           <CardDescription>
             Enter your credentials to access your dashboard
@@ -33,7 +34,7 @@ export default function LoginPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="manager@raha24.com" required />
+                <Input id="email" type="email" placeholder="manager@rahah24.com" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

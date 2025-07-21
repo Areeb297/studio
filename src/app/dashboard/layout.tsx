@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -65,7 +66,7 @@ export default function DashboardLayout({
           <SidebarHeader>
             <div className="flex items-center gap-3 p-2">
               <Logo />
-              <span className="text-xl font-semibold font-headline">Raha24</span>
+              <span className="text-xl font-semibold font-headline">Rahah24</span>
             </div>
           </SidebarHeader>
           <SidebarContent className="p-2">
