@@ -53,28 +53,41 @@ const initialMenuItems: MenuItem[] = [
   { id: 'item-4', name: 'BBQ Platter', category: 'BBQ', recipeCost: 1200, menuPrice: 2500, status: 'Priced', yield: "4 persons", ingredients: []},
 ];
 
+const emptyMenuItem: Omit<MenuItem, 'id'> = {
+    name: '',
+    category: '',
+    recipeCost: 0,
+    menuPrice: 0,
+    status: 'Draft',
+    ingredients: [],
+    yield: ''
+};
+
 export default function MenuPage() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  
+  // State for the item being edited in the sheet
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+
   const [targetMultiplier, setTargetMultiplier] = useState('2.5');
   const [suggestedPrice, setSuggestedPrice] = useState<{ price: number; reasoning: string } | null>(null);
   const [isPricingLoading, setIsPricingLoading] = useState(false);
 
   const handleAddNewItem = () => {
-    setSelectedItem(null);
+    setEditingItem({ id: `item-${Date.now()}`, ...emptyMenuItem });
     setSuggestedPrice(null);
     setIsSheetOpen(true);
   };
   
   const handleEditItem = (item: MenuItem) => {
-    setSelectedItem(item);
+    setEditingItem({ ...item });
     setSuggestedPrice(null);
     setIsSheetOpen(true);
   };
 
   const handleGetPriceSuggestion = async () => {
-    if (!selectedItem || selectedItem.recipeCost <= 0) {
+    if (!editingItem || editingItem.recipeCost <= 0) {
         setSuggestedPrice({ price: 0, reasoning: "Please calculate recipe cost first." });
         return;
     }
@@ -82,8 +95,8 @@ export default function MenuPage() {
     setSuggestedPrice(null);
     try {
         const input: SuggestOptimalPricingInput = {
-            recipeName: selectedItem.name,
-            recipeCost: selectedItem.recipeCost,
+            recipeName: editingItem.name,
+            recipeCost: editingItem.recipeCost,
             marketAnalysis: "Mid-tier casual dining restaurant in a metropolitan area.",
             targetGrossProfitMultiplier: parseFloat(targetMultiplier)
         };
@@ -100,6 +113,28 @@ export default function MenuPage() {
   const calculateTotalCost = (ingredients: Ingredient[]) => {
     return ingredients.reduce((total, ing) => total + parseFloat(ing.cost || '0'), 0);
   }
+  
+  const handleIngredientChange = (index: number, field: keyof Ingredient, value: string) => {
+    if (!editingItem) return;
+    const updatedIngredients = [...editingItem.ingredients];
+    updatedIngredients[index] = { ...updatedIngredients[index], [field]: value };
+    
+    const newCost = calculateTotalCost(updatedIngredients);
+    setEditingItem({ ...editingItem, ingredients: updatedIngredients, recipeCost: newCost });
+  };
+  
+  const handleAddIngredient = () => {
+    if (!editingItem) return;
+    const newIngredient: Ingredient = { id: `ing-${Date.now()}`, name: '', quantity: '', unit: 'g', cost: '' };
+    setEditingItem({ ...editingItem, ingredients: [...editingItem.ingredients, newIngredient] });
+  };
+
+  const handleRemoveIngredient = (index: number) => {
+    if (!editingItem) return;
+    const updatedIngredients = editingItem.ingredients.filter((_, i) => i !== index);
+    const newCost = calculateTotalCost(updatedIngredients);
+    setEditingItem({ ...editingItem, ingredients: updatedIngredients, recipeCost: newCost });
+  };
 
   const renderBadge = (status: 'Draft' | 'Priced') => {
     const variant = status === 'Priced' ? 'default' : 'secondary';
@@ -123,10 +158,10 @@ export default function MenuPage() {
           <form className="flex flex-col h-full">
             <SheetHeader className="p-6">
               <SheetTitle className="text-2xl flex items-center gap-2">
-                <BookCopy /> {selectedItem ? 'Edit' : 'Add'} Menu Item
+                <BookCopy /> {editingItem && editingItem.name ? 'Edit' : 'Add'} Menu Item
               </SheetTitle>
               <SheetDescription>
-                {selectedItem ? 'Edit the details of the menu item and its recipe.' : 'Define a new item, its recipe, and calculate its price.'}
+                {editingItem && editingItem.name ? 'Edit the details of the menu item and its recipe.' : 'Define a new item, its recipe, and calculate its price.'}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
@@ -137,11 +172,11 @@ export default function MenuPage() {
                 <CardContent className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                       <Label htmlFor="item-name">Item Name</Label>
-                      <Input id="item-name" placeholder="e.g., Chicken Biryani" defaultValue={selectedItem?.name} />
+                      <Input id="item-name" placeholder="e.g., Chicken Biryani" value={editingItem?.name || ''} onChange={(e) => setEditingItem(prev => prev ? {...prev, name: e.target.value} : null)} />
                   </div>
                   <div className="space-y-2">
                       <Label htmlFor="item-category">Category</Label>
-                      <Select defaultValue={selectedItem?.category}>
+                      <Select value={editingItem?.category || ''} onValueChange={(value) => setEditingItem(prev => prev ? {...prev, category: value} : null)}>
                           <SelectTrigger id="item-category">
                               <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
@@ -175,12 +210,12 @@ export default function MenuPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {selectedItem?.ingredients.map(ing => (
+                                {editingItem?.ingredients.map((ing, index) => (
                                     <TableRow key={ing.id}>
-                                        <TableCell><Input defaultValue={ing.name} placeholder="e.g., Basmati Rice"/></TableCell>
-                                        <TableCell><Input type="number" defaultValue={ing.quantity} placeholder="e.g., 200"/></TableCell>
+                                        <TableCell><Input value={ing.name} onChange={(e) => handleIngredientChange(index, 'name', e.target.value)} placeholder="e.g., Basmati Rice"/></TableCell>
+                                        <TableCell><Input type="number" value={ing.quantity} onChange={(e) => handleIngredientChange(index, 'quantity', e.target.value)} placeholder="e.g., 200"/></TableCell>
                                         <TableCell>
-                                            <Select defaultValue={ing.unit}>
+                                            <Select value={ing.unit} onValueChange={(value) => handleIngredientChange(index, 'unit', value)}>
                                                 <SelectTrigger><SelectValue/></SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="g">gram (g)</SelectItem>
@@ -191,13 +226,13 @@ export default function MenuPage() {
                                                 </SelectContent>
                                             </Select>
                                         </TableCell>
-                                        <TableCell><Input type="number" defaultValue={ing.cost} placeholder="e.g., 80.00"/></TableCell>
-                                        <TableCell><Button variant="ghost" size="icon"><Trash2 className="w-4 h-4 text-destructive"/></Button></TableCell>
+                                        <TableCell><Input type="number" value={ing.cost} onChange={(e) => handleIngredientChange(index, 'cost', e.target.value)} placeholder="e.g., 80.00"/></TableCell>
+                                        <TableCell><Button variant="ghost" size="icon" onClick={() => handleRemoveIngredient(index)}><Trash2 className="w-4 h-4 text-destructive"/></Button></TableCell>
                                     </TableRow>
                                 ))}
                                 <TableRow>
                                     <TableCell colSpan={5}>
-                                        <Button variant="outline" size="sm" className="w-full">
+                                        <Button variant="outline" size="sm" className="w-full" type="button" onClick={handleAddIngredient}>
                                             <PlusCircle className="mr-2 h-4 w-4" /> Add Ingredient
                                         </Button>
                                     </TableCell>
@@ -207,13 +242,13 @@ export default function MenuPage() {
                         <div className="grid grid-cols-2 gap-4 items-end pt-4">
                              <div className="space-y-2">
                                 <Label htmlFor="yield">Portion Size / Yield</Label>
-                                <Input id="yield" defaultValue={selectedItem?.yield} placeholder="e.g., 1 plate or 1 kg" />
+                                <Input id="yield" value={editingItem?.yield || ''} onChange={(e) => setEditingItem(prev => prev ? {...prev, yield: e.target.value} : null)} placeholder="e.g., 1 plate or 1 kg" />
                             </div>
                             <Card className="bg-muted/50">
                                 <CardHeader className="p-4">
                                     <CardDescription>Total Recipe Cost</CardDescription>
                                     <CardTitle className="text-3xl">
-                                        PKR {selectedItem ? calculateTotalCost(selectedItem.ingredients).toFixed(2) : '0.00'}
+                                        PKR {editingItem ? editingItem.recipeCost.toFixed(2) : '0.00'}
                                     </CardTitle>
                                 </CardHeader>
                             </Card>
@@ -233,7 +268,7 @@ export default function MenuPage() {
                              <Label htmlFor="multiplier">Target Gross Profit Multiplier</Label>
                              <Input id="multiplier" type="number" value={targetMultiplier} onChange={(e) => setTargetMultiplier(e.target.value)} placeholder="e.g., 2.5"/>
                         </div>
-                        <Button variant="outline" onClick={handleGetPriceSuggestion} disabled={isPricingLoading}>
+                        <Button variant="outline" onClick={handleGetPriceSuggestion} disabled={isPricingLoading} type="button">
                             <Sparkles className="mr-2" /> {isPricingLoading ? "Calculating..." : "Suggest Price"}
                         </Button>
                     </div>
@@ -248,7 +283,7 @@ export default function MenuPage() {
                     )}
                     <div className="space-y-2 pt-4">
                       <Label htmlFor="menu-price">Final Menu Price (PKR)</Label>
-                      <Input id="menu-price" type="number" placeholder="Enter final price" className="text-lg font-bold" defaultValue={selectedItem?.menuPrice || ''}/>
+                      <Input id="menu-price" type="number" placeholder="Enter final price" className="text-lg font-bold" value={editingItem?.menuPrice || ''} onChange={(e) => setEditingItem(prev => prev ? {...prev, menuPrice: parseFloat(e.target.value) || 0} : null)}/>
                     </div>
                 </CardContent>
               </Card>
@@ -256,7 +291,7 @@ export default function MenuPage() {
             </div>
             <SheetFooter className="p-6 bg-muted/50 border-t">
               <SheetClose asChild>
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline" type="button">Cancel</Button>
               </SheetClose>
               <Button type="submit">Save Changes</Button>
             </SheetFooter>
@@ -302,5 +337,4 @@ export default function MenuPage() {
       </Card>
     </div>
   );
-
-    
+}
