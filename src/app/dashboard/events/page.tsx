@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Sparkles, TrendingUp, TrendingDown } from "lucide-react";
+import { CalendarIcon, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isValid, getMonth, getYear, isBefore, startOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ import { suggestHallSize, SuggestHallSizeInput } from '@/ai/flows/suggest-hall-s
 import { summarizeEventBookings, SummarizeEventBookingsInput, SummarizeEventBookingsOutput } from '@/ai/flows/summarize-event-bookings';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 const availableHalls = [
