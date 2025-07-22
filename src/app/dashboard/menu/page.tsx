@@ -272,13 +272,13 @@ export default function MenuPage() {
                             <Sparkles className="mr-2" /> {isPricingLoading ? "Calculating..." : "Suggest Price"}
                         </Button>
                     </div>
-                     {suggestedPrice && (
-                        <div className="p-4 bg-accent/20 border-accent/50 border rounded-lg space-y-2">
-                             <p className="text-sm font-semibold text-accent-foreground/80">AI Suggestion</p>
-                            <p className="text-2xl font-bold text-accent-foreground">
+                    {suggestedPrice && (
+                        <div className="p-4 bg-primary/10 border-primary/20 border rounded-lg space-y-2">
+                            <p className="text-sm font-semibold text-foreground">AI Suggestion</p>
+                            <p className="text-2xl font-bold text-foreground">
                                 Suggested Price: PKR {suggestedPrice.price.toFixed(2)}
                             </p>
-                             <p className="text-xs text-muted-foreground">{suggestedPrice.reasoning}</p>
+                            <p className="text-xs text-foreground">{suggestedPrice.reasoning}</p>
                         </div>
                     )}
                     <div className="space-y-2 pt-4">

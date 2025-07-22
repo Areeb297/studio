@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, Sparkles } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isValid, getMonth, getYear, isBefore, startOfDay } from "date-fns";
+import { format, isValid, getMonth, getYear, isBefore, startOfDay, getDate } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { suggestHallSize, SuggestHallSizeInput } from '@/ai/flows/suggest-hall-size';
@@ -154,14 +154,45 @@ export default function EventsPage() {
     }
   }
 
-  const dayContent = (day: Date) => {
+  const CustomDayComponent = (props: any) => {
+    const day = props.date;
     const bookings = getBookingsForDate(day);
-    if (bookings.length > 0) {
-      return (
-        <div className="relative h-full w-full">
+    const dayNumber = getDate(day);
+    
+    // Determine the state of this day
+    const isCompleted = completedDates.some(d => format(d, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
+    const isFullyBooked = fullyBookedDates.some(d => format(d, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
+    const isPartiallyBooked = partiallyBookedDates.some(d => format(d, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'));
+    
+    // Determine background color and text color
+    let bgColor = '';
+    let textColor = '';
+    
+    if (isCompleted) {
+      bgColor = 'hsl(var(--muted))';
+      textColor = 'hsl(var(--muted-foreground))';
+    } else if (isFullyBooked) {
+      bgColor = 'hsl(var(--destructive))';
+      textColor = 'hsl(var(--destructive-foreground))';
+    } else if (isPartiallyBooked) {
+      bgColor = 'hsl(var(--accent))';
+      textColor = 'hsl(var(--foreground))';
+    }
+
+    return (
+      <div 
+        className="relative h-full w-full flex items-center justify-center rounded-md"
+        style={{
+          backgroundColor: bgColor,
+          color: textColor,
+          opacity: isCompleted ? 0.8 : isPartiallyBooked ? 0.7 : 1
+        }}
+      >
+        <span className="text-sm font-medium z-10">{dayNumber}</span>
+        {bookings.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
-                <div className="absolute inset-0 z-10"></div>
+              <div className="absolute inset-0 cursor-pointer" />
             </PopoverTrigger>
             <PopoverContent>
               <h4 className="font-semibold text-sm mb-2">Bookings for {format(day, 'PPP')}</h4>
@@ -174,10 +205,9 @@ export default function EventsPage() {
               </ul>
             </PopoverContent>
           </Popover>
-        </div>
-      );
-    }
-    return null;
+        )}
+      </div>
+    );
   };
   
   const selectedDateBookings = getBookingsForDate(date);
@@ -349,7 +379,7 @@ export default function EventsPage() {
                                 }
                             }}
                             components={{
-                                DayContent: dayContent
+                                Day: CustomDayComponent
                             }}
                         />
                         {date && !isBefore(startOfDay(date), startOfDay(new Date())) && (
