@@ -57,7 +57,7 @@ export default function DashboardLayout({
     { type: 'divider', label: 'Management' },
     { href: "/dashboard/finance", icon: Banknote, label: "Finance" },
     { href: "/dashboard/departments", icon: Building2, label: "Departments" },
-    { href: "/dashboard/staff", icon: Users, label: "Staff" },
+    { href: "/dashboard/staff", icon: Users, label: "HR" },
   ];
 
   return (
@@ -76,7 +76,7 @@ export default function DashboardLayout({
                 item.type === 'divider' ? (
                   <div key={index} className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase">{item.label}</div>
                 ) : (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={item.href!}>
                     <Link href={item.href!} className="w-full">
                       <SidebarMenuButton isActive={pathname === item.href} tooltip={item.label}>
                         <item.icon className="h-4 w-4" />

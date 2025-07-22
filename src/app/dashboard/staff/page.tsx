@@ -56,7 +56,7 @@ export default function StaffPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Staff Management</h1>
+      <h1 className="text-3xl font-bold font-headline">HR Management</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
