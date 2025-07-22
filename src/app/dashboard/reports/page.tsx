@@ -3,8 +3,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip, Line, LineChart, PieChart, Pie, Cell } from "recharts";
-import { DollarSign, Percent, Users, Utensils, TrendingUp, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip, Line, LineChart, PieChart, Pie, Cell, Sector } from "recharts";
+import { DollarSign, Percent, Users, Utensils, TrendingUp, ArrowDownCircle, ArrowUpCircle, TrendingDown } from "lucide-react";
+import React from "react";
 
 // Mock Data
 const kpiData = {
@@ -14,10 +15,14 @@ const kpiData = {
   laborCostPercentage: { value: 25.8, change: -2.1 },
 };
 
-const salesTrendData = Array.from({ length: 14 }, (_, i) => ({
-  date: `Day ${i + 1}`,
-  revenue: Math.floor(Math.random() * (250000 - 150000 + 1)) + 150000,
-}));
+const salesForecastData = [
+    { month: 'Jul', revenue: 310000 },
+    { month: 'Aug', revenue: 325000 },
+    { month: 'Sep', revenue: 340000 },
+    { month: 'Oct', revenue: 360000 },
+    { month: 'Nov', revenue: 385000 },
+    { month: 'Dec', revenue: 420000 },
+];
 
 const categoryProfitabilityData = [
   { category: "Main Course", profit: 450000 },
@@ -34,6 +39,15 @@ const topSellingItems = [
   { name: "Mint Margarita", unitsSold: 600, revenue: 210000 },
   { name: "Seekh Kebab", unitsSold: 300, revenue: 195000 },
 ];
+
+const slowestSellingItems = [
+    { name: "Fish and Chips", unitsSold: 25, revenue: 22500 },
+    { name: "Daal Mash", unitsSold: 40, revenue: 18000 },
+    { name: "Alfredo Pasta", unitsSold: 45, revenue: 40500 },
+    { name: "Chocolate Lava Cake", unitsSold: 55, revenue: 30250 },
+    { name: "Brain Masala", unitsSold: 60, revenue: 54000 },
+];
+
 
 const costBreakdownData = [
   { name: 'Kitchen', value: 65 },
@@ -102,18 +116,18 @@ export default function ReportsPage() {
 
        <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><TrendingUp /> Daily Sales Performance (Last 14 Days)</CardTitle>
-          <CardDescription>Track daily revenue to understand sales trends and peak periods.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><TrendingUp /> Sales Forecast (Next 6 Months)</CardTitle>
+          <CardDescription>AI-powered sales projection to aid in strategic planning and resource allocation.</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={salesTrendData}>
+            <LineChart data={salesForecastData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
+              <XAxis dataKey="month" />
               <YAxis tickFormatter={(value) => `PKR ${value/1000}k`} />
-              <Tooltip formatter={(value: number) => `PKR ${value.toLocaleString()}`} />
+              <Tooltip formatter={(value: number) => [`PKR ${value.toLocaleString()}`, "Projected Revenue"]} />
               <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} name="Daily Revenue" />
+              <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} name="Projected Revenue" />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -152,7 +166,8 @@ export default function ReportsPage() {
                             cy="50%"
                             labelLine={false}
                             label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                            outerRadius={80}
+                            outerRadius={100}
+                            innerRadius={60}
                             fill="#8884d8"
                             dataKey="value"
                         >
@@ -167,35 +182,67 @@ export default function ReportsPage() {
         </Card>
       </div>
 
-       <Card>
-        <CardHeader>
-          <CardTitle>Top Selling Items</CardTitle>
-          <CardDescription>
-            A list of the most popular items by units sold and revenue generated.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Item Name</TableHead>
-                <TableHead className="text-center">Units Sold</TableHead>
-                <TableHead className="text-right">Total Revenue (PKR)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topSellingItems.map((item) => (
-                <TableRow key={item.name}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell className="text-center">{item.unitsSold}</TableCell>
-                  <TableCell className="text-right">{item.revenue.toLocaleString()}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+       <div className="grid lg:grid-cols-2 gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-green-600"><TrendingUp /> Top Selling Items</CardTitle>
+                    <CardDescription>
+                        Your most popular items driving revenue.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Item Name</TableHead>
+                            <TableHead className="text-center">Units Sold</TableHead>
+                            <TableHead className="text-right">Total Revenue (PKR)</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {topSellingItems.map((item) => (
+                            <TableRow key={item.name}>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell className="text-center">{item.unitsSold}</TableCell>
+                            <TableCell className="text-right">{item.revenue.toLocaleString()}</TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-red-600"><TrendingDown/> Slowest Selling Items</CardTitle>
+                    <CardDescription>
+                       Items that are underperforming. Consider menu changes or promotions.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Item Name</TableHead>
+                        <TableHead className="text-center">Units Sold</TableHead>
+                        <TableHead className="text-right">Total Revenue (PKR)</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {slowestSellingItems.map((item) => (
+                        <TableRow key={item.name}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell className="text-center">{item.unitsSold}</TableCell>
+                        <TableCell className="text-right">{item.revenue.toLocaleString()}</TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </CardContent>
+            </Card>
+        </div>
     </div>
   );
 }
+
+    
