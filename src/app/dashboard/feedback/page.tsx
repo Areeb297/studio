@@ -147,7 +147,7 @@ export default function FeedbackPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Author</TableHead>
+                            <TableHead>Author & Source</TableHead>
                             <TableHead>Summary</TableHead>
                             <TableHead>Departments</TableHead>
                             <TableHead className="text-center">Sentiment</TableHead>
@@ -156,7 +156,10 @@ export default function FeedbackPage() {
                     <TableBody>
                         {feedbackList.map((fb) => (
                         <TableRow key={fb.id}>
-                            <TableCell className="font-medium">{fb.author}</TableCell>
+                            <TableCell>
+                                <div className="font-medium">{fb.author}</div>
+                                <div className="text-xs text-muted-foreground">{fb.source}</div>
+                            </TableCell>
                             <TableCell className="max-w-xs truncate text-muted-foreground">{fb.analysis?.summary || fb.feedbackText}</TableCell>
                              <TableCell>
                                 <div className="flex flex-wrap gap-1">
