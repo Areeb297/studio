@@ -9,6 +9,7 @@ import { analyzeFeedback, AnalyzeFeedbackInput, AnalyzeFeedbackOutput } from '@/
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Smile, Frown, Meh, Lightbulb } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 
 type Feedback = {
   id: string;
@@ -22,14 +23,16 @@ const mockFeedback: Omit<Feedback, 'id' | 'analysis'>[] = [
   { author: "Aisha Khan", source: "QR Code Scan", feedbackText: "The Chicken Biryani was absolutely delicious, best I've had in ages! The service was a bit slow during peak hours, but the staff was very polite." },
   { author: "Bilal Ahmed", source: "Google Form", feedbackText: "The ambiance is fantastic and very clean. However, the price for the BBQ platter felt a little high for the portion size." },
   { author: "Fatima Ali (Vendor)", source: "Vendor Email", feedbackText: "The delivery process was smooth and your receiving staff was very professional and efficient. A pleasure doing business." },
-  { author: "John Doe", source: "QR Code Scan", feedbackText: "The restrooms could have been cleaner. It's an important detail." },
+  { author: "John Doe", source: "QR Code Scan", feedbackText: "The restrooms could have been cleaner. It's an important detail that affects the whole experience." },
   { author: "Anonymous", source: "Digital Comment Card", feedbackText: "Just wanted to say the music was at a perfect volume. Made for a great dining experience." },
+  { author: "Maria Garcia", source: "QR Code Scan", feedbackText: "I waited 15 minutes just to get a menu. The waiter, Areeb, seemed overwhelmed. Management needs to staff up."}
 ];
 
 
 export default function FeedbackPage() {
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const processFeedback = async () => {
@@ -41,6 +44,11 @@ export default function FeedbackPage() {
             return { ...item, id: `fb-${index}`, analysis };
           } catch (error) {
             console.error("Failed to analyze feedback:", error);
+            toast({
+              title: "AI Analysis Failed",
+              description: "Could not process a feedback item.",
+              variant: "destructive",
+            });
             return { ...item, id: `fb-${index}`, analysis: undefined };
           }
         })
@@ -50,7 +58,7 @@ export default function FeedbackPage() {
     };
 
     processFeedback();
-  }, []);
+  }, [toast]);
 
   const sentimentCounts = feedbackList.reduce((acc, item) => {
     if (item.analysis) {
@@ -64,17 +72,10 @@ export default function FeedbackPage() {
   const negativePercentage = totalFeedback > 0 ? ((sentimentCounts.Negative || 0) / totalFeedback) * 100 : 0;
   const neutralPercentage = totalFeedback > 0 ? ((sentimentCounts.Neutral || 0) / totalFeedback) * 100 : 0;
   
-  const overallInsight = "Overall sentiment is positive, with customers praising food quality and ambiance. Key areas for improvement are service speed during peak times and restroom cleanliness. Acknowledge staff politeness and address the operational concerns.";
-
-  const getSentimentIcon = (sentiment?: AnalyzeFeedbackOutput['sentiment']) => {
-    switch (sentiment) {
-      case 'Positive': return <Smile className="h-5 w-5 text-green-500" />;
-      case 'Negative': return <Frown className="h-5 w-5 text-red-500" />;
-      case 'Neutral': return <Meh className="h-5 w-5 text-yellow-500" />;
-      default: return <MessageSquare className="h-5 w-5 text-muted-foreground" />;
-    }
-  }
+  const overallInsight = "Overall sentiment is positive, with customers praising food quality (Kitchen) and ambiance. Key areas for improvement are service speed during peak times (Service Staff) and restroom cleanliness (Janitorial). Acknowledge staff politeness and address the operational concerns with respective department heads.";
   
+  const allDepartments = [...new Set(feedbackList.flatMap(fb => fb.analysis?.relevantDepartments || []))];
+
   const getSentimentBadge = (sentiment?: AnalyzeFeedbackOutput['sentiment']) => {
      switch (sentiment) {
       case 'Positive': return <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 dark:border-green-500/50 dark:bg-green-500/10">Positive</Badge>;
@@ -140,15 +141,15 @@ export default function FeedbackPage() {
             <CardContent>
                 {isLoading ? (
                     <div className="space-y-4">
-                        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+                        {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                     </div>
                 ) : (
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>Author</TableHead>
-                            <TableHead>Source</TableHead>
-                            <TableHead>Feedback</TableHead>
+                            <TableHead>Summary</TableHead>
+                            <TableHead>Departments</TableHead>
                             <TableHead className="text-center">Sentiment</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -156,8 +157,12 @@ export default function FeedbackPage() {
                         {feedbackList.map((fb) => (
                         <TableRow key={fb.id}>
                             <TableCell className="font-medium">{fb.author}</TableCell>
-                            <TableCell>{fb.source}</TableCell>
-                            <TableCell className="max-w-xs truncate text-muted-foreground">{fb.feedbackText}</TableCell>
+                            <TableCell className="max-w-xs truncate text-muted-foreground">{fb.analysis?.summary || fb.feedbackText}</TableCell>
+                             <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                    {fb.analysis?.relevantDepartments?.map(dep => <Badge key={dep} variant="secondary">{dep}</Badge>) || 'N/A'}
+                                </div>
+                            </TableCell>
                             <TableCell className="text-center">
                                 {getSentimentBadge(fb.analysis?.sentiment)}
                             </TableCell>
@@ -194,19 +199,16 @@ export default function FeedbackPage() {
                 </div>
 
                  <div>
-                    <h4 className="text-sm font-semibold mb-2">Key Topics Mentioned</h4>
+                    <h4 className="text-sm font-semibold mb-2">Impacted Departments</h4>
                     <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary">Food Quality</Badge>
-                        <Badge variant="secondary">Service Speed</Badge>
-                        <Badge variant="secondary">Ambiance</Badge>
-                        <Badge variant="secondary">Pricing</Badge>
-                        <Badge variant="secondary">Cleanliness</Badge>
+                        {isLoading ? <Skeleton className="w-full h-10" /> :
+                         allDepartments.length > 0 ? allDepartments.map(dep => <Badge key={dep} variant="outline">{dep}</Badge>) : <p className="text-xs text-muted-foreground">No departments identified yet.</p>}
                     </div>
                 </div>
 
                 <div>
                     <h4 className="text-sm font-semibold mb-2">Summary & Recommendation</h4>
-                    <p className="text-sm text-muted-foreground">{overallInsight}</p>
+                    <p className="text-sm text-muted-foreground">{isLoading ? <Skeleton className="w-full h-16" /> : overallInsight}</p>
                 </div>
             </CardContent>
         </Card>

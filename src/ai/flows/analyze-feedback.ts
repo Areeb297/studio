@@ -27,6 +27,9 @@ const AnalyzeFeedbackOutputSchema = z.object({
   keyTopics: z
     .array(z.string())
     .describe('A list of the main topics or categories discussed (e.g., "Food Quality", "Service", "Ambiance", "Pricing").'),
+  relevantDepartments: z
+    .array(z.string())
+    .describe('A list of the departments this feedback is relevant to (e.g., "Kitchen (Pakistani)", "Janitorial", "Service Staff", "Management").'),
   suggestedAction: z
     .string()
     .describe('A specific, actionable recommendation for the restaurant staff based on the feedback.'),
@@ -52,7 +55,8 @@ const analyzeFeedbackPrompt = ai.definePrompt({
     1.  **Determine Sentiment**: Classify the overall sentiment as 'Positive', 'Negative', or 'Neutral'.
     2.  **Summarize Feedback**: Provide a one-sentence summary of the core message.
     3.  **Identify Key Topics**: List the main topics mentioned. Topics can include Food Quality, Service, Ambiance, Pricing, Cleanliness, Staff Behavior, etc.
-    4.  **Suggest Action**: Recommend a concrete next step for the management or staff. For example, "Share positive feedback with Chef Ali," "Investigate slow service claims during peak hours," or "No action needed for neutral comment."
+    4.  **Identify Relevant Departments**: Identify which department(s) the feedback pertains to. Use specific tags like "Kitchen (Pakistani)", "Kitchen (Chinese)", "Kitchen (BBQ)", "Janitorial", "Service Staff", "Management", "Front Desk". If it's about general atmosphere, use "Ambiance".
+    5.  **Suggest Action**: Recommend a concrete next step for the management or staff. For example, "Share positive feedback with Chef Ali," "Forward cleanliness issue to the janitorial supervisor," or "Discuss slow service with the floor manager."
 
     Provide the output in a structured JSON format.
     `,
