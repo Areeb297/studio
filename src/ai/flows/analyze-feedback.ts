@@ -11,13 +11,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzeFeedbackInputSchema = z.object({
+const AnalyzeFeedbackInputSchema = z.object({
   feedbackText: z.string().describe('The raw text of the feedback provided by a customer or vendor.'),
   source: z.string().describe('The source of the feedback (e.g., "Digital Comment Card", "Google Form", "Vendor Email").'),
 });
 export type AnalyzeFeedbackInput = z.infer<typeof AnalyzeFeedbackInputSchema>;
 
-export const AnalyzeFeedbackOutputSchema = z.object({
+const AnalyzeFeedbackOutputSchema = z.object({
   sentiment: z
     .enum(['Positive', 'Negative', 'Neutral'])
     .describe('The overall sentiment of the feedback.'),
