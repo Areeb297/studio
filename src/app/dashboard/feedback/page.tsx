@@ -37,23 +37,22 @@ export default function FeedbackPage() {
   useEffect(() => {
     const processFeedback = async () => {
       setIsLoading(true);
-      const processedFeedback = await Promise.all(
-        mockFeedback.map(async (item, index) => {
-          try {
-            const analysis = await analyzeFeedback({ feedbackText: item.feedbackText, source: item.source });
-            return { ...item, id: `fb-${index}`, analysis };
-          } catch (error) {
-            console.error("Failed to analyze feedback:", error);
-            toast({
-              title: "AI Analysis Failed",
-              description: "Could not process a feedback item.",
-              variant: "destructive",
-            });
-            return { ...item, id: `fb-${index}`, analysis: undefined };
-          }
-        })
-      );
-      setFeedbackList(processedFeedback);
+      const processedFeedbackList: Feedback[] = [];
+      for (const [index, item] of mockFeedback.entries()) {
+        try {
+          const analysis = await analyzeFeedback({ feedbackText: item.feedbackText, source: item.source });
+          processedFeedbackList.push({ ...item, id: `fb-${index}`, analysis });
+        } catch (error) {
+          console.error("Failed to analyze feedback:", error);
+          toast({
+            title: "AI Analysis Failed",
+            description: `Could not process feedback from ${item.author}.`,
+            variant: "destructive",
+          });
+          processedFeedbackList.push({ ...item, id: `fb-${index}`, analysis: undefined });
+        }
+      }
+      setFeedbackList(processedFeedbackList);
       setIsLoading(false);
     };
 
