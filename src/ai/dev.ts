@@ -8,3 +8,4 @@ import '@/ai/flows/forecast-demand.ts';
 import '@/ai/flows/suggest-staffing-levels.ts';
 import '@/ai/flows/suggest-hall-size.ts';
 import '@/ai/flows/summarize-event-bookings.ts';
+import '@/ai/flows/analyze-feedback.ts';
