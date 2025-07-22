@@ -211,7 +211,7 @@ export default function FeedbackPage() {
 
                 <div>
                     <h4 className="text-sm font-semibold mb-2">Summary & Recommendation</h4>
-                    <p className="text-sm text-muted-foreground">{isLoading ? <Skeleton className="w-full h-16" /> : overallInsight}</p>
+                    <div className="text-sm text-muted-foreground">{isLoading ? <Skeleton className="w-full h-16" /> : overallInsight}</div>
                 </div>
             </CardContent>
         </Card>
