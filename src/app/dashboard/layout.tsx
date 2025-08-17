@@ -1,6 +1,7 @@
 
 'use client';
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -41,13 +42,26 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { BusinessLineSelector } from "@/components/business-line-selector";
 import { Rahah24Chatbot } from "@/components/rahah24-chatbot";
 
+interface NavItem {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}
+
+interface NavDivider {
+  type: 'divider';
+  label: string;
+}
+
+type NavItemType = NavItem | NavDivider;
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const navItems = [
+  const navItems: NavItemType[] = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/dashboard/sales", icon: ShoppingCart, label: "Sales" },
     { href: "/dashboard/menu", icon: BookCopy, label: "Menu & Recipes" },
@@ -76,14 +90,14 @@ export default function DashboardLayout({
           <SidebarContent className="p-2">
             <SidebarMenu>
               {navItems.map((item, index) =>
-                item.type === 'divider' ? (
+                'type' in item && item.type === 'divider' ? (
                   <div key={index} className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase">{item.label}</div>
                 ) : (
-                  <SidebarMenuItem key={item.href!}>
-                    <Link href={item.href!} className="w-full">
-                      <SidebarMenuButton isActive={pathname === item.href} tooltip={item.label}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
+                  <SidebarMenuItem key={(item as NavItem).href}>
+                    <Link href={(item as NavItem).href} className="w-full">
+                      <SidebarMenuButton isActive={pathname === (item as NavItem).href} tooltip={(item as NavItem).label}>
+                        {React.createElement((item as NavItem).icon, { className: "h-4 w-4" })}
+                        <span>{(item as NavItem).label}</span>
                       </SidebarMenuButton>
                     </Link>
                   </SidebarMenuItem>
