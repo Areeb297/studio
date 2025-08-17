@@ -121,9 +121,11 @@ export default function DashboardLayout({
           <header className="sticky top-0 z-10 flex items-center h-16 px-4 border-b shrink-0 bg-background/80 backdrop-blur-lg sm:px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="md:hidden"/>
-              <div className="hidden md:block">
-                <BusinessLineSelector currentBusinessLine={pathname.includes('/business/') ? pathname.split('/business/')[1]?.split('/')[0] : undefined} />
-              </div>
+              {pathname.startsWith('/dashboard/business') && (
+                <div className="hidden md:block">
+                  <BusinessLineSelector currentBusinessLine={pathname.includes('/business/') ? pathname.split('/business/')[1]?.split('/')[0] : undefined} />
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2 ml-auto">
               <ThemeToggle />

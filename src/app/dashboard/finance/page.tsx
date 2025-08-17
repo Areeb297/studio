@@ -4,8 +4,14 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import { Banknote, ArrowDownRight, ArrowUpRight, TrendingUp, DollarSign, Scale } from "lucide-react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip, ReferenceLine, Cell } from "recharts";
+import { Banknote, ArrowDownRight, ArrowUpRight, TrendingUp, DollarSign, Scale, Activity } from "lucide-react";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 
 const pnlData = [
   { name: 'Jan', revenue: 4000, expenses: 2400 },
@@ -62,6 +68,34 @@ const trialBalanceData = [
 const totalDebits = trialBalanceData.reduce((acc, item) => acc + item.debit, 0);
 const totalCredits = trialBalanceData.reduce((acc, item) => acc + item.credit, 0);
 
+// Cashflow data - positive values for inflows, negative for outflows
+const cashflowData = [
+  { month: 'Jan', cashflow: 125000, type: 'inflow' },
+  { month: 'Feb', cashflow: 95000, type: 'inflow' },
+  { month: 'Mar', cashflow: -45000, type: 'outflow' },
+  { month: 'Apr', cashflow: 167000, type: 'inflow' },
+  { month: 'May', cashflow: 85000, type: 'inflow' },
+  { month: 'Jun', cashflow: -78000, type: 'outflow' },
+  { month: 'Jul', cashflow: 145000, type: 'inflow' },
+  { month: 'Aug', cashflow: 112000, type: 'inflow' },
+  { month: 'Sep', cashflow: -23000, type: 'outflow' },
+  { month: 'Oct', cashflow: 189000, type: 'inflow' },
+  { month: 'Nov', cashflow: -67000, type: 'outflow' },
+  { month: 'Dec', cashflow: 203000, type: 'inflow' },
+];
+
+const chartConfig = {
+  cashflow: {
+    label: "Cash Flow",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig;
+
+// Calculate cashflow metrics
+const totalInflows = cashflowData.filter(d => d.cashflow > 0).reduce((sum, d) => sum + d.cashflow, 0);
+const totalOutflows = Math.abs(cashflowData.filter(d => d.cashflow < 0).reduce((sum, d) => sum + d.cashflow, 0));
+const netCashflow = totalInflows - totalOutflows;
+
 export default function FinancePage() {
   return (
     <div className="space-y-6">
@@ -110,25 +144,66 @@ export default function FinancePage() {
         </Card>
       </div>
 
-       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><TrendingUp /> Profit &amp; Loss Breakdown</CardTitle>
-          <CardDescription>Monthly revenue vs. expenses overview.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={pnlData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={(value) => `PKR ${value/1000}k`} />
-              <Tooltip formatter={(value: number) => `PKR ${value.toLocaleString()}`} />
-              <Legend />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue" />
-              <Bar dataKey="expenses" fill="hsl(var(--destructive))" name="Expenses" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><TrendingUp /> Profit &amp; Loss Breakdown</CardTitle>
+            <CardDescription>Monthly revenue vs. expenses overview.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={pnlData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis tickFormatter={(value) => `PKR ${value/1000}k`} />
+                <Tooltip formatter={(value: number) => `PKR ${value.toLocaleString()}`} />
+                <Legend />
+                <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue" />
+                <Bar dataKey="expenses" fill="hsl(var(--destructive))" name="Expenses" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Cash Flow Analysis
+            </CardTitle>
+            <CardDescription>Monthly cash inflows and outflows</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="w-full h-[300px]">
+              <BarChart data={cashflowData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="month" 
+                  tickLine={false}
+                  axisLine={false}
+                  className="text-xs"
+                />
+                <YAxis 
+                  tickFormatter={(value) => `${value >= 0 ? '' : '-'}PKR ${Math.abs(value/1000)}k`}
+                  axisLine={false}
+                  tickLine={false}
+                  className="text-xs"
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="2 2" />
+                <Bar dataKey="cashflow" radius={[2, 2, 0, 0]}>
+                  {cashflowData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.cashflow >= 0 ? "hsl(180 98% 31%)" : "hsl(160 84% 39%)"} 
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
       
       <div className="grid lg:grid-cols-2 gap-6">
         <Card>
