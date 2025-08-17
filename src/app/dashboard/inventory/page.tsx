@@ -72,6 +72,7 @@ export default function InventoryPage() {
         const mockPurchase: AlertUnusualPurchasesInput = {
             item: "Chicken",
             quantity: 20,
+            thresholdMultiplier: 1.5,
             purchaseRate: 650, // Higher than the agreed rate
             agreedRate: 600
         };
