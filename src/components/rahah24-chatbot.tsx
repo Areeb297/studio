@@ -18,7 +18,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { rahah24Chatbot, type ChatbotInput, type ChatbotOutput } from '@/ai/flows/rahah24-chatbot';
+// import { rahah24Chatbot, type ChatbotInput, type ChatbotOutput } from '@/ai/flows/rahah24-chatbot';
 
 interface ChatMessage {
   id: string;
@@ -90,17 +90,57 @@ export function Rahah24Chatbot({ className }: Rahah24ChatbotProps) {
     setIsLoading(true);
 
     try {
-      const chatbotInput: ChatbotInput = {
-        message: currentMessage,
-        businessContext: getBusinessContext(),
-        currentPage: getCurrentPage(),
-        chatHistory: messages.slice(-10).map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }))
+      // Temporary mock response for deployment
+      const businessContext = getBusinessContext();
+      const mockResponses = {
+        restaurant: {
+          response: `Based on your restaurant dashboard, I can see you're managing ${businessContext === 'restaurant' ? 'food operations' : 'business operations'}. I can help you with sales analysis, menu optimization, inventory management, and customer insights.`,
+          suggestedActions: [
+            'Show me today\'s best-selling items',
+            'Analyze customer feedback trends', 
+            'Check inventory levels',
+            'Review financial performance'
+          ]
+        },
+        madrasa: {
+          response: `For your Tahfeez Madrasa operations, I can assist with student progress tracking, Hifz monitoring, fee collection analysis, and academic performance insights.`,
+          suggestedActions: [
+            'Show Hifz completion progress',
+            'Review revenue streams',
+            'Check student performance',
+            'Analyze fee collection trends'
+          ]
+        },
+        'shadi-lawn': {
+          response: `I can help you manage your Shadi Lawn event venue with booking coordination, event planning insights, and venue utilization analytics.`,
+          suggestedActions: [
+            'View upcoming bookings',
+            'Check venue availability',
+            'Review event feedback',
+            'Analyze revenue trends'
+          ]
+        },
+        'gym-time': {
+          response: `For Gym Time fitness operations, I can assist with member management, equipment tracking, and fitness program analytics.`,
+          suggestedActions: [
+            'Check member attendance',
+            'Review equipment status',
+            'Analyze membership trends',
+            'Track fitness programs'
+          ]
+        },
+        general: {
+          response: `I'm your Rahah24 AI Assistant for Jamia Binoria's ERP system. I can help you navigate dashboards, analyze data, and provide business insights across all our business lines.`,
+          suggestedActions: [
+            'Navigate to a specific business',
+            'Explain dashboard metrics',
+            'Show business performance',
+            'Help with navigation'
+          ]
+        }
       };
 
-      const response: ChatbotOutput = await rahah24Chatbot(chatbotInput);
+      const response = mockResponses[businessContext as keyof typeof mockResponses] || mockResponses.general;
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
