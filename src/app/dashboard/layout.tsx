@@ -37,6 +37,9 @@ import { UserNav } from "@/components/user-nav";
 import Logo from "@/components/logo";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { BusinessLineSelector } from "@/components/business-line-selector";
+import { Rahah24Chatbot } from "@/components/rahah24-chatbot";
 
 export default function DashboardLayout({
   children,
@@ -62,7 +65,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex min-h-screen w-full bg-background overflow-x-hidden">
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-3 p-2">
@@ -100,9 +103,14 @@ export default function DashboardLayout({
              </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
-        <div className="flex flex-col flex-1 w-full">
-          <header className="sticky top-0 z-10 flex items-center justify-between h-16 px-4 border-b shrink-0 bg-background/80 backdrop-blur-lg sm:px-6">
-            <SidebarTrigger className="md:hidden"/>
+        <div className="flex flex-col flex-1 w-full min-w-0">
+          <header className="sticky top-0 z-10 flex items-center h-16 px-4 border-b shrink-0 bg-background/80 backdrop-blur-lg sm:px-6">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="md:hidden"/>
+              <div className="hidden md:block">
+                <BusinessLineSelector currentBusinessLine={pathname.includes('/business/') ? pathname.split('/business/')[1]?.split('/')[0] : undefined} />
+              </div>
+            </div>
             <div className="flex items-center gap-2 ml-auto">
               <ThemeToggle />
               <Button variant="ghost" size="icon" className="rounded-full">
@@ -112,8 +120,15 @@ export default function DashboardLayout({
               <UserNav />
             </div>
           </header>
-          <main className="flex-1 p-4 sm:p-6 bg-secondary/50">{children}</main>
+          <main className="flex-1 p-4 sm:p-6 bg-secondary/50 w-full min-w-0 overflow-x-hidden">
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </main>
         </div>
+        
+        {/* Global Rahah24 AI Chatbot */}
+        <Rahah24Chatbot />
       </div>
     </SidebarProvider>
   );

@@ -164,7 +164,18 @@ export default function InventoryPage() {
                                 </div>
                                 <DialogFooter>
                                     <DialogClose asChild>
-                                        <Button type="submit">Save Purchase</Button>
+                                        <Button type="submit" onClick={async () => {
+                                            const nameInput = document.getElementById('item-name') as HTMLInputElement | null
+                                            const qtyInput = document.getElementById('quantity') as HTMLInputElement | null
+                                            const costInput = document.getElementById('total-cost') as HTMLInputElement | null
+                                            const quantity = Number(qtyInput?.value || 0)
+                                            const totalCost = Number(costInput?.value || 0)
+                                            await fetch('/api/inventory/purchases', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ itemName: nameInput?.value, quantity, totalCost })
+                                            })
+                                        }}>Save Purchase</Button>
                                     </DialogClose>
                                 </DialogFooter>
                             </DialogContent>

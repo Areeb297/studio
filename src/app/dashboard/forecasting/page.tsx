@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -76,8 +76,13 @@ export default function ForecastingPage() {
     }
   };
 
+  useEffect(() => {
+    handleGenerateForecast();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold font-headline">Demand & Revenue Forecasting</h1>
         <Button onClick={handleGenerateForecast} disabled={isLoading}>
@@ -112,7 +117,7 @@ export default function ForecastingPage() {
       {!isLoading && !forecastResult && (
          <Card>
             <CardContent className="pt-6">
-              <div className="flex flex-col items-center justify-center h-96 border-2 border-dashed rounded-lg">
+              <div className="flex flex-col items-center justify-center h-96 w-full border-2 border-dashed rounded-lg">
                 <BrainCircuit className="w-16 h-16 text-muted-foreground" />
                 <p className="mt-4 text-muted-foreground">Click "Generate AI Forecast" to predict demand, revenue, and stock needs.</p>
               </div>

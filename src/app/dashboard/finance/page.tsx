@@ -198,6 +198,13 @@ export default function FinancePage() {
                       <Badge variant="destructive">Unbalanced</Badge>
                     )}
                  </div>
+                 {/* Example: Replace static with API when needed */}
+                 {/*
+                 <Button variant="outline" className="mt-4" onClick={async () => {
+                   const res = await fetch('/api/finance/trial-balance')
+                   console.log(await res.json())
+                 }}>Load Trial Balance from DB</Button>
+                 */}
             </CardContent>
         </Card>
       </div>

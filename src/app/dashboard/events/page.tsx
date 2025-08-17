@@ -334,7 +334,26 @@ export default function EventsPage() {
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
                     <Button variant="outline">Cancel</Button>
-                    <Button>Save Booking</Button>
+                    <Button onClick={async () => {
+                        const persons = Number((document.getElementById('persons') as HTMLInputElement | null)?.value || 0)
+                        const priceQuoted = Number((document.getElementById('price-quoted') as HTMLInputElement | null)?.value || 0)
+                        const discount = Number((document.getElementById('discount') as HTMLInputElement | null)?.value || 0)
+                        const advance = Number((document.getElementById('advance') as HTMLInputElement | null)?.value || 0)
+                        const terms = (document.getElementById('terms') as HTMLTextAreaElement | null)?.value || ''
+                        await fetch('/api/events/bookings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                eventType,
+                                eventDate: date ? format(date, 'yyyy-MM-dd') : undefined,
+                                persons,
+                                priceQuoted,
+                                discount,
+                                advance,
+                                terms,
+                            })
+                        })
+                    }}>Save Booking</Button>
                 </CardFooter>
             </Card>
 

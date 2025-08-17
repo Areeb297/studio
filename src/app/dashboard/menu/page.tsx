@@ -9,7 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Trash2, BookCopy, Sparkles, Utensils, Tag, DollarSign, Scale } from 'lucide-react';
+import { PlusCircle, Trash2, BookCopy, Sparkles, Utensils, Tag, DollarSign, Scale, TrendingUp, Users, ChefHat, Percent } from 'lucide-react';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import {
   Sheet,
   SheetContent,
@@ -22,6 +29,41 @@ import {
 } from "@/components/ui/sheet"
 import { Textarea } from '@/components/ui/textarea';
 import { suggestOptimalPricing, SuggestOptimalPricingInput } from '@/ai/flows/suggest-optimal-pricing';
+
+// Menu analytics data
+const menuAnalytics = {
+  totalItems: 45,
+  avgProfitMargin: 68.5,
+  totalRecipeCost: 2340.25,
+  pricedItems: 38
+};
+
+const categoryData = [
+  { category: "Main Course", items: 18, avgCost: 420.50, color: "#8884d8" },
+  { category: "Appetizer", items: 12, avgCost: 180.25, color: "#82ca9d" },
+  { category: "Beverage", items: 8, avgCost: 85.00, color: "#ffc658" },
+  { category: "Dessert", items: 5, avgCost: 150.75, color: "#ff7c7c" },
+  { category: "BBQ", items: 2, avgCost: 980.00, color: "#8dd1e1" },
+];
+
+const profitabilityData = [
+  { item: "Mutton Karahi", cost: 750.50, price: 1800, profit: 140 },
+  { item: "BBQ Platter", cost: 1200, price: 2500, profit: 108 },
+  { item: "Chicken Biryani", cost: 350.75, price: 850, profit: 142 },
+  { item: "Seekh Kebab", cost: 200, price: 450, profit: 125 },
+  { item: "Haleem", cost: 180, price: 400, profit: 122 },
+];
+
+const chartConfig = {
+  items: {
+    label: "Items",
+    color: "hsl(var(--primary))",
+  },
+  cost: {
+    label: "Cost (PKR)",
+    color: "hsl(var(--secondary))",
+  },
+} satisfies ChartConfig;
 
 type Ingredient = {
   id: string;
@@ -151,6 +193,106 @@ export default function MenuPage() {
         <Button onClick={handleAddNewItem}>
             <PlusCircle className="mr-2" /> Add New Item
         </Button>
+      </div>
+
+      {/* Analytics Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Total Menu Items</CardTitle>
+            <ChefHat className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{menuAnalytics.totalItems}</div>
+            <p className="text-xs text-muted-foreground">{menuAnalytics.pricedItems} priced items</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Avg Profit Margin</CardTitle>
+            <Percent className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{menuAnalytics.avgProfitMargin}%</div>
+            <p className="text-xs text-muted-foreground">+5.2% from last month</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Total Recipe Cost</CardTitle>
+            <DollarSign className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">PKR {menuAnalytics.totalRecipeCost.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Across all menu items</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Categories</CardTitle>
+            <Tag className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{categoryData.length}</div>
+            <p className="text-xs text-muted-foreground">Main Course leads with 18 items</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charts Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Menu Items by Category</CardTitle>
+            <CardDescription>Distribution of menu items across different categories</CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <ChartContainer config={chartConfig} className="w-full h-[300px]">
+              <BarChart accessibilityLayer data={categoryData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="category"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 8) + (value.length > 8 ? '...' : '')}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="items" fill="var(--color-items)" radius={8} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card className="col-span-4 lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Most Profitable Items</CardTitle>
+            <CardDescription>Menu items ranked by profit margin percentage</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {profitabilityData.map((item, index) => (
+                <div key={item.item} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-green-500' : index === 1 ? 'bg-blue-500' : 'bg-gray-400'}`} />
+                    <span className="font-medium">{item.item}</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">{item.profit}%</div>
+                    <div className="text-xs text-muted-foreground">PKR {item.cost} → PKR {item.price}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -299,13 +441,13 @@ export default function MenuPage() {
         </SheetContent>
       </Sheet>
 
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Menu Items</CardTitle>
           <CardDescription>A list of all menu items and their current pricing status.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
+        <CardContent className="w-full overflow-x-auto">
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
                 <TableHead>Item Name</TableHead>
