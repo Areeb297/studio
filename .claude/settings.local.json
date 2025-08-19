@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(openssl rand:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }

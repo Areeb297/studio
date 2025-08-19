@@ -55,7 +55,6 @@ import Logo from "@/components/logo";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ErrorBoundary } from "@/components/error-boundary";
-import { BusinessLineSelector } from "@/components/business-line-selector";
 import { Rahah24Chatbot } from "@/components/rahah24-chatbot";
 
 interface NavItem {
@@ -104,7 +103,7 @@ export default function DashboardLayout({
       defaultExpanded: true,
       items: [
         { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard Overview" },
-        { href: "/dashboard/reports", icon: LineChart, label: "KPI Analytics" },
+        { href: "/dashboard/analytics", icon: LineChart, label: "KPI Analytics" },
         { href: "/dashboard/forecasting", icon: BrainCircuit, label: "AI Insights" },
       ]
     },
@@ -216,7 +215,10 @@ export default function DashboardLayout({
                   } else if (item.type === 'section') {
                     const section = item as NavSection;
                     const isExpanded = expandedSections.includes(section.label);
-                    const hasActiveItem = section.items.some(subItem => pathname === subItem.href || pathname.startsWith(subItem.href + '/'));
+                    const hasActiveItem = section.items.some(subItem => 
+                      pathname === subItem.href || 
+                      (subItem.href !== '/dashboard' && pathname.startsWith(subItem.href + '/'))
+                    );
                     
                     return (
                       <div key={index} className="mb-2">
@@ -291,11 +293,6 @@ export default function DashboardLayout({
           <header className="sticky top-0 z-10 flex items-center h-16 px-4 border-b shrink-0 bg-background/80 backdrop-blur-lg sm:px-6">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="md:hidden"/>
-              {pathname.startsWith('/dashboard/business') && (
-                <div className="hidden md:block">
-                  <BusinessLineSelector currentBusinessLine={pathname.includes('/business/') ? pathname.split('/business/')[1]?.split('/')[0] : undefined} />
-                </div>
-              )}
             </div>
             <div className="flex items-center gap-2 ml-auto">
               <ThemeToggle />
