@@ -137,7 +137,7 @@ export default function LandingPage() {
                 <h1 className="text-2xl font-bold font-headline bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   Rahah24 ERP
                 </h1>
-                <p className="text-xs text-muted-foreground">AI-Powered Business Management Platform</p>
+                <p className="text-xs text-muted-foreground font-medium">24/7 Relief & Automated Hisab</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -164,18 +164,33 @@ export default function LandingPage() {
                   <Star className="h-3 w-3" />
                   <span>AI-Powered Cloud ERP Platform</span>
                 </Badge>
-                <h1 className="text-4xl lg:text-6xl font-bold font-headline leading-tight">
-                  Intelligent 
-                  <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent block">
+                <h1 className="text-4xl lg:text-6xl font-bold font-headline leading-normal">
+                  <span className="text-foreground block mb-2">Intelligent</span>
+                  <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent block pb-2">
                     Business Management
                   </span>
-                  Made Simple
+                  <span className="text-2xl lg:text-3xl font-medium text-muted-foreground/80 block mt-6">Made Simple</span>
                 </h1>
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  Streamline operations across restaurants, hotels, educational institutions, and more with our 
-                  AI-powered, cloud-based management platform that delivers peace of mind through 
-                  effortless operational and financial control.
-                </p>
+                
+                <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-6 border border-primary/20 backdrop-blur-sm">
+                  <div className="flex items-start space-x-3 mb-4">
+                    <div className="p-2 rounded-lg bg-primary/20">
+                      <Heart className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-primary mb-1">راحة (Rahah) - Comfort & Relief</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Experience true peace of mind with automated accounting that works around the clock
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <p className="text-lg text-foreground/90 leading-relaxed">
+                    Streamline operations across restaurants, hotels, educational institutions, and more with our 
+                    AI-powered platform delivering <span className="font-semibold text-primary">automated relief</span> through 
+                    effortless operational and financial control — bringing you comfort 24/7.
+                  </p>
+                </div>
               </div>
               
               <div className="flex flex-wrap gap-4">
@@ -687,7 +702,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
-              Proudly serving Jamia Binoria Aalamia and growing organizations worldwide
+              Empowering organizations worldwide with intelligent business solutions
             </div>
           </div>
         </div>
