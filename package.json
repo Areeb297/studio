@@ -10,7 +10,11 @@
     "analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "create-demo-users": "node scripts/create-demo-users.js",
+    "create-minimal-users": "node scripts/create-minimal-users.js",
+    "setup-auth": "echo '🔐 Setting up authentication...' && node scripts/create-demo-users.js",
+    "setup-minimal-auth": "echo '🔐 Setting up minimal authentication...' && node scripts/create-minimal-users.js"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",

@@ -1,5 +1,6 @@
 
 'use client';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,9 +34,30 @@ import {
 export default function LandingPage() {
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/dashboard');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const { authService } = await import('@/lib/auth');
+      const result = await authService.login(loginForm);
+
+      if (result.success) {
+        router.push('/dashboard');
+      } else {
+        setError(result.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const features = [
@@ -232,6 +254,11 @@ export default function LandingPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {error && (
+                    <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                      {error}
+                    </div>
+                  )}
                   <form onSubmit={handleLogin} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
@@ -240,7 +267,10 @@ export default function LandingPage() {
                         type="email" 
                         placeholder="admin@rahah24.com" 
                         className="h-11"
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
                         required 
+                        disabled={isLoading}
                       />
                     </div>
                     <div className="space-y-2">
@@ -249,23 +279,50 @@ export default function LandingPage() {
                         id="password" 
                         type="password" 
                         className="h-11"
-                        defaultValue="admin123"
+                        placeholder="Enter your password"
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
                         required 
+                        disabled={isLoading}
                       />
                     </div>
                     <Button 
                       type="submit" 
                       className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                      disabled={isLoading}
                     >
                       <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Access Dashboard
+                      {isLoading ? 'Signing In...' : 'Access Dashboard'}
                     </Button>
                   </form>
                   
-                  <div className="text-center pt-4 border-t">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="space-y-4 pt-4 border-t">
+                    <p className="text-center text-sm text-muted-foreground">
                       Secure access with role-based permissions
                     </p>
+                    <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-3">
+                      <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-2">Demo Credentials:</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <button 
+                          type="button"
+                          onClick={() => setLoginForm({ email: 'admin@rahah24.com', password: 'Admin123!@#' })}
+                          className="text-left p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                          disabled={isLoading}
+                        >
+                          <div className="font-medium text-blue-800 dark:text-blue-200">Admin</div>
+                          <div className="text-blue-600 dark:text-blue-400">admin@rahah24.com</div>
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => setLoginForm({ email: 'manager@rahah24.com', password: 'Manager123!@#' })}
+                          className="text-left p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                          disabled={isLoading}
+                        >
+                          <div className="font-medium text-blue-800 dark:text-blue-200">Manager</div>
+                          <div className="text-blue-600 dark:text-blue-400">manager@rahah24.com</div>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -168,7 +168,11 @@ export default function DashboardLayout({
       icon: Package,
       items: [
         { href: "/dashboard/inventory", icon: Warehouse, label: "Inventory Management" },
-        { href: "/dashboard/procurement", icon: ShoppingBag, label: "Procurement & Supply" },
+        { href: "/dashboard/procurement", icon: ShoppingBag, label: "Procurement Dashboard" },
+        { href: "/dashboard/procurement/requisitions", icon: FileText, label: "Purchase Requisitions" },
+        { href: "/dashboard/procurement/purchase-orders", icon: ShoppingCart, label: "Purchase Orders" },
+        { href: "/dashboard/procurement/vendors", icon: Users, label: "Vendor Management" },
+        { href: "/dashboard/procurement/analytics", icon: LineChart, label: "Procurement Analytics" },
         { href: "/dashboard/facilities", icon: Wrench, label: "Facilities Management" },
         { href: "/dashboard/utilities", icon: Zap, label: "Utilities Management" },
         { href: "/dashboard/rent", icon: Home, label: "Rent & Properties" },
