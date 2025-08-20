@@ -126,16 +126,22 @@ export default function DashboardLayout({
       ]
     },
 
-    // Financial Management
+    // Financial Management & Accounting
     {
       type: 'section',
       label: 'financial',
       icon: DollarSign,
       items: [
         { href: "/dashboard/finance", icon: Banknote, label: "General Ledger" },
+        { href: "/dashboard/finance/accounts", icon: FileText, label: "Chart of Accounts" },
+        { href: "/dashboard/finance/journal-entries", icon: ClipboardList, label: "Journal Entries" },
+        { href: "/dashboard/finance/trial-balance", icon: LineChart, label: "Trial Balance" },
+        { href: "/dashboard/finance/accounts-receivable", icon: TrendingUp, label: "Accounts Receivable" },
+        { href: "/dashboard/finance/accounts-payable", icon: TrendingUp, label: "Accounts Payable" },
+        { href: "/dashboard/finance/bank-reconciliation", icon: Shield, label: "Bank Reconciliation" },
+        { href: "/dashboard/finance/reports", icon: FileText, label: "Financial Reports" },
         { href: "/dashboard/donations", icon: Heart, label: "Donations & Zakat" },
         { href: "/dashboard/sales", icon: ShoppingCart, label: "Sales Management" },
-        { href: "/dashboard/finance/reports", icon: FileText, label: "Financial Reports" },
       ]
     },
 
