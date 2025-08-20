@@ -34,6 +34,10 @@ import {
   Shield,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
+  UserCog,
+  Clock,
+  Award,
 } from "lucide-react";
 
 import {
@@ -154,10 +158,12 @@ export default function DashboardLayout({
       label: 'hr',
       icon: Users,
       items: [
-        { href: "/dashboard/staff", icon: Users, label: "Employee Management" },
-        { href: "/dashboard/departments", icon: Building2, label: "Departments" },
+        { href: "/dashboard/hr", icon: Users, label: "HR Overview" },
+        { href: "/dashboard/hr/employees", icon: UserCog, label: "Employee Management" },
+        { href: "/dashboard/hr/attendance", icon: Clock, label: "Attendance & Leave" },
+        { href: "/dashboard/hr/talent", icon: Award, label: "Talent Management" },
         { href: "/dashboard/hr/payroll", icon: Banknote, label: "Payroll & Benefits" },
-        { href: "/dashboard/hr/attendance", icon: UserCheck, label: "Attendance & Leave" },
+        { href: "/dashboard/departments", icon: Building2, label: "Departments" },
       ]
     },
 
