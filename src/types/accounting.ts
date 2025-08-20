@@ -10,6 +10,7 @@ export type AccountSubType =
   | 'CURRENT_ASSET' 
   | 'FIXED_ASSET' 
   | 'INTANGIBLE_ASSET'
+  | 'CONTRA_ASSET'
   // Liabilities
   | 'CURRENT_LIABILITY' 
   | 'LONG_TERM_LIABILITY'
