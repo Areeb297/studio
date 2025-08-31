@@ -1,5 +1,35 @@
-// Academic Data - Madrassah Tahfeez ul Quran System
-// Based on current system structure and Islamic educational requirements
+// Academic Data - Financial & Donor Management System
+// Focus on fee collection, donor relationships, and business KPIs
+
+export interface Donor {
+  id: string;
+  name: string;
+  email?: string;
+  phone: string;
+  address: string;
+  donorType: 'INDIVIDUAL' | 'ORGANIZATION' | 'FOUNDATION';
+  registrationDate: Date;
+  totalContributed: number;
+  preferredPaymentMethod: 'CASH' | 'BANK_TRANSFER' | 'CHEQUE' | 'ONLINE';
+  status: 'ACTIVE' | 'INACTIVE';
+  notes?: string;
+}
+
+export interface StudentSponsorship {
+  id: string;
+  studentId: string;
+  donorId: string;
+  sponsorshipType: 'FULL' | 'PARTIAL' | 'MONTHLY' | 'ANNUAL';
+  monthlyAmount: number;
+  startDate: Date;
+  endDate?: Date;
+  status: 'ACTIVE' | 'COMPLETED' | 'SUSPENDED';
+  paymentSchedule: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
+  lastPaymentDate?: Date;
+  totalPaid: number;
+  outstandingAmount: number;
+  notes?: string;
+}
 
 export interface Student {
   id: string;
@@ -17,18 +47,20 @@ export interface Student {
   status: 'ACTIVE' | 'COMPLETED' | 'TRANSFERRED' | 'SUSPENDED';
   monthlyFee: number;
   outstandingFees: number;
+  paymentStatus: 'PAID' | 'PARTIAL' | 'OVERDUE' | 'SPONSORED';
+  sponsorships: StudentSponsorship[];
   guardian: {
     name: string;
     relation: string;
     phone: string;
     address: string;
   };
-  academicProgress: {
-    currentPara: number;
-    totalParas: number;
-    lastExamDate?: Date;
-    lastExamResult?: string;
-    teacherRemarks?: string;
+  // Removed academic progress - focus on financial data
+  financialInfo: {
+    lastPaymentDate?: Date;
+    lastPaymentAmount?: number;
+    totalPaid: number;
+    paymentHistory: string[];
   };
   createdAt: Date;
   updatedAt: Date;
@@ -60,11 +92,25 @@ export interface FeeTransaction {
   year: number;
   amount: number;
   paymentDate: Date;
-  paymentMethod: 'CASH' | 'BANK_TRANSFER' | 'CHEQUE';
+  paymentMethod: 'CASH' | 'BANK_TRANSFER' | 'CHEQUE' | 'DONOR_SPONSORED';
   receiptNumber: string;
   status: 'PAID' | 'PARTIAL' | 'OVERDUE';
+  donorId?: string; // Link to donor if sponsored
+  sponsorshipId?: string; // Link to sponsorship record
   remarks?: string;
   collectedBy: string;
+}
+
+// Financial KPI Data
+export interface FinancialKPIs {
+  totalStudents: number;
+  activeStudents: number;
+  totalMonthlyRevenue: number;
+  collectionRate: number; // percentage of fees collected
+  outstandingAmount: number;
+  sponsoredStudents: number;
+  totalDonorContributions: number;
+  averageFeePerStudent: number;
 }
 
 export interface Teacher {
@@ -79,6 +125,94 @@ export interface Teacher {
   classes: string[];
   status: 'ACTIVE' | 'ON_LEAVE' | 'TERMINATED';
 }
+
+// Sample Donors
+export const donors: Donor[] = [
+  {
+    id: 'donor-001',
+    name: 'Muhammad Ahmed Foundation',
+    email: 'info@ahmedfoundation.org',
+    phone: '+92-21-12345678',
+    address: 'Plot 123, Block A, Gulshan-e-Iqbal, Karachi',
+    donorType: 'FOUNDATION',
+    registrationDate: new Date('2023-01-15'),
+    totalContributed: 150000,
+    preferredPaymentMethod: 'BANK_TRANSFER',
+    status: 'ACTIVE',
+    notes: 'Regular monthly contributor for 5 students'
+  },
+  {
+    id: 'donor-002',
+    name: 'Fatima Bibi',
+    phone: '+92-300-1234567',
+    address: 'House 456, Block B, Defence, Karachi',
+    donorType: 'INDIVIDUAL',
+    registrationDate: new Date('2023-03-20'),
+    totalContributed: 36000,
+    preferredPaymentMethod: 'CASH',
+    status: 'ACTIVE',
+    notes: 'Sponsors 1 student fully'
+  },
+  {
+    id: 'donor-003',
+    name: 'Al-Khair Trust',
+    email: 'donations@alkhair.org',
+    phone: '+92-21-87654321',
+    address: 'Office 789, Shahra-e-Faisal, Karachi',
+    donorType: 'ORGANIZATION',
+    registrationDate: new Date('2022-12-10'),
+    totalContributed: 240000,
+    preferredPaymentMethod: 'BANK_TRANSFER',
+    status: 'ACTIVE',
+    notes: 'Annual sponsor for 8 students'
+  }
+];
+
+// Sample Sponsorships
+export const sponsorships: StudentSponsorship[] = [
+  {
+    id: 'sponsor-001',
+    studentId: 'std-001',
+    donorId: 'donor-001',
+    sponsorshipType: 'FULL',
+    monthlyAmount: 3000,
+    startDate: new Date('2024-01-01'),
+    status: 'ACTIVE',
+    paymentSchedule: 'MONTHLY',
+    lastPaymentDate: new Date('2024-01-01'),
+    totalPaid: 12000,
+    outstandingAmount: 0,
+    notes: 'Full sponsorship by Muhammad Ahmed Foundation'
+  },
+  {
+    id: 'sponsor-002',
+    studentId: 'std-002',
+    donorId: 'donor-002',
+    sponsorshipType: 'FULL',
+    monthlyAmount: 3000,
+    startDate: new Date('2023-09-01'),
+    status: 'ACTIVE',
+    paymentSchedule: 'MONTHLY',
+    lastPaymentDate: new Date('2024-01-01'),
+    totalPaid: 36000,
+    outstandingAmount: 0,
+    notes: 'Individual sponsor - very reliable'
+  },
+  {
+    id: 'sponsor-003',
+    studentId: 'std-003',
+    donorId: 'donor-003',
+    sponsorshipType: 'PARTIAL',
+    monthlyAmount: 1500,
+    startDate: new Date('2024-01-01'),
+    status: 'ACTIVE',
+    paymentSchedule: 'MONTHLY',
+    lastPaymentDate: new Date('2024-01-01'),
+    totalPaid: 6000,
+    outstandingAmount: 1500,
+    notes: 'Partial sponsorship - 50% coverage'
+  }
+];
 
 // Real Academic Classes from Madrassah Tahfeez ul Quran
 export const academicClasses: AcademicClass[] = [
@@ -180,7 +314,7 @@ export const academicClasses: AcademicClass[] = [
   }
 ];
 
-// Sample Students for the Academic System
+// Updated Students with Financial Focus and Sponsorship Data
 export const students: Student[] = [
   {
     id: 'std-001',
@@ -198,18 +332,19 @@ export const students: Student[] = [
     status: 'ACTIVE',
     monthlyFee: 3000,
     outstandingFees: 0,
+    paymentStatus: 'SPONSORED',
+    sponsorships: [sponsorships[0]],
     guardian: {
       name: 'Abdul Rahman Khan',
       relation: 'Father',
       phone: '+92-300-1234567',
       address: 'House #123, Block B, Gulshan-e-Iqbal, Karachi'
     },
-    academicProgress: {
-      currentPara: 3,
-      totalParas: 30,
-      lastExamDate: new Date('2024-01-10'),
-      lastExamResult: 'Excellent',
-      teacherRemarks: 'Very good memorization and recitation'
+    financialInfo: {
+      lastPaymentDate: new Date('2024-01-01'),
+      lastPaymentAmount: 3000,
+      totalPaid: 12000,
+      paymentHistory: ['Jan-2024: ₨3,000', 'Dec-2023: ₨3,000', 'Nov-2023: ₨3,000']
     },
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-20')
@@ -217,127 +352,133 @@ export const students: Student[] = [
   {
     id: 'std-002',
     rollNumber: 'TQ-2024-002',
-    name: 'Ahmad Hassan',
-    fatherName: 'Muhammad Yusuf',
-    dateOfBirth: new Date('2009-08-22'),
-    address: 'Flat #45, North Nazimabad, Karachi',
-    phone: '+92-333-5555555',
-    emergencyContact: '+92-322-4444444',
+    name: 'Fatima Khatoon',
+    fatherName: 'Muhammad Usman',
+    dateOfBirth: new Date('2012-03-22'),
+    address: 'Flat 456, Block C, North Nazimabad, Karachi',
+    phone: '+92-321-7654321',
+    emergencyContact: '+92-300-8765432',
     admissionDate: new Date('2023-09-01'),
     class: 'HIFZ - Para 6-15',
-    section: 'A',
+    section: 'B',
     program: 'HIFZ',
     status: 'ACTIVE',
     monthlyFee: 3500,
-    outstandingFees: 3500, // One month outstanding
+    outstandingFees: 0,
+    paymentStatus: 'SPONSORED',
+    sponsorships: [sponsorships[1]],
     guardian: {
-      name: 'Muhammad Yusuf',
-      relation: 'Father',
-      phone: '+92-333-5555555',
-      address: 'Flat #45, North Nazimabad, Karachi'
+      name: 'Aisha Begum',
+      relation: 'Mother',
+      phone: '+92-321-7654321',
+      address: 'Flat 456, Block C, North Nazimabad, Karachi'
     },
-    academicProgress: {
-      currentPara: 8,
-      totalParas: 30,
-      lastExamDate: new Date('2024-01-05'),
-      lastExamResult: 'Good',
-      teacherRemarks: 'Consistent progress, needs to improve pronunciation'
+    financialInfo: {
+      lastPaymentDate: new Date('2024-01-01'),
+      lastPaymentAmount: 3500,
+      totalPaid: 42000,
+      paymentHistory: ['Jan-2024: ₨3,500', 'Dec-2023: ₨3,500', 'Nov-2023: ₨3,500']
     },
     createdAt: new Date('2023-09-01'),
-    updatedAt: new Date('2024-01-20')
+    updatedAt: new Date('2024-01-15')
   },
   {
     id: 'std-003',
     rollNumber: 'TQ-2024-003',
-    name: 'Ali Raza',
-    fatherName: 'Muhammad Raza',
-    dateOfBirth: new Date('2008-03-10'),
-    address: 'House #789, Defence Housing Authority, Karachi',
-    phone: '+92-321-1111111',
-    emergencyContact: '+92-300-9999999',
-    admissionDate: new Date('2022-01-10'),
+    name: 'Ahmed Ali',
+    fatherName: 'Ali Hassan',
+    dateOfBirth: new Date('2011-08-10'),
+    address: 'House 789, Block D, Malir, Karachi',
+    phone: '+92-333-1122334',
+    emergencyContact: '+92-300-2233445',
+    admissionDate: new Date('2024-01-01'),
     class: 'HIFZ - Para 16-30 (Final)',
     section: 'A',
     program: 'HIFZ',
     status: 'ACTIVE',
     monthlyFee: 4000,
-    outstandingFees: 0,
+    outstandingFees: 2000,
+    paymentStatus: 'PARTIAL',
+    sponsorships: [sponsorships[2]],
     guardian: {
-      name: 'Muhammad Raza',
+      name: 'Ali Hassan',
       relation: 'Father',
-      phone: '+92-321-1111111',
-      address: 'House #789, Defence Housing Authority, Karachi'
+      phone: '+92-333-1122334',
+      address: 'House 789, Block D, Malir, Karachi'
     },
-    academicProgress: {
-      currentPara: 25,
-      totalParas: 30,
-      lastExamDate: new Date('2024-01-12'),
-      lastExamResult: 'Excellent',
-      teacherRemarks: 'Exceptional student, likely to complete Hifz soon'
+    financialInfo: {
+      lastPaymentDate: new Date('2023-12-15'),
+      lastPaymentAmount: 2000,
+      totalPaid: 8000,
+      paymentHistory: ['Dec-2023: ₨2,000 (Partial)', 'Nov-2023: ₨2,000 (Partial)']
     },
-    createdAt: new Date('2022-01-10'),
-    updatedAt: new Date('2024-01-20')
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-10')
   },
   {
     id: 'std-004',
     rollNumber: 'TQ-2024-004',
-    name: 'Fatima Zahra',
-    fatherName: 'Muhammad Akram',
-    dateOfBirth: new Date('2012-11-05'),
-    address: 'Apartment #12, Clifton, Karachi',
-    emergencyContact: '+92-300-7777777',
-    admissionDate: new Date('2024-01-20'),
+    name: 'Zainab Sheikh',
+    fatherName: 'Muhammad Sheikh',
+    dateOfBirth: new Date('2013-01-18'),
+    address: 'Plot 321, Block E, Gulberg, Karachi',
+    phone: '+92-300-5566778',
+    emergencyContact: '+92-321-6677889',
+    admissionDate: new Date('2024-02-01'),
     class: 'NAZRA - Beginner',
+    section: 'A',
     program: 'NAZRA',
     status: 'ACTIVE',
     monthlyFee: 2000,
-    outstandingFees: 0,
+    outstandingFees: 4000,
+    paymentStatus: 'OVERDUE',
+    sponsorships: [],
     guardian: {
-      name: 'Muhammad Akram',
-      relation: 'Father',
-      phone: '+92-300-7777777',
-      address: 'Apartment #12, Clifton, Karachi'
+      name: 'Khadija Sheikh',
+      relation: 'Mother',
+      phone: '+92-300-5566778',
+      address: 'Plot 321, Block E, Gulberg, Karachi'
     },
-    academicProgress: {
-      currentPara: 0,
-      totalParas: 30,
-      lastExamDate: undefined,
-      lastExamResult: undefined,
-      teacherRemarks: 'New student, learning Arabic letters'
+    financialInfo: {
+      lastPaymentDate: new Date('2023-10-01'),
+      lastPaymentAmount: 2000,
+      totalPaid: 4000,
+      paymentHistory: ['Oct-2023: ₨2,000', 'Sep-2023: ₨2,000']
     },
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-20')
+    createdAt: new Date('2024-02-01'),
+    updatedAt: new Date('2024-02-05')
   },
   {
     id: 'std-005',
     rollNumber: 'TQ-2024-005',
-    name: 'Usman Ahmed',
-    fatherName: 'Ahmed Ali',
-    dateOfBirth: new Date('2007-12-18'),
-    address: 'House #456, Shah Faisal Colony, Karachi',
-    phone: '+92-333-8888888',
-    emergencyContact: '+92-321-6666666',
-    admissionDate: new Date('2023-03-01'),
-    class: 'ALIM - Year 1',
-    program: 'ALIM',
+    name: 'Omar Farooq',
+    fatherName: 'Abdul Farooq',
+    dateOfBirth: new Date('2010-11-25'),
+    address: 'House 654, Block F, Korangi, Karachi',
+    emergencyContact: '+92-321-9988776',
+    admissionDate: new Date('2024-01-20'),
+    class: 'NAZRA - Intermediate',
+    section: 'B',
+    program: 'NAZRA',
     status: 'ACTIVE',
     monthlyFee: 2500,
-    outstandingFees: 5000, // Two months outstanding
+    outstandingFees: 0,
+    paymentStatus: 'PAID',
+    sponsorships: [],
     guardian: {
-      name: 'Ahmed Ali',
+      name: 'Abdul Farooq',
       relation: 'Father',
-      phone: '+92-333-8888888',
-      address: 'House #456, Shah Faisal Colony, Karachi'
+      phone: '+92-321-9988776',
+      address: 'House 654, Block F, Korangi, Karachi'
     },
-    academicProgress: {
-      currentPara: 30, // Completed Hifz, now in Alim
-      totalParas: 30,
-      lastExamDate: new Date('2023-12-15'),
-      lastExamResult: 'Good',
-      teacherRemarks: 'Hafiz-e-Quran, good in Arabic grammar studies'
+    financialInfo: {
+      lastPaymentDate: new Date('2024-01-01'),
+      lastPaymentAmount: 2500,
+      totalPaid: 2500,
+      paymentHistory: ['Jan-2024: ₨2,500']
     },
-    createdAt: new Date('2023-03-01'),
-    updatedAt: new Date('2024-01-20')
+    createdAt: new Date('2024-01-20'),
+    updatedAt: new Date('2024-01-25')
   }
 ];
 
@@ -417,7 +558,7 @@ export const teachers: Teacher[] = [
   }
 ];
 
-// Fee Transactions - Recent payments
+// Fee Transactions with Donor Integration
 export const feeTransactions: FeeTransaction[] = [
   {
     id: 'fee-001',
@@ -428,41 +569,76 @@ export const feeTransactions: FeeTransaction[] = [
     year: 2024,
     amount: 3000,
     paymentDate: new Date('2024-01-05'),
-    paymentMethod: 'CASH',
+    paymentMethod: 'DONOR_SPONSORED',
     receiptNumber: 'RCP-2024-001',
     status: 'PAID',
-    collectedBy: 'Office Staff - Ahmed'
+    donorId: 'donor-001',
+    sponsorshipId: 'sponsor-001',
+    remarks: 'Paid by Muhammad Ahmed Foundation',
+    collectedBy: 'Admin Office'
   },
   {
     id: 'fee-002',
-    studentId: 'std-003',
-    studentName: 'Ali Raza',
-    rollNumber: 'TQ-2024-003',
+    studentId: 'std-002',
+    studentName: 'Fatima Khatoon',
+    rollNumber: 'TQ-2024-002',
     month: 'January',
     year: 2024,
-    amount: 4000,
+    amount: 3500,
     paymentDate: new Date('2024-01-03'),
-    paymentMethod: 'BANK_TRANSFER',
+    paymentMethod: 'DONOR_SPONSORED',
     receiptNumber: 'RCP-2024-002',
     status: 'PAID',
-    collectedBy: 'Office Staff - Fatima'
+    donorId: 'donor-002',
+    sponsorshipId: 'sponsor-002',
+    remarks: 'Sponsored by Fatima Bibi',
+    collectedBy: 'Admin Office'
   },
   {
     id: 'fee-003',
-    studentId: 'std-004',
-    studentName: 'Fatima Zahra',
-    rollNumber: 'TQ-2024-004',
+    studentId: 'std-003',
+    studentName: 'Ahmed Ali',
+    rollNumber: 'TQ-2024-003',
+    month: 'December',
+    year: 2023,
+    amount: 2000,
+    paymentDate: new Date('2023-12-15'),
+    paymentMethod: 'DONOR_SPONSORED',
+    receiptNumber: 'RCP-2023-089',
+    status: 'PARTIAL',
+    donorId: 'donor-003',
+    sponsorshipId: 'sponsor-003',
+    remarks: 'Partial payment by Al-Khair Trust - 50% coverage',
+    collectedBy: 'Finance Office'
+  },
+  {
+    id: 'fee-004',
+    studentId: 'std-005',
+    studentName: 'Omar Farooq',
+    rollNumber: 'TQ-2024-005',
     month: 'January',
     year: 2024,
-    amount: 2000,
-    paymentDate: new Date('2024-01-20'),
+    amount: 2500,
+    paymentDate: new Date('2024-01-10'),
     paymentMethod: 'CASH',
     receiptNumber: 'RCP-2024-003',
     status: 'PAID',
-    remarks: 'Admission fee paid',
-    collectedBy: 'Office Staff - Ahmed'
+    remarks: 'Direct payment by guardian',
+    collectedBy: 'Cashier'
   }
 ];
+
+// Financial KPIs for Dashboard
+export const financialKPIs: FinancialKPIs = {
+  totalStudents: 387,
+  activeStudents: 362,
+  totalMonthlyRevenue: 1245000,
+  collectionRate: 89.5, // 89.5% collection rate
+  outstandingAmount: 156000,
+  sponsoredStudents: 156, // 43% of students are sponsored
+  totalDonorContributions: 850000,
+  averageFeePerStudent: 3200
+};
 
 // Academic Statistics
 export const getAcademicStatistics = () => {

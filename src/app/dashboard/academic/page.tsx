@@ -10,91 +10,148 @@ import {
   Users, 
   DollarSign, 
   TrendingUp, 
-  Clock, 
+  TrendingDown,
   CheckCircle, 
   AlertCircle,
-  BookOpen,
   UserCheck,
   Calendar,
-  Award,
+  Heart,
   FileText,
   UserPlus,
-  BarChart3,
-  School,
+  CreditCard,
+  Wallet,
+  HandHeart,
   Target,
-  Star
+  PiggyBank,
+  AlertTriangle,
+  Receipt,
+  Building2
 } from "lucide-react";
+import { donors, sponsorships, financialKPIs } from "@/lib/academic-data";
+import { DonorSponsorshipTracker } from "@/components/donor-sponsorship-tracker";
+import { FinancialKPICards } from "@/components/financial-kpi-cards";
 
 export default function AcademicPage() {
-  const academicStats = [
+  // Financial KPIs - Business focused
+  const financialStats = [
     {
       title: "Total Students",
-      value: "2,847",
-      change: "+127",
+      value: "387",
+      change: "+23 this month",
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-950/20"
     },
     {
-      title: "Fee Collection",
-      value: "₨ 14,567,890",
-      change: "+8.5%",
+      title: "Monthly Revenue",
+      value: "₨ 1,245,000",
+      change: "+12.3%",
       icon: DollarSign,
       color: "text-green-600",
       bgColor: "bg-green-50 dark:bg-green-950/20"
     },
     {
-      title: "Attendance Rate",
-      value: "92.4%",
-      change: "+2.1%",
-      icon: UserCheck,
+      title: "Collection Rate",
+      value: "89.5%",
+      change: "+4.2%",
+      icon: Target,
       color: "text-purple-600",
       bgColor: "bg-purple-50 dark:bg-purple-950/20"
     },
     {
-      title: "Active Classes",
+      title: "Sponsored Students",
       value: "156",
-      change: "+12",
-      icon: School,
+      change: "40% of total",
+      icon: HandHeart,
       color: "text-orange-600",
       bgColor: "bg-orange-50 dark:bg-orange-950/20"
     }
   ];
 
-  const classDistribution = [
-    { level: "Hifz-e-Quran", students: 987, percentage: 35, color: "bg-green-500" },
-    { level: "Qirat & Tajweed", students: 654, percentage: 23, color: "bg-blue-500" },
-    { level: "Islamic Studies", students: 542, percentage: 19, color: "bg-purple-500" },
-    { level: "Arabic Language", students: 398, percentage: 14, color: "bg-orange-500" },
-    { level: "Advanced Studies", students: 266, percentage: 9, color: "bg-red-500" }
+  // Fee Collection Status
+  const feeCollectionStatus = [
+    { status: "Paid", count: 298, percentage: 77, amount: 954000, color: "bg-green-500" },
+    { status: "Sponsored", count: 56, percentage: 14, amount: 189000, color: "bg-blue-500" },
+    { status: "Partial", count: 21, percentage: 5, amount: 67000, color: "bg-yellow-500" },
+    { status: "Overdue", count: 12, percentage: 3, amount: 35000, color: "bg-red-500" }
   ];
 
-  const recentEnrollments = [
-    { student: "Muhammad Hassan", class: "Hifz-e-Quran Level 3", guardian: "Ahmed Hassan", status: "confirmed" },
-    { student: "Fatima Khan", class: "Qirat & Tajweed", guardian: "Omar Khan", status: "pending" },
-    { student: "Ali Rahman", class: "Islamic Studies", guardian: "Abdullah Rahman", status: "confirmed" },
-    { student: "Aisha Malik", class: "Arabic Language", guardian: "Yusuf Malik", status: "confirmed" },
-    { student: "Ibrahim Sheikh", class: "Advanced Studies", guardian: "Hassan Sheikh", status: "pending" }
+  // Recent Financial Activities
+  const recentActivities = [
+    { 
+      type: "payment", 
+      description: "Muhammad Abdullah - Fee Paid", 
+      amount: "₨ 3,000", 
+      donor: "Muhammad Ahmed Foundation",
+      time: "2 hours ago",
+      status: "sponsored"
+    },
+    { 
+      type: "enrollment", 
+      description: "New Student: Fatima Khan", 
+      amount: "₨ 2,500/month", 
+      time: "5 hours ago",
+      status: "direct"
+    },
+    { 
+      type: "donation", 
+      description: "Al-Khair Trust Payment", 
+      amount: "₨ 24,000", 
+      time: "1 day ago",
+      status: "sponsored",
+      note: "For 8 students"
+    },
+    { 
+      type: "overdue", 
+      description: "Ahmed Ali - Payment Overdue", 
+      amount: "₨ 2,000", 
+      time: "2 days ago",
+      status: "overdue"
+    }
   ];
 
-  const feeStatus = [
-    { month: "January 2025", collected: 2456780, pending: 234560, total: 2691340 },
-    { month: "February 2025", collected: 2387450, pending: 456780, total: 2844230 },
-    { month: "March 2025", collected: 2567890, pending: 123450, total: 2691340 }
+  // Top Donors
+  const topDonors = [
+    { 
+      name: "Muhammad Ahmed Foundation", 
+      students: 12, 
+      monthlyContribution: 36000, 
+      totalContributed: 432000,
+      type: "Foundation",
+      status: "active"
+    },
+    { 
+      name: "Al-Khair Trust", 
+      students: 8, 
+      monthlyContribution: 24000, 
+      totalContributed: 288000,
+      type: "Organization",
+      status: "active"
+    },
+    { 
+      name: "Fatima Bibi", 
+      students: 3, 
+      monthlyContribution: 9000, 
+      totalContributed: 108000,
+      type: "Individual",
+      status: "active"
+    },
+    { 
+      name: "Zakat Foundation", 
+      students: 15, 
+      monthlyContribution: 45000, 
+      totalContributed: 540000,
+      type: "Foundation",
+      status: "active"
+    }
   ];
 
-  const topPerformers = [
-    { name: "Muhammad Usman", class: "Hifz Level 5", completion: 95, rank: 1 },
-    { name: "Fatima Bibi", class: "Qirat Advanced", completion: 93, rank: 2 },
-    { name: "Ahmed Ali", class: "Islamic Studies", completion: 91, rank: 3 },
-    { name: "Khadija Sheikh", class: "Arabic Advanced", completion: 89, rank: 4 }
-  ];
-
-  const upcomingExams = [
-    { subject: "Hifz Completion Test", date: "March 15, 2025", students: 45, type: "Major" },
-    { subject: "Qirat Assessment", date: "March 20, 2025", students: 78, type: "Regular" },
-    { subject: "Arabic Grammar", date: "March 25, 2025", students: 92, type: "Regular" },
-    { subject: "Islamic History", date: "March 30, 2025", students: 156, type: "Major" }
+  // Outstanding Payments by Program
+  const outstandingByProgram = [
+    { program: "HIFZ", outstanding: 45000, students: 8, color: "bg-green-500" },
+    { program: "NAZRA", outstanding: 12000, students: 3, color: "bg-blue-500" },
+    { program: "ALIM", outstanding: 8000, students: 2, color: "bg-purple-500" },
+    { program: "FAZIL", outstanding: 3000, students: 1, color: "bg-orange-500" }
   ];
 
   return (
@@ -102,314 +159,254 @@ export default function AcademicPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold font-headline">Academic Management</h1>
-          <p className="text-muted-foreground">Comprehensive Islamic education management system</p>
+          <h1 className="text-3xl font-bold font-headline">Fee Collection Management</h1>
+          <p className="text-muted-foreground">Student fee collection, payment tracking, and donor sponsorship management</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">
-            <UserPlus className="h-4 w-4 mr-2" />
-            New Enrollment
+            <Receipt className="h-4 w-4 mr-2" />
+            Record Payment
           </Button>
           <Button variant="outline">
             <FileText className="h-4 w-4 mr-2" />
-            Generate Report
+            Fee Reports
           </Button>
           <Button>
-            <Award className="h-4 w-4 mr-2" />
-            Issue Certificate
+            <HandHeart className="h-4 w-4 mr-2" />
+            Add Donor
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {academicStats.map((stat, index) => (
-          <Card key={index} className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-green-600 flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {stat.change}
-                  </p>
-                </div>
-                <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Financial KPI Cards */}
+      <FinancialKPICards showDetailed={false} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Class Distribution */}
+        {/* Fee Collection Status */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              Student Distribution by Class Level
+              <Wallet className="h-5 w-5 text-primary" />
+              Fee Collection Overview
             </CardTitle>
             <CardDescription>
-              Enrollment breakdown across different Islamic education programs
+              Current month payment status breakdown
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {classDistribution.map((item, index) => (
+              {feeCollectionStatus.map((item, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-medium">{item.level}</span>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                      <span className="font-medium">{item.status}</span>
+                    </div>
                     <div className="text-right">
-                      <span className="font-bold">{item.students}</span>
+                      <span className="font-bold">{item.count} students</span>
                       <span className="text-sm text-muted-foreground ml-2">({item.percentage}%)</span>
                     </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>₨ {item.amount.toLocaleString()}</span>
+                    <span className="text-muted-foreground">{item.percentage}%</span>
                   </div>
                   <Progress value={item.percentage} className="h-2" />
                 </div>
               ))}
             </div>
             
-            <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+            <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <GraduationCap className="h-4 w-4 text-primary" />
-                <span className="font-semibold">Academic Year 2024-25</span>
+                <Target className="h-4 w-4 text-green-600" />
+                <span className="font-semibold text-green-600">Collection Performance</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Currently in the second semester. New admissions for 2025-26 will open in May 2025.
+                89.5% collection rate exceeds target of 85%. Outstanding amount: ₨ 156,000
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Recent Enrollments */}
+        {/* Recent Financial Activities */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-primary" />
-              Recent Enrollments
+              <CreditCard className="h-5 w-5 text-primary" />
+              Recent Activities
             </CardTitle>
             <CardDescription>
-              Latest student registrations
+              Latest payments and enrollments
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentEnrollments.map((enrollment, index) => (
+              {recentActivities.map((activity, index) => (
                 <div key={index} className="p-3 rounded-lg border hover:bg-accent/50 transition-colors">
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-sm">{enrollment.student}</p>
-                    <Badge variant={enrollment.status === 'confirmed' ? 'default' : 'secondary'}>
-                      {enrollment.status}
-                    </Badge>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{activity.description}</p>
+                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      {activity.donor && (
+                        <p className="text-xs text-blue-600">by {activity.donor}</p>
+                      )}
+                      {activity.note && (
+                        <p className="text-xs text-muted-foreground">{activity.note}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <Badge variant={
+                        activity.status === 'sponsored' ? 'default' : 
+                        activity.status === 'overdue' ? 'destructive' : 'secondary'
+                      }>
+                        {activity.amount}
+                      </Badge>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{enrollment.class}</p>
-                  <p className="text-xs text-muted-foreground">Guardian: {enrollment.guardian}</p>
                 </div>
               ))}
             </div>
             
             <Button className="w-full mt-4" variant="outline">
-              <UserPlus className="h-4 w-4 mr-2" />
-              View All Enrollments
+              <FileText className="h-4 w-4 mr-2" />
+              View All Transactions
             </Button>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Fee Collection Status */}
+        {/* Top Donors */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-primary" />
-              Fee Collection Status
+              <HandHeart className="h-5 w-5 text-primary" />
+              Top Donors & Sponsors
             </CardTitle>
             <CardDescription>
-              Monthly fee collection progress and pending amounts
+              Major contributors supporting student education
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {feeStatus.map((month, index) => (
+              {topDonors.map((donor, index) => (
                 <div key={index} className="p-4 border rounded-lg space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-sm">{month.month}</h4>
-                    <Badge variant="outline">
-                      {Math.round((month.collected / month.total) * 100)}% collected
-                    </Badge>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold text-sm">{donor.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {donor.type}
+                        </Badge>
+                        <Badge variant={donor.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                          {donor.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-sm text-green-600">₨ {donor.monthlyContribution.toLocaleString()}/month</p>
+                      <p className="text-xs text-muted-foreground">{donor.students} students</p>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Collected: ₨ {month.collected.toLocaleString()}</span>
-                      <span className="text-red-600">Pending: ₨ {month.pending.toLocaleString()}</span>
-                    </div>
-                    <Progress value={(month.collected / month.total) * 100} className="h-2" />
+                  <div className="flex justify-between text-sm">
+                    <span>Total Contributed:</span>
+                    <span className="font-medium">₨ {donor.totalContributed.toLocaleString()}</span>
                   </div>
                 </div>
               ))}
             </div>
             
-            <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+            <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium">Collection Rate</span>
+                <Heart className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-600">Donor Impact</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Overall collection rate: 91.2% - Above institutional target of 85%
+                156 students (40%) receive full or partial sponsorship from generous donors.
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Top Performers */}
+        {/* Outstanding Payments by Program */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-primary" />
-              Top Academic Performers
+              <AlertTriangle className="h-5 w-5 text-primary" />
+              Outstanding Payments
             </CardTitle>
             <CardDescription>
-              Students excelling in their studies this semester
+              Pending payments breakdown by academic program
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topPerformers.map((student, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
-                    {student.rank}
+              {outstandingByProgram.map((item, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                      <span className="font-medium">{item.program}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-red-600">₨ {item.outstanding.toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground ml-2">({item.students} students)</span>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{student.name}</p>
-                    <p className="text-xs text-muted-foreground">{student.class}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-sm text-green-600">{student.completion}%</p>
-                    <p className="text-xs text-muted-foreground">completion</p>
-                  </div>
+                  <Progress value={(item.outstanding / 68000) * 100} className="h-2" />
                 </div>
               ))}
             </div>
             
-            <div className="mt-4 p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
+            <div className="mt-4 p-3 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <Award className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Recognition</span>
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <span className="text-sm font-medium text-red-600">Action Required</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Top performers will receive certificates at the quarterly assembly on March 31st.
+                Total outstanding: ₨ 68,000 from 14 students. Follow-up needed.
               </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Upcoming Examinations */}
+      {/* Fee Collection Actions - Most Important Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            Upcoming Examinations & Assessments
+            <DollarSign className="h-5 w-5 text-primary" />
+            Fee Collection Management
           </CardTitle>
           <CardDescription>
-            Scheduled tests and evaluations for the current semester
+            Core fee collection tools and donor management
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {upcomingExams.map((exam, index) => (
-              <div key={index} className="p-4 border rounded-lg space-y-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-sm">{exam.subject}</h4>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                      <Calendar className="h-3 w-3" />
-                      {exam.date}
-                    </p>
-                  </div>
-                  <Badge variant={exam.type === 'Major' ? 'default' : 'secondary'}>
-                    {exam.type}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{exam.students} students</span>
-                </div>
-                
-                <Button variant="outline" size="sm" className="w-full">
-                  View Details
-                </Button>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button className="h-20 flex-col" variant="outline">
+              <Receipt className="h-6 w-6 mb-2" />
+              <span className="text-sm">Record Payment</span>
+            </Button>
+            <Button className="h-20 flex-col" variant="outline">
+              <AlertTriangle className="h-6 w-6 mb-2" />
+              <span className="text-sm">Follow Up Overdue</span>
+            </Button>
+            <Button className="h-20 flex-col" variant="outline">
+              <HandHeart className="h-6 w-6 mb-2" />
+              <span className="text-sm">Add Donor</span>
+            </Button>
+            <Button className="h-20 flex-col" variant="outline">
+              <FileText className="h-6 w-6 mb-2" />
+              <span className="text-sm">Fee Reports</span>
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Academic Calendar & Announcements */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              Attendance Analytics
-            </CardTitle>
-            <CardDescription>
-              Class-wise attendance trends and patterns
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg">
-                <UserCheck className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                <p className="text-lg font-bold text-green-600">94.2%</p>
-                <p className="text-xs text-muted-foreground">Hifz Classes</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/20 dark:to-sky-950/20 rounded-lg">
-                <UserCheck className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                <p className="text-lg font-bold text-blue-600">91.8%</p>
-                <p className="text-xs text-muted-foreground">Qirat Classes</p>
-              </div>
-              <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20 rounded-lg">
-                <UserCheck className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                <p className="text-lg font-bold text-purple-600">89.5%</p>
-                <p className="text-xs text-muted-foreground">Arabic Classes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full justify-start" variant="outline">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add New Student
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <FileText className="h-4 w-4 mr-2" />
-              Generate Report Card
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <Award className="h-4 w-4 mr-2" />
-              Issue Certificate
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <Calendar className="h-4 w-4 mr-2" />
-              Schedule Exam
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Donor-Student Sponsorship Tracking */}
+      <DonorSponsorshipTracker />
     </div>
   );
 }

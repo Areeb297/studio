@@ -5,7 +5,18 @@
       "Bash(mkdir:*)",
       "Bash(npm install:*)",
       "Bash(find:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(claude mcp add supabase:*)",
+      "Bash(where claude)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(cmd /c:*)",
+      "WebFetch(domain:docs.supabase.com)",
+      "Bash(powershell:*)",
+      "Bash(npx:*)",
+      "mcp__rube__RUBE_SEARCH_TOOLS",
+      "mcp__rube__RUBE_CREATE_PLAN",
+      "mcp__rube__RUBE_MULTI_EXECUTE_TOOL"
     ],
     "deny": []
   }

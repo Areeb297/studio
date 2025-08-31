@@ -3,33 +3,26 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { 
-  GraduationCap,
   DollarSign, 
   TrendingUp, 
+  TrendingDown,
   Users, 
-  BookOpen,
-  Clock,
-  Trophy,
-  Star,
-  Calendar,
-  UserCheck,
-  AlertCircle,
-  PlusCircle,
-  Award,
   Target,
+  AlertCircle,
   CheckCircle,
   Heart,
   Building2,
-  ScrollText,
-  BookMarked,
-  
-  TrendingDown,
-  Activity,
-  Timer,
-  Percent
+  HandHeart,
+  Receipt,
+  Wallet,
+  PiggyBank,
+  AlertTriangle,
+  CreditCard,
+  Percent,
+  BarChart3,
+  FileText
 } from 'lucide-react';
 import {
   ChartContainer,
@@ -37,121 +30,90 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart, Pie, PieChart, Cell } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart } from "recharts";
+import { donors, sponsorships, financialKPIs } from "@/lib/academic-data";
 
-// Comprehensive Islamic Education Analytics Data
-const madrasaMetrics = {
+// Business & Financial KPIs for Madrasa
+const madrasaBusinessMetrics = {
   totalStudents: 387,
   activeStudents: 362,
-  totalTeachers: 24,
-  monthlyFeeCollection: 645000,
-  averageJuzzCompleted: 8.4,
-  hifzCompletionRate: 78.5,
-  averageAttendance: 94.2,
-  prayerAttendance: 89.6,
-  parentSatisfaction: 4.6,
-  staffRetention: 92.3,
-  scholarshipStudents: 67,
-  graduatedHuffaz: 23
+  monthlyRevenue: 645000,
+  collectionRate: 89.5,
+  sponsoredStudents: 156,
+  totalDonorContributions: 850000,
+  outstandingAmount: 68000,
+  averageFeePerStudent: 3200,
+  revenueGrowth: 12.3,
+  donorRetentionRate: 94.2
 };
 
-// Quran Memorization Progress Data
-const quranProgressData = [
-  { juzz: "Juzz 1", completed: 95, inProgress: 8, total: 103 },
-  { juzz: "Juzz 2", completed: 89, inProgress: 12, total: 101 },
-  { juzz: "Juzz 3", completed: 82, inProgress: 15, total: 97 },
-  { juzz: "Juzz 4", completed: 78, inProgress: 11, total: 89 },
-  { juzz: "Juzz 5", completed: 71, inProgress: 9, total: 80 },
-  { juzz: "Last 10", completed: 23, inProgress: 12, total: 35 }
+// Monthly Financial Performance
+const monthlyFinancialData = [
+  { month: "Jan", revenue: 590000, collection: 91.2, sponsored: 145000, outstanding: 52000 },
+  { month: "Feb", revenue: 615000, collection: 88.7, sponsored: 158000, outstanding: 69000 },
+  { month: "Mar", revenue: 635000, collection: 92.1, sponsored: 162000, outstanding: 51000 },
+  { month: "Apr", revenue: 645000, collection: 89.5, sponsored: 175000, outstanding: 68000 },
+  { month: "May", revenue: 625000, collection: 87.3, sponsored: 168000, outstanding: 79000 },
+  { month: "Jun", revenue: 645000, collection: 89.5, sponsored: 182000, outstanding: 68000 }
 ];
 
-// Hadith Memorization Progress
-const hadithProgress = [
-  { collection: "40 Nawawi", students: 145, completed: 89, percentage: 61.4 },
-  { collection: "Riyad as-Salihin", students: 89, completed: 67, percentage: 75.3 },
-  { collection: "Sahih Bukhari (Selected)", students: 67, completed: 34, percentage: 50.7 },
-  { collection: "Sahih Muslim (Selected)", students: 45, completed: 23, percentage: 51.1 }
-];
-
-// Student Performance by Age Group
-const ageGroupPerformance = [
-  { ageGroup: "5-8 years", students: 89, averageProgress: 65, attendance: 92 },
-  { ageGroup: "9-12 years", students: 134, averageProgress: 78, attendance: 95 },
-  { ageGroup: "13-16 years", students: 112, averageProgress: 84, attendance: 93 },
-  { ageGroup: "17+ years", students: 52, averageProgress: 91, attendance: 97 }
-];
-
-// Monthly Academic Progress
-const monthlyProgress = [
-  { month: "Jan", newHifz: 3, juzzCompleted: 234, attendance: 93.5, fees: 590000 },
-  { month: "Feb", newHifz: 2, juzzCompleted: 267, attendance: 94.2, fees: 615000 },
-  { month: "Mar", newHifz: 4, juzzCompleted: 289, attendance: 92.8, fees: 635000 },
-  { month: "Apr", newHifz: 5, juzzCompleted: 312, attendance: 95.1, fees: 645000 },
-  { month: "May", newHifz: 3, juzzCompleted: 298, attendance: 93.9, fees: 625000 },
-  { month: "Jun", newHifz: 6, juzzCompleted: 334, attendance: 94.2, fees: 645000 }
-];
-
-// Individual Student Progress (Top Performers)
-const topStudents = [
-  { name: "Ahmad Ali", class: "Hifz Advanced", juzzCompleted: 28, hafithProgress: 93.3, attendance: 98, trend: "up" },
-  { name: "Fatima Hassan", class: "Hifz Intermediate", juzzCompleted: 22, hafithProgress: 73.3, attendance: 97, trend: "up" },
-  { name: "Muhammad Omar", class: "Hifz Advanced", juzzCompleted: 27, hafithProgress: 90.0, attendance: 95, trend: "stable" },
-  { name: "Aisha Khan", class: "Nazra Advanced", juzzCompleted: 15, hafithProgress: 50.0, attendance: 99, trend: "up" },
-  { name: "Abdullah Sheikh", class: "Hifz Advanced", juzzCompleted: 29, hafithProgress: 96.7, attendance: 94, trend: "up" }
-];
-
-// Class Distribution and Performance
-const classPerformance = [
-  { class: "Hifz-e-Quran", students: 127, avgProgress: 68.5, fees: 190500, completion: 78, color: "hsl(25 95% 53%)" },
-  { class: "Nazra Quran", students: 89, avgProgress: 82.3, fees: 133500, completion: 92, color: "hsl(30 90% 60%)" },
-  { class: "Islamic Studies", students: 98, avgProgress: 76.8, fees: 147000, completion: 85, color: "hsl(35 85% 65%)" },
-  { class: "Arabic Language", students: 73, avgProgress: 71.2, fees: 109500, completion: 88, color: "hsl(40 80% 70%)" }
-];
-
-// Staff Performance and Monitoring
-const staffPerformance = [
-  { name: "Qari Abdullah Mahmood", role: "Senior Hifz Teacher", students: 32, rating: 4.9, experience: "18 years", hifzGraduated: 47 },
-  { name: "Ustadha Khadija Ahmad", role: "Nazra Specialist", students: 28, rating: 4.8, experience: "12 years", hifzGraduated: 0 },
-  { name: "Ustadh Hassan Ali", role: "Islamic Studies", students: 35, rating: 4.7, experience: "15 years", hifzGraduated: 0 },
-  { name: "Qari Muhammad Yusuf", role: "Hifz Teacher", students: 25, rating: 4.9, experience: "10 years", hifzGraduated: 23 },
-  { name: "Teacher Fatima Zahra", role: "Arabic Language", students: 30, rating: 4.6, experience: "8 years", hifzGraduated: 0 }
-];
-
-// Recent Islamic Achievements
-const recentAchievements = [
-  { student: "Abdullah Malik", achievement: "Completed Full Hifz (30 Juzz)", date: "2024-01-28", milestone: "Hafiz" },
-  { student: "Zainab Fatima", achievement: "Mastered 40 Hadith Nawawi", date: "2024-01-26", milestone: "Hadith" },
-  { student: "Muhammad Usman", achievement: "Perfect Tajweed Evaluation", date: "2024-01-24", milestone: "Tajweed" },
-  { student: "Aisha Siddiqui", achievement: "Arabic Grammar Excellence", date: "2024-01-22", milestone: "Arabic" },
-  { student: "Ali Hassan", achievement: "25 Juzz Memorization", date: "2024-01-20", milestone: "Progress" },
-  { student: "Hafsa Ahmed", achievement: "6 Months Perfect Attendance", date: "2024-01-18", milestone: "Attendance" }
-];
-
-// Business Revenue Streams
+// Revenue Streams Analysis
 const revenueStreams = [
-  { stream: "Monthly Fees", amount: 580000, percentage: 73.2, growth: "+8.5%" },
-  { stream: "Registration Fees", amount: 89000, percentage: 11.2, growth: "+12.3%" },
-  { stream: "Books & Materials", amount: 67000, percentage: 8.4, growth: "+5.7%" },
-  { stream: "Special Programs", amount: 45000, percentage: 5.7, growth: "+15.2%" },
-  { stream: "Donations", amount: 12000, percentage: 1.5, growth: "+3.1%" }
+  { stream: "Monthly Fees", amount: 580000, percentage: 73.2, growth: "+8.5%", color: "bg-green-500" },
+  { stream: "Donor Contributions", amount: 89000, percentage: 11.2, growth: "+15.3%", color: "bg-blue-500" },
+  { stream: "Registration Fees", amount: 67000, percentage: 8.4, growth: "+5.7%", color: "bg-purple-500" },
+  { stream: "Books & Materials", amount: 45000, percentage: 5.7, growth: "+12.2%", color: "bg-orange-500" },
+  { stream: "Special Programs", amount: 12000, percentage: 1.5, growth: "+3.1%", color: "bg-red-500" }
+];
+
+// Fee Collection Status by Program
+const feeCollectionByProgram = [
+  { program: "HIFZ", students: 198, collected: 594000, outstanding: 32000, rate: 94.9 },
+  { program: "NAZRA", students: 89, collected: 178000, outstanding: 12000, rate: 93.7 },
+  { program: "ALIM", students: 67, collected: 167500, outstanding: 18000, rate: 90.3 },
+  { program: "FAZIL", students: 33, collected: 99000, outstanding: 6000, rate: 94.3 }
+];
+
+// Top Donors and Sponsors
+const topDonorsData = [
+  { name: "Muhammad Ahmed Foundation", students: 12, monthlyAmount: 36000, totalContributed: 432000, type: "Foundation" },
+  { name: "Al-Khair Trust", students: 8, monthlyAmount: 24000, totalContributed: 288000, type: "Organization" },
+  { name: "Zakat Foundation", students: 15, monthlyAmount: 45000, totalContributed: 540000, type: "Foundation" },
+  { name: "Fatima Bibi", students: 3, monthlyAmount: 9000, totalContributed: 108000, type: "Individual" }
+];
+
+// Recent Financial Activities
+const recentFinancialActivities = [
+  { type: "payment", description: "Monthly fee collection - HIFZ Program", amount: 189000, time: "Today", status: "completed" },
+  { type: "donation", description: "Al-Khair Trust - Quarterly Contribution", amount: 72000, time: "Yesterday", status: "received" },
+  { type: "sponsorship", description: "New student sponsorship - Muhammad Foundation", amount: 3000, time: "2 days ago", status: "active" },
+  { type: "overdue", description: "Follow-up required - 12 students", amount: 38000, time: "3 days ago", status: "pending" }
+];
+
+// Outstanding Analysis
+const outstandingAnalysis = [
+  { category: "1-30 days", amount: 28000, students: 8, percentage: 41.2 },
+  { category: "31-60 days", amount: 22000, students: 4, percentage: 32.4 },
+  { category: "61-90 days", amount: 12000, students: 2, percentage: 17.6 },
+  { category: "90+ days", amount: 6000, students: 1, percentage: 8.8 }
 ];
 
 const chartConfig = {
-  completed: {
-    label: "Completed",
+  revenue: {
+    label: "Revenue (PKR)",
     color: "hsl(25 95% 53%)",
   },
-  inProgress: {
-    label: "In Progress", 
+  collection: {
+    label: "Collection Rate %",
     color: "hsl(30 90% 60%)",
   },
-  attendance: {
-    label: "Attendance %",
+  sponsored: {
+    label: "Sponsored Amount (PKR)",
     color: "hsl(35 85% 65%)",
   },
-  fees: {
-    label: "Fee Collection (PKR)",
-    color: "hsl(40 80% 70%)",
+  outstanding: {
+    label: "Outstanding (PKR)",
+    color: "hsl(0 70% 60%)",
   }
 } satisfies ChartConfig;
 
@@ -161,251 +123,164 @@ export default function MadrasaDashboard() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-orange-500">Tahfeez Madrasa</h1>
-          <p className="text-muted-foreground">Comprehensive Islamic education management and student progress tracking</p>
+          <h1 className="text-3xl font-bold text-orange-500">Tahfeez Madrasa Business</h1>
+          <p className="text-muted-foreground">Financial performance, fee collection, and donor management</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="border-orange-500 text-orange-500">
             <Building2 className="w-3 h-3 mr-1" />
-            Islamic Education
+            Business Operations
           </Badge>
           <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
         </div>
       </div>
 
-      {/* Core Islamic Education KPIs */}
+      {/* Core Financial KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+            <DollarSign className="w-4 h-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">₨ {madrasaBusinessMetrics.monthlyRevenue.toLocaleString()}</div>
+            <p className="text-xs text-green-600">+{madrasaBusinessMetrics.revenueGrowth}% this month</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-blue-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Collection Rate</CardTitle>
+            <Target className="w-4 h-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-500">{madrasaBusinessMetrics.collectionRate}%</div>
+            <p className="text-xs text-green-600">Above 85% target</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Sponsored Students</CardTitle>
+            <HandHeart className="w-4 h-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-500">{madrasaBusinessMetrics.sponsoredStudents}</div>
+            <p className="text-xs text-muted-foreground">40% of total students</p>
+          </CardContent>
+        </Card>
+
         <Card className="border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Active Students</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
             <Users className="w-4 h-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{madrasaMetrics.activeStudents}/{madrasaMetrics.totalStudents}</div>
-            <p className="text-xs text-green-600">94% attendance rate</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-orange-400">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Avg Juzz Memorized</CardTitle>
-            <BookOpen className="w-4 h-4 text-orange-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{madrasaMetrics.averageJuzzCompleted}</div>
-            <p className="text-xs text-green-600">Per student progress</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-orange-600">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Hifz Completion Rate</CardTitle>
-            <Trophy className="w-4 h-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{madrasaMetrics.hifzCompletionRate}%</div>
-            <p className="text-xs text-green-600">Above industry standard</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-orange-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Monthly Fees</CardTitle>
-            <DollarSign className="w-4 h-4 text-orange-300" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">PKR {madrasaMetrics.monthlyFeeCollection.toLocaleString()}</div>
-            <p className="text-xs text-green-600">+4.2% this month</p>
+            <div className="text-2xl font-bold text-orange-500">{madrasaBusinessMetrics.activeStudents}</div>
+            <p className="text-xs text-green-600">+23 new enrollments</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Additional Islamic Education KPIs */}
+      {/* Additional Financial KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Graduated Huffaz</CardTitle>
-            <Award className="w-4 h-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium">Donor Contributions</CardTitle>
+            <Heart className="w-4 h-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-500">{madrasaMetrics.graduatedHuffaz}</div>
-            <p className="text-xs text-muted-foreground">This year</p>
+            <div className="text-2xl font-bold text-red-500">₨ {madrasaBusinessMetrics.totalDonorContributions.toLocaleString()}</div>
+            <p className="text-xs text-green-600">Monthly total</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Prayer Attendance</CardTitle>
-            <Building2 className="w-4 h-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium">Outstanding Amount</CardTitle>
+            <AlertTriangle className="w-4 h-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{madrasaMetrics.prayerAttendance}%</div>
-            <p className="text-xs text-green-600">Daily Salah participation</p>
+            <div className="text-2xl font-bold text-yellow-600">₨ {madrasaBusinessMetrics.outstandingAmount.toLocaleString()}</div>
+            <p className="text-xs text-red-600">Needs follow-up</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Parent Satisfaction</CardTitle>
-            <Heart className="w-4 h-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium">Average Fee/Student</CardTitle>
+            <Wallet className="w-4 h-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{madrasaMetrics.parentSatisfaction}/5.0</div>
-            <p className="text-xs text-green-600">Excellent rating</p>
+            <div className="text-2xl font-bold text-indigo-500">₨ {madrasaBusinessMetrics.averageFeePerStudent.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Per month</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Scholarship Students</CardTitle>
-            <GraduationCap className="w-4 h-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium">Donor Retention</CardTitle>
+            <PiggyBank className="w-4 h-4 text-teal-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{madrasaMetrics.scholarshipStudents}</div>
-            <p className="text-xs text-muted-foreground">17% of total students</p>
+            <div className="text-2xl font-bold text-teal-500">{madrasaBusinessMetrics.donorRetentionRate}%</div>
+            <p className="text-xs text-green-600">Excellent retention</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quran & Academic Progress Charts */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Quran Memorization Progress */}
-        <Card className="lg:col-span-2">
+      {/* Financial Performance Charts */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Monthly Financial Trends */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-orange-500" />
-              Quran Memorization Progress
+              <TrendingUp className="h-5 w-5 text-orange-500" />
+              Monthly Financial Performance
             </CardTitle>
-            <CardDescription>Student progress across different Juzz (sections)</CardDescription>
+            <CardDescription>Revenue, collection rate, and sponsored amounts</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="w-full h-[300px]">
-              <BarChart data={quranProgressData}>
+              <LineChart data={monthlyFinancialData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="juzz" />
-                <YAxis />
+                <XAxis dataKey="month" />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="completed" fill="hsl(25 95% 53%)" radius={4} />
-                <Bar dataKey="inProgress" fill="hsl(30 90% 60%)" radius={4} />
-              </BarChart>
+                <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="hsl(25 95% 53%)" strokeWidth={3} />
+                <Line yAxisId="left" type="monotone" dataKey="collection" stroke="hsl(30 90% 60%)" strokeWidth={2} />
+                <Line yAxisId="right" type="monotone" dataKey="sponsored" stroke="hsl(35 85% 65%)" strokeWidth={2} strokeDasharray="5 5" />
+              </LineChart>
             </ChartContainer>
           </CardContent>
         </Card>
 
-        {/* Class Performance Distribution */}
+        {/* Revenue Streams */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5 text-orange-500" />
-              Class Performance
+              <BarChart3 className="h-5 w-5 text-orange-500" />
+              Revenue Streams
             </CardTitle>
-            <CardDescription>Student distribution by class</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="w-full h-[300px]">
-              <PieChart>
-                <Pie
-                  data={classPerformance}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  dataKey="students"
-                  label={({ class: className, students }) => `${className}: ${students}`}
-                >
-                  {classPerformance.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Monthly Academic Trends */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-orange-500" />
-            Monthly Academic Performance & Financial Trends
-          </CardTitle>
-          <CardDescription>Hifz graduates, Juzz completion, attendance, and fee collection</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="w-full h-[350px]">
-            <LineChart data={monthlyProgress}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line yAxisId="left" type="monotone" dataKey="juzzCompleted" stroke="hsl(25 95% 53%)" strokeWidth={3} />
-              <Line yAxisId="left" type="monotone" dataKey="newHifz" stroke="hsl(30 90% 60%)" strokeWidth={2} />
-              <Line yAxisId="right" type="monotone" dataKey="fees" stroke="hsl(35 85% 65%)" strokeWidth={2} strokeDasharray="5 5" />
-            </LineChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-
-      {/* Student Performance & Staff Management */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Top Performing Students */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-orange-500" />
-              Top Performing Students
-            </CardTitle>
-            <CardDescription>Highest achieving students in Hifz program</CardDescription>
+            <CardDescription>Income sources breakdown and growth</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topStudents.map((student, index) => (
-                <div key={student.name} className="flex items-center justify-between p-3 rounded-lg bg-orange-500/5 border border-orange-500/20">
-                  <div className="flex items-center gap-3">
-                    <div className="text-sm font-medium text-orange-500">#{index + 1}</div>
-                    <div>
-                      <div className="font-medium">{student.name}</div>
-                      <div className="text-xs text-muted-foreground">{student.class}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold">{student.juzzCompleted}/30 Juzz</div>
-                    <div className="flex items-center gap-1 text-xs">
-                      <span className="text-orange-500">{student.hafithProgress.toFixed(1)}% Hifz</span>
-                      {student.trend === 'up' ? <TrendingUp className="h-3 w-3 text-green-500" /> : 
-                       student.trend === 'down' ? <TrendingDown className="h-3 w-3 text-red-500" /> : 
-                       <div className="h-3 w-3 rounded-full bg-yellow-500"></div>}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Hadith Memorization Progress */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ScrollText className="h-5 w-5 text-orange-500" />
-              Hadith Memorization Progress
-            </CardTitle>
-            <CardDescription>Progress in various Hadith collections</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {hadithProgress.map((hadith) => (
-                <div key={hadith.collection} className="space-y-2">
+              {revenueStreams.map((stream, index) => (
+                <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{hadith.collection}</span>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${stream.color}`}></div>
+                      <span className="font-medium">{stream.stream}</span>
+                    </div>
                     <div className="text-right">
-                      <div className="text-sm font-bold">{hadith.completed}/{hadith.students}</div>
-                      <div className="text-xs text-muted-foreground">{hadith.percentage.toFixed(1)}%</div>
+                      <span className="font-bold">₨ {stream.amount.toLocaleString()}</span>
+                      <span className="text-sm text-green-600 ml-2">{stream.growth}</span>
                     </div>
                   </div>
-                  <Progress value={hadith.percentage} className="h-2" />
+                  <Progress value={stream.percentage} className="h-2" />
+                  <div className="text-xs text-muted-foreground">{stream.percentage}% of total revenue</div>
                 </div>
               ))}
             </div>
@@ -413,36 +288,41 @@ export default function MadrasaDashboard() {
         </Card>
       </div>
 
-      {/* Staff Performance & Recent Achievements */}
+      {/* Fee Collection by Program & Top Donors */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Staff Performance */}
+        {/* Fee Collection by Program */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-orange-500" />
-              Teaching Staff Performance
+              <Receipt className="h-5 w-5 text-orange-500" />
+              Fee Collection by Program
             </CardTitle>
-            <CardDescription>Faculty ratings and student outcomes</CardDescription>
+            <CardDescription>Collection performance across academic programs</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {staffPerformance.slice(0, 4).map((staff) => (
-                <div key={staff.name} className="p-3 rounded-lg border bg-gradient-to-r from-orange-500/5 to-orange-300/5">
-                  <div className="flex justify-between items-start mb-2">
+              {feeCollectionByProgram.map((program) => (
+                <div key={program.program} className="p-4 border rounded-lg space-y-3">
+                  <div className="flex justify-between items-center">
                     <div>
-                      <h4 className="font-semibold">{staff.name}</h4>
-                      <p className="text-sm text-muted-foreground">{staff.role}</p>
-                      <p className="text-xs text-muted-foreground">{staff.experience} experience</p>
+                      <h4 className="font-semibold">{program.program}</h4>
+                      <p className="text-sm text-muted-foreground">{program.students} students</p>
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-1 mb-1">
-                        <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                        <span className="text-sm font-medium">{staff.rating}</span>
-                      </div>
-                      <div className="text-sm text-orange-500">{staff.students} students</div>
-                      {staff.hifzGraduated > 0 && (
-                        <div className="text-xs text-green-600">{staff.hifzGraduated} Huffaz graduated</div>
-                      )}
+                      <Badge variant={program.rate > 90 ? 'default' : 'secondary'}>
+                        {program.rate}%
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Collected:</span>
+                      <div className="font-bold text-green-600">₨ {program.collected.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Outstanding:</span>
+                      <div className="font-bold text-red-600">₨ {program.outstanding.toLocaleString()}</div>
                     </div>
                   </div>
                 </div>
@@ -451,99 +331,154 @@ export default function MadrasaDashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Islamic Achievements */}
+        {/* Top Donors */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-orange-500" />
-              Recent Islamic Achievements
+              <HandHeart className="h-5 w-5 text-orange-500" />
+              Top Donors & Sponsors
             </CardTitle>
-            <CardDescription>Latest student milestones and accomplishments</CardDescription>
+            <CardDescription>Major contributors and their impact</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {topDonorsData.map((donor, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{donor.name}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {donor.type}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">{donor.students} students</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">₨ {donor.monthlyAmount.toLocaleString()}/month</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Contributed:</span>
+                    <span className="font-medium">₨ {donor.totalContributed.toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Financial Activities & Outstanding Analysis */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Recent Financial Activities */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-orange-500" />
+              Recent Financial Activities
+            </CardTitle>
+            <CardDescription>Latest payments, donations, and transactions</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentAchievements.map((achievement, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-orange-500/5">
+              {recentFinancialActivities.map((activity, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs">
-                      {achievement.milestone === 'Hafiz' ? '🏆' : 
-                       achievement.milestone === 'Hadith' ? '📜' :
-                       achievement.milestone === 'Tajweed' ? '🎵' :
-                       achievement.milestone === 'Arabic' ? '📚' : '⭐'}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs ${
+                      activity.type === 'payment' ? 'bg-green-500' :
+                      activity.type === 'donation' ? 'bg-blue-500' :
+                      activity.type === 'sponsorship' ? 'bg-purple-500' : 'bg-red-500'
+                    }`}>
+                      {activity.type === 'payment' ? '💰' : 
+                       activity.type === 'donation' ? '❤️' :
+                       activity.type === 'sponsorship' ? '🤝' : '⚠️'}
                     </div>
                     <div>
-                      <div className="font-medium">{achievement.student}</div>
-                      <div className="text-sm text-muted-foreground">{achievement.achievement}</div>
+                      <div className="font-medium text-sm">{activity.description}</div>
+                      <div className="text-xs text-muted-foreground">{activity.time}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <Badge className="bg-green-500/20 text-green-700 mb-1">
-                      {achievement.milestone}
+                    <Badge variant={
+                      activity.status === 'completed' ? 'default' : 
+                      activity.status === 'pending' ? 'destructive' : 'secondary'
+                    }>
+                      ₨ {activity.amount.toLocaleString()}
                     </Badge>
-                    <div className="text-xs text-muted-foreground">{achievement.date}</div>
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
+        {/* Outstanding Analysis */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              Outstanding Payments Analysis
+            </CardTitle>
+            <CardDescription>Aging analysis of pending payments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {outstandingAnalysis.map((item, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{item.category}</span>
+                    <div className="text-right">
+                      <span className="font-bold text-red-600">₨ {item.amount.toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground ml-2">({item.students} students)</span>
+                    </div>
+                  </div>
+                  <Progress value={item.percentage} className="h-2" />
+                  <div className="text-xs text-muted-foreground">{item.percentage.toFixed(1)}% of total outstanding</div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 p-3 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 rounded-lg">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <span className="text-sm font-medium text-red-600">Priority Action</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Focus on 1-30 days outstanding (₨ 28,000) for quick recovery.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Revenue Streams Analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-orange-500" />
-            Revenue Streams & Business Performance
-          </CardTitle>
-          <CardDescription>Financial performance across different income sources</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-5">
-            {revenueStreams.map((stream) => (
-              <div key={stream.stream} className="text-center p-4 rounded-lg bg-orange-500/5 border border-orange-500/20">
-                <div className="text-lg font-bold text-orange-500">PKR {(stream.amount / 1000).toFixed(0)}K</div>
-                <div className="text-sm font-medium">{stream.stream}</div>
-                <div className="text-xs text-muted-foreground">{stream.percentage}% of total</div>
-                <div className="text-xs text-green-600 font-medium mt-1">{stream.growth}</div>
-                <Progress value={stream.percentage * 5} className="mt-2 h-2" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Insights for Islamic Education */}
+      {/* Business Intelligence & Actions */}
       <Card className="bg-gradient-to-r from-orange-500/10 to-orange-300/10 border-orange-500/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-orange-500">
             <CheckCircle className="h-5 w-5" />
-            AI-Powered Islamic Education Insights
+            Financial Management Actions
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
-              <h4 className="font-semibold text-orange-500 mb-2">Hifz Progress Alert</h4>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-orange-500">15 students</span> in advanced Hifz showing slower 
-                progress. Recommend additional Muraja'ah sessions and one-on-one guidance.
-              </p>
-            </div>
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
-              <h4 className="font-semibold text-orange-500 mb-2">Fee Collection Optimization</h4>
-              <p className="text-sm text-muted-foreground">
-                Monthly fee collection at 89%. Consider implementing 
-                <span className="font-medium text-orange-500"> automated reminders</span> to improve collection rate.
-              </p>
-            </div>
-            <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
-              <h4 className="font-semibold text-orange-500 mb-2">Teaching Efficiency</h4>
-              <p className="text-sm text-muted-foreground">
-                Student-teacher ratio optimal at 16:1. <span className="font-medium text-orange-500">Qari Abdullah</span> 
-                achieves highest Hifz graduation rate - consider mentoring program.
-              </p>
-            </div>
+        <CardContent>
+          <div className="grid md:grid-cols-4 gap-4">
+            <Button className="h-16 flex-col" variant="outline">
+              <Receipt className="h-5 w-5 mb-1" />
+              <span className="text-sm">Record Payment</span>
+            </Button>
+            <Button className="h-16 flex-col" variant="outline">
+              <HandHeart className="h-5 w-5 mb-1" />
+              <span className="text-sm">Add Donor</span>
+            </Button>
+            <Button className="h-16 flex-col" variant="outline">
+              <AlertTriangle className="h-5 w-5 mb-1" />
+              <span className="text-sm">Follow Up Overdue</span>
+            </Button>
+            <Button className="h-16 flex-col" variant="outline">
+              <FileText className="h-5 w-5 mb-1" />
+              <span className="text-sm">Financial Reports</span>
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -53,7 +53,7 @@
 
 **Status**: ✅ APPROVED - Proceeding with implementation
 
-## 📅 Current Session: August 20, 2025 - 20:05
+e ## 📅 Current Session: August 20, 2025 - 20:05
 **Session ID**: BUILD-FIX-001
 **User Request**: Fix Vercel build failure due to TypeScript error: AccountSubType missing 'CONTRA_ASSET'
 
@@ -80,3 +80,122 @@
 ### 📋 Next Steps
 - Trigger a new build and confirm success
 - Optionally handle non-blocking warnings from Genkit/OpenTelemetry/handlebars in a separate task if needed
+
+---
+
+## 📅 Current Session: August 31, 2025 - 00:00 UTC
+**Session ID**: MCP-SUPABASE-SETUP-001
+**User Request**: Add Supabase MCP server via Claude CLI; fix CLI/node path error
+
+### 🎯 Task Breakdown
+- [ ] Log session and task breakdown in MyPlanning.md for Supabase MCP setup | Complexity: 🟢 Simple | ETA: 5 min
+- [ ] Diagnose Node/Claude CLI path issue causing "This: command not found" | Complexity: 🟡 Medium | ETA: 10-15 min
+- [ ] Uninstall rogue global npm "node" package if present | Complexity: 🟢 Simple | ETA: 2 min
+- [ ] Verify PATH uses Program Files Node and Claude works | Complexity: 🟢 Simple | ETA: 3 min
+- [ ] Add Supabase MCP server with PAT env via Claude CLI | Complexity: 🟡 Medium | ETA: 5-10 min
+- [ ] Validate MCP server visible in Claude tools list | Complexity: 🟢 Simple | ETA: 2 min
+- [ ] Update MyPlanning.md with results and close tasks | Complexity: 🟢 Simple | ETA: 5 min
+
+### 📊 Impact Assessment
+**Change Category**: 🟡 Medium (CLI/tooling configuration; no app code changes)
+**Files Affected**:
+- `MyPlanning.md` (documentation edits)
+**Risk Level**: Low
+**Approval Status**: ✅ Approved
+
+### 🚨 Issues & Resolutions (in-progress)
+**Issue**: Claude CLI command fails with `C:\Users\areeb\AppData\Roaming\npm/node_modules/node/bin/node: line 1: This: command not found`.
+**Hypothesis**: A deprecated global npm package `node` is shadowing the real Node.js executable.
+**Plan**: Detect and uninstall `npm -g node`, ensure PATH points to `C:\Program Files\nodejs\node.exe`, retry Claude MCP add.
+
+### 📋 Next Steps
+1. Diagnose and fix Node shim/PATH
+2. Run Claude MCP add command with PAT
+3. Validate tool appears via `claude mcp list`
+
+---
+
+## 📅 Current Session: January 21, 2025 - 14:45 UTC
+**Session ID**: ACADEMIC-FINANCIAL-DONOR-001
+**User Request**: Transform Academic Management module from education-focused to financial/fee-focused with donor-student sponsorship tracking. Remove Quran memorization progress, exam assessments, academic performance metrics. Focus on fee collection, payment status, enrollment numbers, donor-student relationships, and business KPIs.
+
+### 🎯 Task Breakdown
+- [x] **Task 1**: Update Academic Data Structure with Donor-Student Relationships (`src/lib/academic-data.ts`) | Complexity: 🟡 Medium | ETA: 30 min
+- [ ] **Task 2**: Update Academic Management Dashboard - Financial Focus (`src/app/dashboard/academic/page.tsx`) | Complexity: 🟡 Medium | ETA: 45 min
+- [ ] **Task 3**: Update Madrasa Business Dashboard - Remove Academic Progress (`src/app/dashboard/business/madrasa/page.tsx`) | Complexity: 🟡 Medium | ETA: 45 min  
+- [ ] **Task 4**: Add Donor-Student Sponsorship Tracking Components | Complexity: 🟡 Medium | ETA: 30 min
+- [ ] **Task 5**: Create Financial KPI Cards for Student Management | Complexity: 🟢 Simple | ETA: 20 min
+- [ ] **Task 6**: Test and Validate Financial Focus with Donor Tracking | Complexity: 🟢 Simple | ETA: 15 min
+
+### 📊 Impact Assessment
+**Change Category**: 🟡 Medium
+**Files Affected**:
+- `src/lib/academic-data.ts` (✅ COMPLETED - added donor-student relationships, sponsorship tracking)
+- `src/app/dashboard/academic/page.tsx` (major restructure - remove academic focus, add financial + donor focus)
+- `src/app/dashboard/business/madrasa/page.tsx` (remove Quran progress, add financial KPIs)
+- New components for donor-student tracking
+
+**Risk Level**: Medium
+**Approval Status**: ✅ Approved
+
+### 🎯 Key Requirements Identified
+**Financial Focus Areas:**
+- Fee collection status (paid/unpaid/overdue)
+- Student enrollment numbers and trends
+- Revenue tracking and projections
+- Payment method analysis
+- Outstanding balances tracking
+
+**Donor-Student Sponsorship Features:**
+- Donor profiles and contact information
+- Student-donor relationship mapping
+- Sponsorship payment tracking
+- Donor communication and reporting
+- Sponsored student progress reports for donors
+- Multiple donors per student support
+- Donor contribution history
+
+**Remove Academic Elements:**
+- ❌ Quran memorization progress charts
+- ❌ Exam assessments and scheduling
+- ❌ Academic performance metrics
+- ❌ Top academic performers lists
+- ❌ Educational progress tracking
+
+**Keep Business Elements:**
+- ✅ Total students enrolled
+- ✅ Fee collection amounts
+- ✅ Attendance (for billing purposes)
+- ✅ Active classes (capacity management)
+- ✅ Recent enrollments (business activity)
+- ✅ Financial trends and analytics
+
+### ✅ Completed Tasks
+- ✅ **Academic Data Structure**: Added Donor, StudentSponsorship interfaces with sample data - 15:00
+- ✅ **Student Interface**: Updated with paymentStatus, sponsorships, financialInfo fields - 15:05
+- ✅ **Fee Transactions**: Added donor integration with donorId and sponsorshipId fields - 15:10
+- ✅ **Financial KPIs**: Added comprehensive financial metrics interface and sample data - 15:15
+- ✅ **Academic Dashboard**: Transformed to financial-focused Fee Collection Management - 15:30
+- ✅ **Madrasa Dashboard**: Removed academic progress, added business/financial KPIs - 15:45
+- ✅ **Navigation Update**: Removed unnecessary academic sections, focused on Fee Collection - 15:50
+- ✅ **Donor-Student Components**: Created comprehensive sponsorship tracking components - 16:00
+- ✅ **Financial KPI Cards**: Built themed financial performance cards with insights - 16:05
+- ✅ **Integration**: Successfully integrated all components with consistent theming - 16:10
+
+### 🚨 Issues & Resolutions
+**Issue**: Current system lacks donor-student relationship tracking
+**Root Cause**: System was designed for direct fee payment, not sponsorship model
+**Resolution**: ✅ Added comprehensive donor management with student sponsorship relationships
+
+**Issue**: Academic dashboards show educational metrics instead of business metrics
+**Root Cause**: System designed for educational institution rather than business management
+**Resolution**: ⏳ In Progress - Transform dashboards to focus on financial KPIs and donor relationships
+
+### 📋 Next Steps
+1. ✅ Design donor-student relationship data structure
+2. ✅ Implement financial-focused academic dashboard
+3. ✅ Update Madrasa dashboard with business KPIs
+4. ✅ Add donor tracking and reporting features
+5. ✅ Test comprehensive financial and donor management system
+
+**Status**: ✅ COMPLETED - Successfully implemented comprehensive financial management and donor-student sponsorship tracking system with consistent theming

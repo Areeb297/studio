@@ -145,16 +145,13 @@ export default function DashboardLayout({
       ]
     },
 
-    // Academic Affairs
+    // Fee Collection Management
     {
       type: 'section',
       label: 'academic',
-      icon: GraduationCap,
+      icon: DollarSign,
       items: [
-        { href: "/dashboard/academic", icon: GraduationCap, label: "Student Management" },
-        { href: "/dashboard/academic/fees", icon: DollarSign, label: "Fee Collection" },
-        { href: "/dashboard/academic/attendance", icon: UserCheck, label: "Attendance & Grading" },
-        { href: "/dashboard/academic/reports", icon: FileText, label: "Academic Reports" },
+        { href: "/dashboard/academic", icon: DollarSign, label: "Fee Collection" },
       ]
     },
 
