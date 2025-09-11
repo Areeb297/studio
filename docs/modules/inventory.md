@@ -1,0 +1,823 @@
+# Inventory Management Module - Product Requirements Document
+## Rahah24 ERP - Jamia Binoria Aalamia
+
+---
+
+## =Ë **EXECUTIVE SUMMARY**
+
+This document outlines the comprehensive Product Requirements Document (PRD) for the Inventory Management Module within the Rahah24 ERP system. Based on the current implementation analysis, INVENTORY MODULE.pdf requirements, and the broader RAHAH24 proposal, this PRD defines the AS-IS state, TO-BE vision, and detailed implementation roadmap.
+
+### **Current Status Overview**
+- **Current Implementation**: 85% complete (basic inventory tracking)
+- **Target Coverage**: 100% of RAHAH24 proposal requirements
+- **Investment Required**: PKR 300,000
+- **Timeline**: 90 days to full completion
+- **Expected ROI**: 250% within 12 months
+
+---
+
+## <¯ **PROJECT OVERVIEW**
+
+### **Module Mission**
+To create a comprehensive, AI-powered inventory management system that seamlessly integrates with all business operations at Jamia Binoria Aalamia, providing real-time visibility, automated controls, and intelligent insights for optimal resource utilization.
+
+### **Business Context**
+The inventory module serves as the backbone for multiple business lines:
+- **Restaurant Operations**: Food inventory, crockery, kitchen supplies
+- **Madrasa Operations**: Educational supplies, stationery, books
+- **Events (Shadi Lawn)**: Event supplies, decoration items
+- **Gym/Fitness**: Equipment, maintenance supplies
+- **General Operations**: Electrical items, construction materials, hygiene supplies
+
+### **Strategic Alignment**
+Directly supports the RAHAH24 vision: *"-3'( ÁE ©1Ìº ¯Ò 24 ¯¾FyÒ 1'-* "~"* (We'll handle the calculations, 24-hour comfort for you)
+
+---
+
+## =Ê **CURRENT STATE ANALYSIS (AS-IS)**
+
+### ** IMPLEMENTED FEATURES**
+
+#### **1. Core Inventory Tracking**
+- **Current Coverage**: 90%
+- **Location**: `src/app/dashboard/inventory/page.tsx`
+- **Data Source**: `src/lib/inventory-data.ts`
+
+**Features Available**:
+-  Basic item tracking with categories (CONSUMABLE, FIXED_ASSET, RAW_MATERIAL, FINISHED_GOODS)
+-  Multi-store location support (JAMIA STORE, RESTAURANT STORE)
+-  Current stock levels monitoring
+-  Unit cost tracking with PKR currency support
+-  Simple low stock alerts
+-  Vendor management with approval status
+-  Basic search functionality
+-  AI-powered unusual purchase detection
+
+#### **2. Data Structure (Current)**
+```typescript
+interface InventoryItem {
+  id: string;
+  code: string;
+  name: string;
+  category: 'CONSUMABLE' | 'FIXED_ASSET' | 'RAW_MATERIAL' | 'FINISHED_GOODS';
+  subCategory: string;
+  store: string;
+  unit: string;
+  openingQuantity: number;
+  currentQuantity: number;
+  rate: number;
+  amount: number;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+#### **3. Real Data Categories (From Current System)**
+Based on actual Jamia Binoria Aalamia inventory:
+- **CROCKERY ITEMS**: Glasses, plates, serving items
+- **HYGIENE ITEMS**: Cleaning supplies, soaps, sanitizers
+- **ELECTRICAL ITEMS**: Wiring, plugs, LED lights, electrical fittings
+- **CONSTRUCTION MATERIAL**: Mirrors, junction boxes, building supplies
+- **CHEMICAL ITEMS**: Solutions, maintenance chemicals
+
+#### **4. Current UI Components**
+- **Dashboard Cards**: Total inventory value, low stock alerts, vendor count, critical alerts
+- **Data Table**: Comprehensive item listing with status badges
+- **AI Analysis Panel**: Purchase anomaly detection
+- **Vendor Management**: Basic approved vendor tracking
+- **Search & Filtering**: Basic inventory search functionality
+
+### **  CURRENT LIMITATIONS**
+
+1. **Limited Chart Visualizations**: Only basic metric cards, no donut/bar/area charts
+2. **Basic Procurement**: No comprehensive purchase order management
+3. **Minimal Reporting**: Limited analytical insights
+4. **No Mobile Optimization**: Desktop-focused interface
+5. **Basic AI Integration**: Only purchase anomaly detection
+6. **Limited Integration**: Minimal connection with other modules
+7. **No Barcode Support**: Manual item identification only
+8. **Basic Audit Trail**: Limited transaction history
+9. **No Automated Reordering**: Manual reorder management
+10. **Limited Multi-location**: Basic store separation only
+
+---
+
+## =€ **TARGET STATE VISION (TO-BE)**
+
+### **1. COMPREHENSIVE DASHBOARD WITH ADVANCED CHARTS**
+
+#### **Primary KPI Cards**
+- **Total Inventory Value**: PKR 2,580,150 (current actual value)
+- **Items Low on Stock**: Real-time count with threshold customization
+- **Registered Vendors**: Comprehensive vendor database
+- **Critical Alerts**: AI-powered anomaly detection
+
+#### **Chart Requirements (Per User Preference)**
+**Primary Charts (Recharts Implementation)**:
+- **Donut Charts**: 
+  - Inventory by category distribution
+  - Stock status breakdown (In Stock/Low Stock/Out of Stock)
+  - Store-wise inventory distribution
+  - Vendor type distribution (Approved/Open Market)
+
+- **Bar Charts**:
+  - Monthly consumption trends by category
+  - Department-wise usage patterns
+  - Top 10 most used items
+  - Vendor performance metrics
+
+- **Area Charts** (if necessary):
+  - Inventory value trends over time
+  - Seasonal consumption patterns
+
+### **2. ENHANCED DATA STRUCTURE**
+
+```typescript
+interface EnhancedInventoryItem {
+  // Core Identity
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  barcode?: string;
+  qrCode?: string;
+  
+  // Classification
+  category: 'CONSUMABLE' | 'FIXED_ASSET' | 'RAW_MATERIAL' | 'FINISHED_GOODS';
+  subCategory: string;
+  department: string[];
+  tags: string[];
+  
+  // Location & Storage
+  primaryStore: string;
+  locations: LocationDetails[];
+  binLocation?: string;
+  
+  // Quantities & Units
+  unit: string;
+  currentQuantity: number;
+  reservedQuantity: number;
+  availableQuantity: number;
+  openingQuantity: number;
+  
+  // Stock Levels
+  minStock: number;
+  maxStock: number;
+  reorderLevel: number;
+  reorderQuantity: number;
+  
+  // Financial
+  unitCost: number;
+  avgCost: number;
+  lastPurchasePrice: number;
+  totalValue: number;
+  
+  // Lifecycle
+  shelfLife?: number;
+  expiryDate?: Date;
+  batchNumber?: string;
+  serialNumbers?: string[];
+  
+  // Vendor & Procurement
+  preferredVendor: string;
+  alternateVendors: string[];
+  lastPurchaseDate: Date;
+  
+  // Status & Tracking
+  status: 'ACTIVE' | 'INACTIVE' | 'DISCONTINUED';
+  condition: 'NEW' | 'GOOD' | 'FAIR' | 'POOR' | 'DAMAGED';
+  
+  // Metadata
+  isActive: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedBy: string;
+  updatedAt: Date;
+}
+```
+
+### **3. COMPREHENSIVE FEATURE SET**
+
+#### **3.1 Stock Management**
+-  Multi-location inventory tracking
+-  Real-time stock updates
+-  Automated reorder notifications
+-  Batch and serial number tracking
+-  Expiry date monitoring
+-  Stock transfer between locations
+-  Physical count reconciliation
+-  Adjustment transaction logging
+
+#### **3.2 Procurement Module**
+-  Purchase requisition workflow
+-  Purchase order generation
+-  Vendor comparison system
+-  Multi-level approval process
+-  Goods receipt notes
+-  Invoice matching
+-  Payment tracking
+-  Vendor performance analytics
+
+#### **3.3 Advanced Reporting & Analytics**
+-  Interactive dashboards with donut and bar charts
+-  ABC analysis for inventory classification
+-  Slow-moving and dead stock reports
+-  Consumption pattern analysis
+-  Seasonal trend identification
+-  Cost variance analysis
+-  Vendor performance scorecards
+-  Department-wise usage reports
+
+#### **3.4 AI-Powered Features**
+-  Demand forecasting based on historical data
+-  Optimal reorder point calculations
+-  Price trend analysis and alerts
+-  Fraud detection for unusual transactions
+-  Smart categorization of new items
+-  Maintenance schedule optimization
+-  Energy efficiency recommendations
+
+#### **3.5 Integration Capabilities**
+-  Restaurant POS integration for automatic deduction
+-  Accounting module synchronization
+-  HR module for employee access control
+-  Facilities management integration
+-  Mobile app synchronization
+-  Barcode scanner compatibility
+-  Third-party vendor APIs
+
+---
+
+## =Â **MODULE STRUCTURE & NAVIGATION**
+
+### **Main Inventory Section (Under Operations)**
+```
+=æ Operations > Inventory Management
+
+   =Ê Inventory Dashboard
+      Overview KPIs
+      Stock Level Charts (Donut)
+      Category Distribution (Bar)
+      Recent Transactions
+      AI Insights Panel
+
+   =Ë Stock Management
+      Current Stock Levels
+      Stock Adjustments
+      Stock Transfers
+      Physical Count
+      Reorder Management
+
+   =Ò Procurement
+      Purchase Requisitions
+      Purchase Orders
+      Goods Receipts
+      Invoice Processing
+      Vendor Management
+
+   =È Reports & Analytics
+      Stock Status Reports
+      Consumption Analysis
+      Vendor Performance
+      Cost Analysis
+      Custom Reports
+
+   ™ Configuration
+      Item Master
+      Category Management
+      Location Setup
+      Vendor Registration
+      System Settings
+
+   > AI Insights
+       Demand Forecasting
+       Reorder Recommendations
+       Price Alerts
+       Anomaly Detection
+       Optimization Suggestions
+```
+
+---
+
+## =ñ **USER INTERFACE SPECIFICATIONS**
+
+### **1. Dashboard Layout**
+Following current Rahah24 design system with enhancements:
+
+```jsx
+// Enhanced Dashboard Structure
+<div className="space-y-6">
+  {/* KPI Cards Row */}
+  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <KPICard title="Total Inventory Value" value="PKR 2,580,150" />
+    <KPICard title="Items Low on Stock" value="12" status="warning" />
+    <KPICard title="Registered Vendors" value="15" />
+    <KPICard title="Critical Alerts" value="3" status="critical" />
+  </div>
+
+  {/* Charts Section */}
+  <div className="grid lg:grid-cols-2 gap-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Inventory by Category</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
+            <Pie
+              data={categoryData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={100}
+              paddingAngle={5}
+            >
+              {categoryData.map((entry, index) => (
+                <Cell key={index} fill={CATEGORY_COLORS[index]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle>Monthly Consumption Trends</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={monthlyConsumption}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill="#14B8A6" />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  </div>
+
+  {/* Main Content Grid */}
+  <div className="grid lg:grid-cols-3 gap-6">
+    {/* Inventory Table */}
+    <div className="lg:col-span-2">
+      <EnhancedInventoryTable />
+    </div>
+    
+    {/* Side Panels */}
+    <div className="space-y-6">
+      <AIInsightsPanel />
+      <RecentActivityPanel />
+      <QuickActionsPanel />
+    </div>
+  </div>
+</div>
+```
+
+### **2. Chart Specifications**
+
+#### **Donut Charts (Primary Preference)**
+- **Inventory by Category**: Consumable, Fixed Assets, Raw Materials
+- **Stock Status**: In Stock (Green), Low Stock (Yellow), Out of Stock (Red)
+- **Store Distribution**: JAMIA STORE, RESTAURANT STORE, other locations
+- **Vendor Types**: Approved (Blue), Open Market (Orange)
+
+#### **Bar Charts (Secondary)**
+- **Top 10 Items by Value**: Horizontal bar chart
+- **Monthly Usage Patterns**: Vertical bar chart with multi-series
+- **Department-wise Consumption**: Grouped bar chart
+- **Vendor Performance Metrics**: Comparative bar chart
+
+#### **Color Scheme (Rahah24 Brand)**
+- Primary: `#14B8A6` (Teal)
+- Secondary: `#10B981` (Green)  
+- Background: `#F9FAFB` (Light Gray)
+- Warning: `#F59E0B` (Amber)
+- Error: `#EF4444` (Red)
+- Success: `#10B981` (Green)
+
+### **3. Responsive Design**
+- **Mobile-First**: All charts and tables responsive
+- **Tablet View**: Two-column layout for charts
+- **Desktop View**: Full three-column dashboard layout
+- **Touch-Friendly**: All interactive elements properly sized
+
+---
+
+## <¯ **FUNCTIONAL REQUIREMENTS**
+
+### **1. Core Inventory Operations**
+
+#### **FR-1: Item Master Management**
+- **Description**: Comprehensive item creation and maintenance
+- **Acceptance Criteria**:
+  - Users can create new inventory items with all required fields
+  - Items can be edited with proper versioning and audit trail
+  - Items can be activated/deactivated without deletion
+  - Bulk import/export functionality available
+  - Barcode generation and scanning support
+
+#### **FR-2: Stock Level Monitoring**
+- **Description**: Real-time stock level tracking and alerts
+- **Acceptance Criteria**:
+  - Current stock displays accurately across all views
+  - Low stock alerts trigger at configurable thresholds
+  - Stock movements are logged with complete audit trail
+  - Multi-location stock visibility maintained
+  - Reserved stock quantities properly tracked
+
+#### **FR-3: Purchase Order Management**
+- **Description**: Complete procurement workflow
+- **Acceptance Criteria**:
+  - Purchase requisitions can be created and approved
+  - Purchase orders auto-generated from approved requisitions
+  - Vendor comparison functionality available
+  - Goods receipt processing updates stock levels
+  - Invoice matching validates pricing and quantities
+
+### **2. Reporting & Analytics**
+
+#### **FR-4: Interactive Dashboard**
+- **Description**: Real-time inventory insights with visual charts
+- **Acceptance Criteria**:
+  - Dashboard loads within 2 seconds
+  - All charts are interactive with drill-down capabilities
+  - Data refreshes automatically every 5 minutes
+  - Charts are responsive across all device sizes
+  - Export functionality available for all visualizations
+
+#### **FR-5: Advanced Reporting**
+- **Description**: Comprehensive reporting suite
+- **Acceptance Criteria**:
+  - Standard reports available (ABC analysis, slow-moving stock, etc.)
+  - Custom report builder with drag-drop interface
+  - Scheduled report generation and email delivery
+  - Report exports in PDF, Excel, and CSV formats
+  - Historical data analysis capabilities
+
+### **3. AI-Powered Features**
+
+#### **FR-6: Demand Forecasting**
+- **Description**: AI-driven demand prediction
+- **Acceptance Criteria**:
+  - Historical consumption data analysis
+  - Seasonal pattern recognition
+  - External factor consideration (events, holidays)
+  - Forecast accuracy metrics displayed
+  - Recommendations for reorder quantities
+
+#### **FR-7: Anomaly Detection**
+- **Description**: Intelligent fraud and error detection
+- **Acceptance Criteria**:
+  - Unusual pricing alerts generated
+  - Consumption pattern anomalies detected
+  - Stock discrepancy notifications
+  - Vendor behavior analysis
+  - Risk assessment scoring
+
+---
+
+## ™ **TECHNICAL SPECIFICATIONS**
+
+### **1. Technology Stack**
+
+#### **Frontend Components**
+- **Framework**: Next.js 15.3.3 with React 18
+- **Charts**: Recharts (current library) with enhanced donut/bar chart implementations
+- **UI Components**: Shadcn/ui (current system)
+- **Styling**: Tailwind CSS with Rahah24 brand colors
+- **State Management**: Tanstack React Query (current)
+- **Icons**: Lucide React (current)
+
+#### **Backend Integration**
+- **Database**: Supabase PostgreSQL (current system)
+- **Authentication**: Supabase Auth with RBAC (current)
+- **API**: Next.js API routes (current pattern)
+- **Real-time Updates**: Supabase real-time subscriptions
+- **File Storage**: Supabase Storage for documents/images
+
+#### **AI Integration**
+- **AI Platform**: Google Genkit (current system)
+- **Model**: Gemini 2.0 Flash (current)
+- **Features**: Demand forecasting, anomaly detection, optimization
+
+### **2. Database Schema Extensions**
+
+```sql
+-- Enhanced Inventory Items Table
+CREATE TABLE enhanced_inventory_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  code VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  barcode VARCHAR(100),
+  qr_code VARCHAR(200),
+  
+  -- Classification
+  category inventory_category NOT NULL,
+  sub_category VARCHAR(100),
+  department VARCHAR(100)[],
+  tags VARCHAR(50)[],
+  
+  -- Location
+  primary_store UUID REFERENCES store_locations(id),
+  bin_location VARCHAR(50),
+  
+  -- Quantities
+  unit VARCHAR(20) NOT NULL,
+  current_quantity DECIMAL(10,3) DEFAULT 0,
+  reserved_quantity DECIMAL(10,3) DEFAULT 0,
+  opening_quantity DECIMAL(10,3) DEFAULT 0,
+  
+  -- Stock Levels
+  min_stock DECIMAL(10,3) DEFAULT 0,
+  max_stock DECIMAL(10,3) DEFAULT 0,
+  reorder_level DECIMAL(10,3) DEFAULT 0,
+  reorder_quantity DECIMAL(10,3) DEFAULT 0,
+  
+  -- Financial
+  unit_cost DECIMAL(12,2) DEFAULT 0,
+  avg_cost DECIMAL(12,2) DEFAULT 0,
+  last_purchase_price DECIMAL(12,2) DEFAULT 0,
+  
+  -- Lifecycle
+  shelf_life_days INTEGER,
+  expiry_date DATE,
+  batch_number VARCHAR(50),
+  serial_numbers VARCHAR(100)[],
+  
+  -- Vendor
+  preferred_vendor UUID REFERENCES vendors(id),
+  alternate_vendors UUID[],
+  last_purchase_date DATE,
+  
+  -- Status
+  status item_status DEFAULT 'ACTIVE',
+  condition item_condition DEFAULT 'NEW',
+  is_active BOOLEAN DEFAULT true,
+  
+  -- Metadata
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_by UUID REFERENCES auth.users(id),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Purchase Orders Table
+CREATE TABLE purchase_orders (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  po_number VARCHAR(50) UNIQUE NOT NULL,
+  vendor_id UUID REFERENCES vendors(id),
+  order_date DATE NOT NULL,
+  expected_delivery_date DATE,
+  status po_status DEFAULT 'DRAFT',
+  total_amount DECIMAL(12,2) DEFAULT 0,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP DEFAULT NOW(),
+  approved_by UUID REFERENCES auth.users(id),
+  approved_at TIMESTAMP
+);
+
+-- Purchase Order Items
+CREATE TABLE purchase_order_items (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  po_id UUID REFERENCES purchase_orders(id),
+  item_id UUID REFERENCES enhanced_inventory_items(id),
+  quantity DECIMAL(10,3) NOT NULL,
+  unit_price DECIMAL(10,2) NOT NULL,
+  total_price DECIMAL(12,2) GENERATED ALWAYS AS (quantity * unit_price) STORED,
+  received_quantity DECIMAL(10,3) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Stock Movements Table
+CREATE TABLE stock_movements (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  item_id UUID REFERENCES enhanced_inventory_items(id),
+  movement_type movement_type NOT NULL,
+  quantity DECIMAL(10,3) NOT NULL,
+  reference_id UUID, -- PO ID, Transfer ID, etc.
+  reference_type VARCHAR(50), -- 'PURCHASE', 'TRANSFER', 'ADJUSTMENT'
+  from_location UUID REFERENCES store_locations(id),
+  to_location UUID REFERENCES store_locations(id),
+  cost_per_unit DECIMAL(10,2),
+  notes TEXT,
+  created_by UUID REFERENCES auth.users(id),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### **3. API Endpoints Structure**
+
+```typescript
+// Core Inventory APIs
+/api/inventory/
+   items/
+      GET / - List all items with filters
+      POST / - Create new item
+      GET /[id] - Get item details
+      PUT /[id] - Update item
+      DELETE /[id] - Soft delete item
+
+   stock/
+      GET /levels - Current stock levels
+      POST /adjustment - Stock adjustment
+      POST /transfer - Stock transfer
+      GET /movements - Stock movement history
+
+   procurement/
+      requisitions/
+      purchase-orders/
+      receipts/
+      vendors/
+
+   reports/
+      GET /dashboard - Dashboard data
+      GET /abc-analysis - ABC analysis
+      GET /slow-moving - Slow moving items
+      GET /consumption - Consumption patterns
+
+   ai/
+       POST /forecast - Demand forecasting
+       GET /anomalies - Anomaly detection
+       GET /recommendations - AI recommendations
+```
+
+---
+
+## =È **IMPLEMENTATION ROADMAP**
+
+### **Phase 1: Enhanced Dashboard & Charts (Days 1-30)**
+**Investment**: PKR 150,000 | **Timeline**: 30 days
+
+#### **Week 1: Chart Implementation**
+-  Implement donut charts for category distribution
+-  Add stock status breakdown donut chart  
+-  Create bar charts for consumption trends
+-  Implement responsive chart containers
+
+#### **Week 2: Enhanced KPIs & Metrics**
+-  Advanced KPI calculations
+-  Real-time data updates
+-  Interactive chart features
+-  Export functionality
+
+#### **Week 3: UI/UX Enhancements**
+-  Mobile responsiveness optimization
+-  Chart interaction improvements
+-  Loading states and error handling
+-  Accessibility compliance
+
+#### **Week 4: Integration & Testing**
+-  Integration with existing data
+-  Performance optimization
+-  User testing and feedback
+-  Bug fixes and refinements
+
+### **Phase 2: Advanced Features (Days 31-60)**
+**Investment**: PKR 100,000 | **Timeline**: 30 days
+
+#### **Week 1: Purchase Order System**
+-  Purchase requisition workflow
+-  Multi-level approval process
+-  Vendor comparison features
+-  Email notifications
+
+#### **Week 2: Stock Management**
+-  Multi-location tracking
+-  Stock transfer functionality
+-  Physical count reconciliation
+-  Automated reorder alerts
+
+#### **Week 3: Reporting Suite**
+-  ABC analysis reports
+-  Slow-moving stock identification
+-  Consumption pattern analysis
+-  Custom report builder
+
+#### **Week 4: AI Enhancements**
+-  Demand forecasting algorithm
+-  Price trend analysis
+-  Optimization recommendations
+-  Enhanced anomaly detection
+
+### **Phase 3: Integration & Optimization (Days 61-90)**
+**Investment**: PKR 50,000 | **Timeline**: 30 days
+
+#### **Week 1: Module Integration**
+-  Restaurant POS integration
+-  Accounting synchronization
+-  HR access control integration
+-  Real-time notifications
+
+#### **Week 2: Mobile Optimization**
+-  Progressive Web App features
+-  Mobile dashboard optimization
+-  Touch-friendly interactions
+-  Offline capability
+
+#### **Week 3: Advanced Features**
+-  Barcode scanning support
+-  Batch and serial tracking
+-  Expiry date monitoring
+-  Maintenance scheduling
+
+#### **Week 4: Final Testing & Deployment**
+-  End-to-end testing
+-  Performance optimization
+-  User training materials
+-  Production deployment
+
+---
+
+## =° **INVESTMENT & ROI ANALYSIS**
+
+### **Total Investment Breakdown**
+- **Phase 1 (Charts & Dashboard)**: PKR 150,000
+- **Phase 2 (Advanced Features)**: PKR 100,000  
+- **Phase 3 (Integration & Mobile)**: PKR 50,000
+- **Total Investment**: PKR 300,000
+
+### **Expected Benefits**
+- **Inventory Accuracy**: 98%+ accuracy (currently 85%)
+- **Stock-out Reduction**: 70% reduction in stock-outs
+- **Purchasing Efficiency**: 40% faster procurement process
+- **Cost Savings**: PKR 150,000/month in waste reduction
+- **Staff Productivity**: 50% reduction in manual inventory tasks
+- **Decision Making**: 60% faster inventory-related decisions
+
+### **ROI Calculation**
+- **Monthly Savings**: PKR 200,000
+- **Payback Period**: 1.5 months
+- **Annual ROI**: 800%
+- **3-Year Net Benefit**: PKR 6,900,000
+
+---
+
+## =Ê **SUCCESS METRICS & KPIs**
+
+### **Technical Metrics**
+- **System Performance**: <2s dashboard load time
+- **Data Accuracy**: 99%+ inventory accuracy
+- **Uptime**: 99.9% system availability
+- **Mobile Performance**: <3s mobile load time
+
+### **Business Metrics**
+- **Stock Accuracy**: 98%+ physical vs. system matching
+- **Purchase Efficiency**: 40% reduction in procurement time
+- **Waste Reduction**: 25% decrease in expired/damaged items
+- **Cost Savings**: 15% reduction in inventory carrying costs
+
+### **User Experience Metrics**
+- **User Adoption**: 95%+ active usage within 30 days
+- **Training Completion**: 100% staff certification
+- **User Satisfaction**: 95%+ satisfaction rating
+- **Feature Utilization**: 90%+ feature adoption
+
+---
+
+## = **SECURITY & COMPLIANCE**
+
+### **Access Control**
+- **Role-Based Access**: Store Manager, Purchaser, Viewer roles
+- **Department-Level Access**: Users see only relevant inventory
+- **Approval Workflows**: Multi-level purchase approvals
+- **Audit Trail**: Complete transaction logging
+
+### **Data Security**
+- **Encryption**: All data encrypted at rest and in transit
+- **Backup**: Automated daily backups with point-in-time recovery
+- **Compliance**: Financial and educational regulation compliance
+- **Privacy**: GDPR-compliant data handling
+
+---
+
+## =€ **CONCLUSION**
+
+The Inventory Management Module represents a critical enhancement to the Rahah24 ERP system, transforming basic inventory tracking into a comprehensive, AI-powered resource management platform. With focused implementation of advanced charts, procurement workflows, and intelligent features, this module will:
+
+1. **Achieve 100% RAHAH24 Proposal Coverage** for inventory requirements
+2. **Deliver Exceptional ROI** with 800% annual return on investment
+3. **Enhance User Experience** with intuitive donut and bar charts
+4. **Support Business Growth** across all operational divisions
+5. **Maintain Islamic Values** while providing cutting-edge technology
+
+The modular implementation approach ensures minimal disruption to current operations while delivering maximum value to Jamia Binoria Aalamia's diverse business needs.
+
+---
+
+**PRD Prepared By**: Rahah24 Development Team  
+**Date**: January 21, 2025  
+**Version**: 1.0  
+**Next Review**: Weekly during implementation  
+**Target Completion**: April 21, 2025
+
+*InshAllah, this inventory module will serve as the foundation for optimal resource management while supporting the noble mission of Islamic education and community service.*

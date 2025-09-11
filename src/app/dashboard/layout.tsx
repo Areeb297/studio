@@ -51,6 +51,7 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,7 @@ interface NavDivider {
 }
 
 type NavItemType = NavItem | NavSection | NavDivider;
+
 
 export default function DashboardLayout({
   children,
@@ -181,6 +183,7 @@ export default function DashboardLayout({
         { href: "/dashboard/procurement/requisitions", icon: FileText, label: "Purchase Requisitions" },
         { href: "/dashboard/procurement/purchase-orders", icon: ShoppingCart, label: "Purchase Orders" },
         { href: "/dashboard/procurement/vendors", icon: Users, label: "Vendor Management" },
+        { href: "/dashboard/vendor-approvals", icon: UserCheck, label: "Vendor Approvals" },
         { href: "/dashboard/procurement/analytics", icon: LineChart, label: "Procurement Analytics" },
         { href: "/dashboard/facilities", icon: Wrench, label: "Facilities Management" },
         { href: "/dashboard/utilities", icon: Zap, label: "Utilities Management" },
@@ -206,9 +209,9 @@ export default function DashboardLayout({
   ];
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background overflow-x-hidden">
-        <Sidebar>
+        <Sidebar collapsible="offcanvas">
           <SidebarHeader>
             <div className="flex items-center gap-3 p-2">
               <Logo />
@@ -260,7 +263,6 @@ export default function DashboardLayout({
                                   <SidebarMenuButton 
                                     isActive={pathname === subItem.href || pathname.startsWith(subItem.href + '/')}
                                     className="text-sm pl-6"
-                                    tooltip={subItem.label}
                                   >
                                     {React.createElement(subItem.icon, { className: "h-3 w-3" })}
                                     <span>{subItem.label}</span>
@@ -278,7 +280,7 @@ export default function DashboardLayout({
                   return (
                     <SidebarMenuItem key={navItem.href}>
                       <Link href={navItem.href} className="w-full">
-                        <SidebarMenuButton isActive={pathname === navItem.href} tooltip={navItem.label}>
+                        <SidebarMenuButton isActive={pathname === navItem.href}>
                           {React.createElement(navItem.icon, { className: "h-4 w-4" })}
                           <span>{navItem.label}</span>
                         </SidebarMenuButton>
@@ -305,7 +307,7 @@ export default function DashboardLayout({
         <div className="flex flex-col flex-1 w-full min-w-0">
           <header className="sticky top-0 z-10 flex items-center h-16 px-4 border-b shrink-0 bg-background/80 backdrop-blur-lg sm:px-6">
             <div className="flex items-center gap-4">
-              <SidebarTrigger className="md:hidden"/>
+              <SidebarTrigger />
             </div>
             <div className="flex items-center gap-2 ml-auto">
               <ThemeToggle />

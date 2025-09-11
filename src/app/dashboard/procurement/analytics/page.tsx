@@ -25,6 +25,20 @@ import {
   PieChart,
   Download
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
 interface AnalyticsMetric {
   label: string;
@@ -198,26 +212,62 @@ export default function ProcurementAnalyticsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="h-80 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
-              <div className="text-center">
-                <BarChart3 className="h-16 w-16 text-blue-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-muted-foreground">Spending Trend Chart</h3>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Interactive chart showing {selectedMetric} trends over {selectedPeriod}
-                </p>
-                <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                  {mockChartData.slice(-3).map((data, index) => (
-                    <div key={index} className="text-center">
-                      <div className="font-medium">{data.month}</div>
-                      <div className="text-blue-600">
-                        {selectedMetric === 'spending' && `PKR ${(data.spending / 1000).toFixed(0)}K`}
-                        {selectedMetric === 'orders' && data.orders}
-                        {selectedMetric === 'savings' && `PKR ${(data.savings / 1000).toFixed(0)}K`}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={mockChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="spendingGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <linearGradient id="savingsGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                    formatter={(value, name) => {
+                      if (name === 'spending') return [`PKR ${(value as number / 1000).toFixed(0)}K`, 'Spending'];
+                      if (name === 'savings') return [`PKR ${(value as number / 1000).toFixed(0)}K`, 'Savings'];
+                      if (name === 'orders') return [value, 'Orders'];
+                      return [value, name];
+                    }}
+                  />
+                  <Legend />
+                  <Bar 
+                    yAxisId="left" 
+                    dataKey="spending" 
+                    fill="url(#spendingGradient)"
+                    name="Spending"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    yAxisId="left" 
+                    dataKey="savings" 
+                    fill="url(#savingsGradient)"
+                    name="Savings"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Line 
+                    yAxisId="right"
+                    type="monotone" 
+                    dataKey="orders" 
+                    stroke="#F59E0B" 
+                    strokeWidth={3}
+                    name="Orders"
+                    dot={{ r: 6, fill: '#F59E0B' }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
@@ -230,18 +280,40 @@ export default function ProcurementAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {/* Donut Chart Placeholder */}
-              <div className="h-48 flex items-center justify-center">
-                <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-8 border-gray-200 dark:border-gray-700"></div>
-                  <div className="absolute inset-0 w-32 h-32 rounded-full border-8 border-t-blue-500 border-r-green-500 border-b-purple-500 border-l-orange-500"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-lg font-bold">PKR 2.4M</div>
-                      <div className="text-xs text-muted-foreground">Total</div>
-                    </div>
-                  </div>
-                </div>
+              {/* Recharts Donut Chart */}
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsPieChart>
+                    <Pie
+                      data={mockCategorySpend}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      dataKey="amount"
+                      startAngle={90}
+                      endAngle={450}
+                    >
+                      {mockCategorySpend.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={
+                          entry.category === 'Kitchen Equipment' ? '#3B82F6' :
+                          entry.category === 'Office Supplies' ? '#10B981' :
+                          entry.category === 'IT Equipment' ? '#8B5CF6' :
+                          entry.category === 'Maintenance' ? '#F59E0B' :
+                          '#6B7280'
+                        } />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value, name) => [`PKR ${((value as number) / 1000).toFixed(0)}K`, 'Amount']}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
               </div>
 
               {/* Category Legend */}
@@ -249,7 +321,16 @@ export default function ProcurementAnalyticsPage() {
                 {mockCategorySpend.map((category, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${category.color}`}></div>
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ 
+                          backgroundColor: category.category === 'Kitchen Equipment' ? '#3B82F6' :
+                          category.category === 'Office Supplies' ? '#10B981' :
+                          category.category === 'IT Equipment' ? '#8B5CF6' :
+                          category.category === 'Maintenance' ? '#F59E0B' :
+                          '#6B7280'
+                        }}
+                      ></div>
                       <span className="text-sm font-medium">{category.category}</span>
                     </div>
                     <div className="text-right">

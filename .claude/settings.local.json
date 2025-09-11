@@ -16,7 +16,10 @@
       "Bash(npx:*)",
       "mcp__rube__RUBE_SEARCH_TOOLS",
       "mcp__rube__RUBE_CREATE_PLAN",
-      "mcp__rube__RUBE_MULTI_EXECUTE_TOOL"
+      "mcp__rube__RUBE_MULTI_EXECUTE_TOOL",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(netstat:*)"
     ],
     "deny": []
   }

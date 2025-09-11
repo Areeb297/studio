@@ -24,21 +24,76 @@ import {
   Activity,
   Zap,
   UserCheck,
-  Home
+  Home,
+  Percent,
+  Globe,
+  Workflow
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  LineChart,
+  Line,
+  ComposedChart,
+  ReferenceLine
+} from 'recharts';
 
 export default function ExecutiveDashboard() {
-  // Executive-level KPIs across all business lines
+  // Enhanced chart data for executive dashboard
+  const monthlyRevenueData = [
+    { month: 'Jan', restaurant: 9.5, academic: 6.2, events: 2.8, fitness: 1.8, total: 20.3, target: 22.0 },
+    { month: 'Feb', restaurant: 10.2, academic: 7.1, events: 3.2, fitness: 2.1, total: 22.6, target: 22.5 },
+    { month: 'Mar', restaurant: 11.8, academic: 7.8, events: 3.9, fitness: 2.3, total: 25.8, target: 23.0 },
+    { month: 'Apr', restaurant: 12.1, academic: 8.2, events: 4.1, fitness: 2.4, total: 26.8, target: 23.5 },
+    { month: 'May', restaurant: 13.2, academic: 8.9, events: 4.8, fitness: 2.6, total: 29.5, target: 24.0 },
+    { month: 'Jun', restaurant: 12.6, academic: 9.0, events: 4.5, fitness: 2.4, total: 28.5, target: 24.5 }
+  ];
+
+  const businessLineDistribution = [
+    { name: 'Restaurant & Catering', value: 44.2, revenue: 12.6, color: '#14B8A6' },
+    { name: 'Academic Operations', value: 31.6, revenue: 9.0, color: '#3B82F6' },
+    { name: 'Events & Ceremonies', value: 15.8, revenue: 4.5, color: '#8B5CF6' },
+    { name: 'Fitness & Wellness', value: 8.4, revenue: 2.4, color: '#F59E0B' }
+  ];
+
+  const operationalMetrics = [
+    { metric: 'Student Enrollment', current: 2847, target: 3000, percentage: 95, growth: 12.3 },
+    { metric: 'Property Occupancy', current: 89.4, target: 95, percentage: 94, growth: 4.2 },
+    { metric: 'Staff Efficiency', current: 94.8, target: 96, percentage: 99, growth: 2.1 },
+    { metric: 'Customer Satisfaction', current: 4.7, target: 4.8, percentage: 98, growth: 8.5 },
+    { metric: 'Revenue Target', current: 28.5, target: 30.0, percentage: 95, growth: 15.2 }
+  ];
+
+  const weeklyTrends = [
+    { week: 'Week 1', revenue: 6.8, expenses: 4.2, profit: 2.6, efficiency: 89 },
+    { week: 'Week 2', revenue: 7.2, expenses: 4.1, profit: 3.1, efficiency: 92 },
+    { week: 'Week 3', revenue: 7.8, expenses: 4.5, profit: 3.3, efficiency: 94 },
+    { week: 'Week 4', revenue: 6.9, expenses: 4.0, profit: 2.9, efficiency: 91 }
+  ];
+
+  // Enhanced KPI Cards with mini charts
   const executiveKPIs = [
     {
       title: "Total Revenue",
-      value: "₨ 28,456,890",
+      value: "₨ 28.5M",
       change: "+15.2%",
       period: "vs last month",
       icon: DollarSign,
       trend: "up",
       color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950/20"
+      bgColor: "bg-green-50 dark:bg-green-950/20",
+      chartData: monthlyRevenueData.slice(-4).map(d => ({ value: d.total }))
     },
     {
       title: "Active Students",
@@ -48,7 +103,8 @@ export default function ExecutiveDashboard() {
       icon: GraduationCap,
       trend: "up",
       color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-950/20"
+      bgColor: "bg-blue-50 dark:bg-blue-950/20",
+      chartData: [{ value: 2720 }, { value: 2765 }, { value: 2810 }, { value: 2847 }]
     },
     {
       title: "Property Occupancy",
@@ -58,7 +114,8 @@ export default function ExecutiveDashboard() {
       icon: Home,
       trend: "up",
       color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950/20"
+      bgColor: "bg-purple-50 dark:bg-purple-950/20",
+      chartData: [{ value: 85.2 }, { value: 87.1 }, { value: 88.7 }, { value: 89.4 }]
     },
     {
       title: "Overall Efficiency",
@@ -68,7 +125,8 @@ export default function ExecutiveDashboard() {
       icon: Target,
       trend: "up",
       color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-950/20"
+      bgColor: "bg-orange-50 dark:bg-orange-950/20",
+      chartData: [{ value: 92.7 }, { value: 93.2 }, { value: 93.8 }, { value: 94.8 }]
     }
   ];
 
@@ -131,7 +189,7 @@ export default function ExecutiveDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold font-headline">Executive Dashboard</h1>
-          <p className="text-muted-foreground">Comprehensive overview of all business operations</p>
+          <p className="text-muted-foreground">Comprehensive overview of all business operations with advanced analytics</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">
@@ -145,12 +203,12 @@ export default function ExecutiveDashboard() {
         </div>
       </div>
 
-      {/* Executive KPIs */}
+      {/* Enhanced Executive KPIs with Mini Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {executiveKPIs.map((kpi, index) => (
           <Card key={index} className="relative overflow-hidden">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">{kpi.title}</p>
                   <p className="text-2xl font-bold">{kpi.value}</p>
@@ -170,55 +228,189 @@ export default function ExecutiveDashboard() {
                   <kpi.icon className={`h-6 w-6 ${kpi.color}`} />
                 </div>
               </div>
+              
+              {/* Mini Chart */}
+              <div className="h-12">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={kpi.chartData}>
+                    <defs>
+                      <linearGradient id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={kpi.color.includes('green') ? '#10B981' : kpi.color.includes('blue') ? '#3B82F6' : kpi.color.includes('purple') ? '#8B5CF6' : '#F59E0B'} stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor={kpi.color.includes('green') ? '#10B981' : kpi.color.includes('blue') ? '#3B82F6' : kpi.color.includes('purple') ? '#8B5CF6' : '#F59E0B'} stopOpacity={0.0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={kpi.color.includes('green') ? '#10B981' : kpi.color.includes('blue') ? '#3B82F6' : kpi.color.includes('purple') ? '#8B5CF6' : '#F59E0B'}
+                      strokeWidth={2}
+                      fill={`url(#gradient-${index})`}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Sophisticated Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Business Line Performance */}
+        {/* Revenue Trends Area Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5 text-primary" />
-              Business Line Performance
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Revenue Performance & Trends
             </CardTitle>
             <CardDescription>
-              Revenue and key metrics across all business operations
+              Monthly revenue with target comparison and business line breakdown
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={monthlyRevenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                  <YAxis axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend />
+                  <Bar dataKey="restaurant" stackId="a" fill="#14B8A6" name="Restaurant" />
+                  <Bar dataKey="academic" stackId="a" fill="#3B82F6" name="Academic" />
+                  <Bar dataKey="events" stackId="a" fill="#8B5CF6" name="Events" />
+                  <Bar dataKey="fitness" stackId="a" fill="#F59E0B" name="Fitness" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="target" 
+                    stroke="#EF4444" 
+                    strokeWidth={3}
+                    strokeDasharray="5 5"
+                    name="Target"
+                    dot={{ r: 6 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="total" 
+                    stroke="#059669" 
+                    strokeWidth={3}
+                    name="Total Revenue"
+                    dot={{ r: 6 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Business Line Distribution Donut Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Percent className="h-5 w-5 text-primary" />
+              Business Line Distribution
+            </CardTitle>
+            <CardDescription>
+              Revenue contribution by business line
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={businessLineDistribution}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={450}
+                  >
+                    {businessLineDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name) => [`${value}%`, name]}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    formatter={(value, entry) => (
+                      <span style={{ color: entry.color }}>
+                        {value} ({entry.payload.value}%)
+                      </span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 space-y-2">
+              {businessLineDistribution.map((item, index) => (
+                <div key={index} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="font-medium">{item.name}</span>
+                  </div>
+                  <span className="font-semibold">₨ {item.revenue}M</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Operational Metrics Bar+Trend Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" />
+              Operational Excellence Metrics
+            </CardTitle>
+            <CardDescription>
+              Key performance indicators with target achievement
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {businessLines.map((business, index) => (
-                <div key={index} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <business.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">{business.name}</h4>
-                        <p className="text-sm text-muted-foreground">₨ {business.revenue.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant={
-                        business.status === 'excellent' ? 'default' :
-                        business.status === 'good' ? 'secondary' : 'outline'
-                      }>
-                        {business.status}
+              {operationalMetrics.map((metric, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{metric.metric}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{metric.current}{metric.metric.includes('Satisfaction') ? '/5' : metric.metric.includes('%') || metric.metric.includes('Occupancy') || metric.metric.includes('Efficiency') ? '%' : metric.metric.includes('Revenue') ? 'M' : ''}</span>
+                      <Badge variant={metric.percentage >= 95 ? 'default' : metric.percentage >= 90 ? 'secondary' : 'outline'}>
+                        {metric.percentage}%
                       </Badge>
-                      <p className="text-sm text-green-600 font-medium mt-1">+{business.growth}%</p>
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    {Object.entries(business.metrics).map(([key, value]) => (
-                      <div key={key} className="text-center">
-                        <p className="font-medium">{value}</p>
-                        <p className="text-muted-foreground capitalize">{key}</p>
-                      </div>
-                    ))}
+                  <Progress value={metric.percentage} className="h-2" />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Target: {metric.target}{metric.metric.includes('Satisfaction') ? '/5' : metric.metric.includes('%') || metric.metric.includes('Occupancy') || metric.metric.includes('Efficiency') ? '%' : metric.metric.includes('Revenue') ? 'M' : ''}</span>
+                    <span className="text-green-600">+{metric.growth}% growth</span>
                   </div>
                 </div>
               ))}
@@ -226,44 +418,103 @@ export default function ExecutiveDashboard() {
           </CardContent>
         </Card>
 
-        {/* Alerts & Notifications */}
+        {/* Weekly Performance Trends */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-primary" />
-              Alerts & Actions
+              <Activity className="h-5 w-5 text-primary" />
+              Weekly Performance Analysis
             </CardTitle>
             <CardDescription>
-              Items requiring executive attention
+              Revenue, expenses, and efficiency trends
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {alerts.map((alert, index) => (
-                <div key={index} className={`p-3 rounded-lg border-l-4 ${
-                  alert.type === 'error' ? 'border-l-red-500 bg-red-50 dark:bg-red-950/20' :
-                  alert.type === 'warning' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20' :
-                  alert.type === 'success' ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' :
-                  'border-l-blue-500 bg-blue-50 dark:bg-blue-950/20'
-                }`}>
-                  <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-sm">{alert.message}</p>
-                    <Badge variant={
-                      alert.priority === 'high' ? 'destructive' :
-                      alert.priority === 'medium' ? 'default' : 'secondary'
-                    } className="text-xs">
-                      {alert.priority}
-                    </Badge>
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-6 text-xs">
-                    {alert.action}
-                  </Button>
-                </div>
-              ))}
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={weeklyTrends} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="week" axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="revenue" fill="#14B8A6" name="Revenue (M)" />
+                  <Bar yAxisId="left" dataKey="expenses" fill="#EF4444" name="Expenses (M)" />
+                  <Area 
+                    yAxisId="left"
+                    type="monotone" 
+                    dataKey="profit" 
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    fill="url(#profitGradient)"
+                    name="Profit (M)"
+                  />
+                  <Line 
+                    yAxisId="right"
+                    type="monotone" 
+                    dataKey="efficiency" 
+                    stroke="#8B5CF6" 
+                    strokeWidth={3}
+                    name="Efficiency %"
+                    dot={{ r: 4 }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Alerts & Notifications */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-primary" />
+            Executive Alerts & Priority Actions
+          </CardTitle>
+          <CardDescription>
+            Items requiring immediate executive attention
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {alerts.map((alert, index) => (
+              <div key={index} className={`p-4 rounded-lg border-l-4 ${
+                alert.type === 'error' ? 'border-l-red-500 bg-red-50 dark:bg-red-950/20' :
+                alert.type === 'warning' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20' :
+                alert.type === 'success' ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' :
+                'border-l-blue-500 bg-blue-50 dark:bg-blue-950/20'
+              }`}>
+                <div className="flex justify-between items-start mb-2">
+                  <p className="font-medium">{alert.message}</p>
+                  <Badge variant={
+                    alert.priority === 'high' ? 'destructive' :
+                    alert.priority === 'medium' ? 'default' : 'secondary'
+                  }>
+                    {alert.priority}
+                  </Badge>
+                </div>
+                <Button variant="ghost" size="sm" className="h-8">
+                  {alert.action}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Activities */}
       <Card>
@@ -316,6 +567,42 @@ export default function ExecutiveDashboard() {
         </CardContent>
       </Card>
 
+      {/* Pending Approvals Alert */}
+      <Card className="border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-950/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserCheck className="h-5 w-5 text-orange-600" />
+            Pending Vendor Approvals
+          </CardTitle>
+          <CardDescription>
+            Vendor applications requiring executive attention
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-2xl font-bold text-orange-600">12 Pending</div>
+              <div className="text-sm text-muted-foreground">5 High Priority • 7 Standard</div>
+              <div className="text-xs text-muted-foreground mt-1">Average wait: 8.3 days</div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button asChild className="bg-orange-600 hover:bg-orange-700">
+                <a href="/dashboard/vendor-approvals">
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Review Approvals
+                </a>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="/dashboard/vendor-approvals/workflow">
+                  <Workflow className="h-4 w-4 mr-2" />
+                  View Workflow
+                </a>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Quick Actions */}
       <Card>
         <CardHeader>
@@ -338,9 +625,11 @@ export default function ExecutiveDashboard() {
               <Users className="h-6 w-6" />
               <span className="text-xs">Staff Management</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <Target className="h-6 w-6" />
-              <span className="text-xs">Set Targets</span>
+            <Button variant="outline" className="h-20 flex-col gap-2" asChild>
+              <a href="/dashboard/vendor-approvals">
+                <UserCheck className="h-6 w-6" />
+                <span className="text-xs">Vendor Approvals</span>
+              </a>
             </Button>
             <Button variant="outline" className="h-20 flex-col gap-2">
               <AlertCircle className="h-6 w-6" />
