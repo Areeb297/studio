@@ -595,7 +595,7 @@ export default function UtilitiesManagementPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" fontSize={12} />
                   <YAxis 
-                    formatter={(value: number) => `PKR ${(value/1000).toFixed(0)}K`}
+                    tickFormatter={(value: number) => `PKR ${(value/1000).toFixed(0)}K`}
                     fontSize={12}
                   />
                   <Tooltip 

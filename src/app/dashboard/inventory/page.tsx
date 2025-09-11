@@ -290,7 +290,7 @@ export default function EnhancedInventoryPage() {
                   fontSize={12}
                 />
                 <YAxis 
-                  formatter={(value: number) => `PKR ${(value/1000).toFixed(0)}K`}
+                  tickFormatter={(value: number) => `PKR ${(value/1000).toFixed(0)}K`}
                   fontSize={12}
                 />
                 <Tooltip 
@@ -527,7 +527,7 @@ export default function EnhancedInventoryPage() {
                 stroke="#64748B" 
                 strokeDasharray="8 8"
                 strokeWidth={2}
-                label={{ value: "Avg Budget", position: "topRight", fontSize: 11 }}
+                label={{ value: "Avg Budget", position: "insideTopRight", fontSize: 11 }}
               />
               
               {/* Stacked Bars for Categories */}

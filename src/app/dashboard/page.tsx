@@ -357,7 +357,7 @@ export default function ExecutiveDashboard() {
                     height={36}
                     formatter={(value, entry) => (
                       <span style={{ color: entry.color }}>
-                        {value} ({entry.payload.value}%)
+                        {value} ({entry.payload?.value || 0}%)
                       </span>
                     )}
                   />

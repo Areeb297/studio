@@ -274,7 +274,7 @@ export default function VendorApprovalsPage() {
                     height={36}
                     formatter={(value, entry) => (
                       <span style={{ color: entry.color }}>
-                        {value} ({entry.payload.count})
+                        {value}
                       </span>
                     )}
                   />
