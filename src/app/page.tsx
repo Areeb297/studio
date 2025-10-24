@@ -9,12 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/logo';
 import { ThemeToggle } from "@/components/theme-toggle";
-import { 
-  LayoutDashboard, 
-  Users, 
-  TrendingUp, 
-  Shield, 
-  Zap, 
+import {
+  LayoutDashboard,
+  Users,
+  TrendingUp,
+  Shield,
+  Zap,
   Heart,
   Building2,
   GraduationCap,
@@ -28,7 +28,8 @@ import {
   ChefHat,
   Hotel,
   Target,
-  Eye
+  Eye,
+  MessageSquare
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -100,52 +101,6 @@ export default function LandingPage() {
     { number: "100%", label: "Cloud-Based Solution" }
   ];
 
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "$49",
-      period: "per month",
-      description: "Perfect for small restaurants and cafes",
-      features: [
-        "POS System & Inventory",
-        "Basic Financial Reports",
-        "Up to 3 Users",
-        "Email Support",
-        "Basic Analytics"
-      ],
-      popular: false
-    },
-    {
-      name: "Professional",
-      price: "$149",
-      period: "per month",
-      description: "Ideal for mid-size businesses and institutions",
-      features: [
-        "Full ERP Suite",
-        "Advanced Analytics & AI",
-        "Up to 25 Users",
-        "Priority Support",
-        "Custom Integrations",
-        "Multi-location Support"
-      ],
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      price: "$399",
-      period: "per month",
-      description: "Complete solution for large organizations",
-      features: [
-        "Unlimited Modules",
-        "Advanced AI & Forecasting",
-        "Unlimited Users",
-        "24/7 Dedicated Support",
-        "Custom Development",
-        "White-label Solutions"
-      ],
-      popular: false
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
@@ -420,7 +375,7 @@ export default function LandingPage() {
                         <span className="text-sm text-muted-foreground">Daily Revenue</span>
                         <DollarSign className="h-4 w-4 text-primary" />
                       </div>
-                      <div className="text-2xl font-bold text-primary">$18,750</div>
+                      <div className="text-2xl font-bold text-primary">PKR 5,625,000</div>
                       <div className="text-xs text-green-600">+15.2% from yesterday</div>
                     </div>
                   </Card>
@@ -442,7 +397,7 @@ export default function LandingPage() {
                         <span className="text-sm text-muted-foreground">Avg Order Value</span>
                         <Users className="h-4 w-4 text-purple-500" />
                       </div>
-                      <div className="text-2xl font-bold text-purple-600">$548</div>
+                      <div className="text-2xl font-bold text-purple-600">PKR 16,440</div>
                       <div className="text-xs text-green-600">+12.1% vs last week</div>
                     </div>
                   </Card>
@@ -592,80 +547,102 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section className="py-20 bg-secondary/20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 mb-16">
+          <div className="text-center space-y-4 mb-12">
             <Badge variant="outline" className="inline-flex items-center space-x-1">
               <DollarSign className="h-3 w-3" />
-              <span>Transparent Pricing</span>
+              <span>Pricing Information</span>
             </Badge>
             <h2 className="text-3xl lg:text-4xl font-bold font-headline">
-              Choose Your Perfect Plan
+              Flexible Solutions Tailored to Your Needs
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Flexible pricing plans designed to grow with your business, from startups to enterprise organizations
+              Every business is unique. Our pricing is customized based on your specific requirements, scale, and modules needed.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative p-8 border-2 transition-all duration-300 hover:shadow-xl ${
-                plan.popular 
-                  ? 'border-primary bg-primary/5 shadow-lg scale-105' 
-                  : 'border-border hover:border-primary/30'
-              }`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-                
-                <CardHeader className="space-y-4 pb-8">
-                  <div className="text-center space-y-2">
-                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <div className="space-y-1">
-                      <div className="flex items-baseline justify-center space-x-1">
-                        <span className="text-4xl font-bold text-primary">{plan.price}</span>
-                        <span className="text-muted-foreground">{plan.period}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{plan.description}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-6">
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center space-x-3">
-                        <div className="flex-shrink-0">
-                          <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Check className="w-3 h-3 text-primary" />
-                          </div>
-                        </div>
-                        <span className="text-sm text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button 
-                    className={`w-full h-11 font-medium ${
-                      plan.popular 
-                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
-                        : 'bg-secondary hover:bg-secondary/80 text-secondary-foreground'
-                    }`}
-                  >
-                    Get Started
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card className="max-w-3xl mx-auto p-12 border-2 border-primary/20 bg-card/80 backdrop-blur-sm shadow-2xl">
+            <CardHeader className="space-y-6 pb-8 text-center">
+              <div className="flex justify-center">
+                <div className="p-4 rounded-full bg-primary/10">
+                  <MessageSquare className="h-12 w-12 text-primary" />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <CardTitle className="text-3xl font-bold font-headline">
+                  Get a Personalized Quote
+                </CardTitle>
+                <CardDescription className="text-lg">
+                  Contact our sales team to discuss your requirements and receive a custom pricing proposal tailored to your organization.
+                </CardDescription>
+              </div>
+            </CardHeader>
 
-          <div className="text-center mt-12">
-            <p className="text-muted-foreground mb-4">Need a custom solution for your organization?</p>
-            <Button variant="outline" size="lg">
-              Contact Sales Team
-            </Button>
+            <CardContent className="space-y-8">
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-8 border border-primary/20">
+                <div className="text-center space-y-6">
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2 text-primary">Contact Sales</h3>
+                    <p className="text-base text-muted-foreground mb-6">
+                      For pricing information, please contact us at:
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <a
+                      href="mailto:sales@rahah24.com"
+                      className="inline-flex items-center justify-center space-x-3 px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold text-lg transition-all hover:shadow-lg"
+                    >
+                      <MessageSquare className="h-5 w-5" />
+                      <span>sales@rahah24.com</span>
+                    </a>
+
+                    <p className="text-sm text-muted-foreground">
+                      Our team typically responds within 24 hours
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6 pt-6">
+                <div className="text-center space-y-2">
+                  <div className="p-3 rounded-lg bg-primary/10 w-fit mx-auto">
+                    <Check className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-semibold">Custom Modules</h4>
+                  <p className="text-sm text-muted-foreground">Choose only what you need</p>
+                </div>
+                <div className="text-center space-y-2">
+                  <div className="p-3 rounded-lg bg-primary/10 w-fit mx-auto">
+                    <Check className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-semibold">Flexible Scaling</h4>
+                  <p className="text-sm text-muted-foreground">Grow at your own pace</p>
+                </div>
+                <div className="text-center space-y-2">
+                  <div className="p-3 rounded-lg bg-primary/10 w-fit mx-auto">
+                    <Check className="h-6 w-6 text-primary" />
+                  </div>
+                  <h4 className="font-semibold">Transparent Costs</h4>
+                  <p className="text-sm text-muted-foreground">No hidden fees</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="text-center mt-12 space-y-4">
+            <p className="text-muted-foreground">
+              Interested in learning more about our solutions?
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button size="lg" variant="outline" onClick={() => document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                <LayoutDashboard className="mr-2 h-5 w-5" />
+                Try Demo Version
+              </Button>
+              <Button size="lg" variant="outline">
+                <Globe className="mr-2 h-5 w-5" />
+                Schedule Consultation
+              </Button>
+            </div>
           </div>
         </div>
       </section>

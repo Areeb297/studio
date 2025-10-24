@@ -38,6 +38,14 @@ import {
   UserCog,
   Clock,
   Award,
+  Receipt,
+  UtensilsCrossed,
+  Calculator,
+  Truck,
+  PackageCheck,
+  AlertCircle,
+  HandCoins,
+  Calendar,
 } from "lucide-react";
 
 import {
@@ -122,6 +130,9 @@ export default function DashboardLayout({
       defaultExpanded: true,
       items: [
         { href: "/dashboard/business/restaurant", icon: ChefHat, label: "Restaurant & Catering" },
+        { href: "/dashboard/business/restaurant/pos", icon: Receipt, label: "POS System" },
+        { href: "/dashboard/business/restaurant/menu", icon: UtensilsCrossed, label: "Menu Management" },
+        { href: "/dashboard/business/restaurant/recipe-costing", icon: Calculator, label: "Recipe Costing" },
         { href: "/dashboard/business/madrasa", icon: GraduationCap, label: "Academic (Madrasa)" },
         { href: "/dashboard/business/shadi-lawn", icon: CalendarDays, label: "Events (Shadi Lawn)" },
         { href: "/dashboard/business/gym-time", icon: Heart, label: "Fitness (Gym Time)" },
@@ -142,18 +153,19 @@ export default function DashboardLayout({
         { href: "/dashboard/finance/accounts-payable", icon: TrendingUp, label: "Accounts Payable" },
         { href: "/dashboard/finance/bank-reconciliation", icon: Shield, label: "Bank Reconciliation" },
         { href: "/dashboard/finance/reports", icon: FileText, label: "Financial Reports" },
-        { href: "/dashboard/donations", icon: Heart, label: "Donations & Zakat" },
         { href: "/dashboard/sales", icon: ShoppingCart, label: "Sales Management" },
       ]
     },
 
-    // Fee Collection Management
+    // Academic Affairs & Fee Collection
     {
       type: 'section',
-      label: 'academic',
-      icon: DollarSign,
+      label: 'academic_affairs',
+      icon: GraduationCap,
       items: [
         { href: "/dashboard/academic", icon: DollarSign, label: "Fee Collection" },
+        { href: "/dashboard/academic/students", icon: Users, label: "Student Registration" },
+        { href: "/dashboard/academic/sponsorship", icon: HandCoins, label: "Donor-Student Sponsorship" },
       ]
     },
 
@@ -172,22 +184,35 @@ export default function DashboardLayout({
       ]
     },
 
-    // Operations
+    // Inventory & Procurement
     {
       type: 'section',
-      label: 'operations',
+      label: 'inventory_procurement',
       icon: Package,
       items: [
-        { href: "/dashboard/inventory", icon: Warehouse, label: "Inventory Management" },
-        { href: "/dashboard/procurement", icon: ShoppingBag, label: "Procurement Dashboard" },
+        { href: "/dashboard/inventory", icon: Warehouse, label: "Inventory Dashboard" },
+        { href: "/dashboard/inventory/stock-levels", icon: TrendingUp, label: "Stock Level Controls" },
         { href: "/dashboard/procurement/requisitions", icon: FileText, label: "Purchase Requisitions" },
         { href: "/dashboard/procurement/purchase-orders", icon: ShoppingCart, label: "Purchase Orders" },
+        { href: "/dashboard/procurement/grn", icon: PackageCheck, label: "Goods Receipt Notes" },
         { href: "/dashboard/procurement/vendors", icon: Users, label: "Vendor Management" },
         { href: "/dashboard/vendor-approvals", icon: UserCheck, label: "Vendor Approvals" },
         { href: "/dashboard/procurement/analytics", icon: LineChart, label: "Procurement Analytics" },
+        { href: "/dashboard/inventory/department-requisitions", icon: ClipboardList, label: "Department Requisitions" },
+        { href: "/dashboard/inventory/expiry-warranty", icon: AlertCircle, label: "Expiry & Warranty Tracking" },
+      ]
+    },
+
+    // Facilities & Operations
+    {
+      type: 'section',
+      label: 'facilities_operations',
+      icon: Wrench,
+      items: [
         { href: "/dashboard/facilities", icon: Wrench, label: "Facilities Management" },
         { href: "/dashboard/utilities", icon: Zap, label: "Utilities Management" },
-        { href: "/dashboard/rent", icon: Home, label: "Rent & Properties" },
+        { href: "/dashboard/rent", icon: Home, label: "Rental & Asset Income" },
+        { href: "/dashboard/facilities/maintenance", icon: Truck, label: "Maintenance Management" },
       ]
     },
 
@@ -199,7 +224,8 @@ export default function DashboardLayout({
       items: [
         { href: "/dashboard/qurbani", icon: Heart, label: "Qurbani Management" },
         { href: "/dashboard/donations", icon: Heart, label: "Donation Campaigns" },
-        { href: "/dashboard/events", icon: CalendarDays, label: "Islamic Events" },
+        { href: "/dashboard/donations/zakat", icon: HandCoins, label: "Zakat Management" },
+        { href: "/dashboard/events", icon: Calendar, label: "Islamic Events Calendar" },
         { href: "/dashboard/feedback", icon: MessageSquare, label: "Community Feedback" },
       ]
     },
@@ -245,7 +271,13 @@ export default function DashboardLayout({
                           >
                             <div className="flex items-center gap-2">
                               {React.createElement(section.icon, { className: "h-4 w-4" })}
-                              <span className="capitalize">{section.label === 'hr' ? 'Human Resources' : section.label.replace('_', ' ')}</span>
+                              <span className="capitalize">
+                                {section.label === 'hr' ? 'Human Resources'
+                                  : section.label === 'academic_affairs' ? 'Academic Affairs'
+                                  : section.label === 'inventory_procurement' ? 'Inventory & Procurement'
+                                  : section.label === 'facilities_operations' ? 'Facilities & Operations'
+                                  : section.label.replace(/_/g, ' ')}
+                              </span>
                             </div>
                             {isExpanded ? (
                               <ChevronDown className="h-3 w-3" />

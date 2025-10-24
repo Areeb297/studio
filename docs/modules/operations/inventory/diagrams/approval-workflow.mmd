@@ -1,0 +1,165 @@
+%% 3-Level Approval Workflow System
+%% Rahah24 ERP - Inventory Management System
+%% Last Updated: October 25, 2025
+
+flowchart TD
+    START[Document Submitted<br/>PR, PO, Variance, etc]
+
+    START --> ANALYZE[Analyze Document:<br/>- Total Amount<br/>- Price Variance %<br/>- Document Type]
+
+    ANALYZE --> DETERMINE{Determine<br/>Approval Requirements}
+
+    %% LEVEL 1 ROUTING
+    DETERMINE -->|Amount < PKR 50,000<br/>AND Variance ≤ 5%| L1_ROUTE[Route to Level 1]
+    L1_ROUTE --> L1_NOTIFY[Notify L1 Approver<br/>Email + In-App Alert]
+    L1_NOTIFY --> L1_REVIEW[L1 Approver Reviews:<br/>- Budget availability<br/>- Business justification<br/>- Item necessity]
+
+    L1_REVIEW --> L1_DECISION{L1 Decision}
+    L1_DECISION -->|Approve| L1_APPROVE[L1 Approves<br/>Document]
+    L1_DECISION -->|Reject| L1_REJECT[L1 Rejects<br/>Reason Required]
+    L1_DECISION -->|Request Info| L1_INFO[Request Additional<br/>Information]
+
+    L1_INFO --> REQUESTER_RESPONSE[Requester Provides<br/>Additional Info]
+    REQUESTER_RESPONSE --> L1_REVIEW
+
+    L1_APPROVE --> LOG_L1[Log Approval:<br/>- Timestamp<br/>- Approver ID<br/>- Comments]
+    LOG_L1 --> UPDATE_STATUS_L1[Update Document Status<br/>Status: APPROVED]
+    UPDATE_STATUS_L1 --> NOTIFY_SUCCESS_L1[Notify Requester<br/>Approval Granted]
+    NOTIFY_SUCCESS_L1 --> NEXT_STEP_L1[Proceed to Next Step<br/>PR → PO or PO → Vendor]
+
+    L1_REJECT --> LOG_REJECT_L1[Log Rejection:<br/>- Timestamp<br/>- Reason<br/>- Comments]
+    LOG_REJECT_L1 --> UPDATE_STATUS_REJ_L1[Update Document Status<br/>Status: REJECTED]
+    UPDATE_STATUS_REJ_L1 --> NOTIFY_REJECT_L1[Notify Requester<br/>Rejection Reason]
+    NOTIFY_REJECT_L1 --> END_REJECT[End: Document Rejected]
+
+    %% LEVEL 2 ROUTING
+    DETERMINE -->|Amount PKR 50,001-200,000<br/>OR Variance 5-10%| L2_ROUTE[Route to Level 2]
+    L2_ROUTE --> L2_NOTIFY[Notify L2 Approver<br/>Email + In-App Alert<br/>+ SMS for Urgent]
+    L2_NOTIFY --> L2_REVIEW[L2 Approver Reviews:<br/>- Budget impact<br/>- Price variance justification<br/>- Strategic alignment<br/>- Vendor performance]
+
+    L2_REVIEW --> L2_DECISION{L2 Decision}
+    L2_DECISION -->|Approve| L2_APPROVE[L2 Approves<br/>Document]
+    L2_DECISION -->|Reject| L2_REJECT[L2 Rejects<br/>Detailed Reason Required]
+    L2_DECISION -->|Escalate| L2_ESCALATE[Escalate to L3<br/>For Executive Review]
+    L2_DECISION -->|Request Info| L2_INFO[Request Additional<br/>Information/Quotes]
+
+    L2_INFO --> REQUESTER_RESPONSE_L2[Requester Provides<br/>Additional Info/Quotes]
+    REQUESTER_RESPONSE_L2 --> L2_REVIEW
+
+    L2_APPROVE --> LOG_L2[Log Approval:<br/>- Timestamp<br/>- Approver ID<br/>- Variance notes<br/>- Comments]
+    LOG_L2 --> UPDATE_STATUS_L2[Update Document Status<br/>Status: APPROVED]
+    UPDATE_STATUS_L2 --> NOTIFY_SUCCESS_L2[Notify Requester<br/>Approval Granted]
+    NOTIFY_SUCCESS_L2 --> NEXT_STEP_L2[Proceed to Next Step<br/>PR → PO or PO → Vendor]
+
+    L2_REJECT --> LOG_REJECT_L2[Log Rejection:<br/>- Timestamp<br/>- Detailed reason<br/>- Alternative recommendations]
+    LOG_REJECT_L2 --> UPDATE_STATUS_REJ_L2[Update Document Status<br/>Status: REJECTED]
+    UPDATE_STATUS_REJ_L2 --> NOTIFY_REJECT_L2[Notify Requester<br/>Rejection with Guidance]
+    NOTIFY_REJECT_L2 --> END_REJECT
+
+    L2_ESCALATE --> L3_ROUTE
+
+    %% LEVEL 3 ROUTING
+    DETERMINE -->|Amount > PKR 200,000<br/>OR Variance > 10%<br/>OR Theft Report<br/>OR Capital Purchase| L3_ROUTE[Route to Level 3]
+    L3_ROUTE --> L3_NOTIFY[Notify L3 Approver<br/>Email + In-App Alert<br/>+ SMS + Phone Call for Critical]
+    L3_NOTIFY --> L3_REVIEW[L3 Approver Reviews:<br/>- Executive budget impact<br/>- Strategic importance<br/>- ROI analysis<br/>- Risk assessment<br/>- Compliance check]
+
+    L3_REVIEW --> L3_DECISION{L3 Decision}
+    L3_DECISION -->|Approve| L3_APPROVE[L3 Approves<br/>Document<br/>Final Authority]
+    L3_DECISION -->|Reject| L3_REJECT[L3 Rejects<br/>Executive Reason Required]
+    L3_DECISION -->|Defer| L3_DEFER[Defer Decision<br/>Board Review Required]
+    L3_DECISION -->|Request Presentation| L3_PRESENTATION[Request Formal<br/>Presentation/Proposal]
+
+    L3_PRESENTATION --> PREPARE_PRESENTATION[Requester Prepares<br/>Detailed Presentation<br/>with ROI Analysis]
+    PREPARE_PRESENTATION --> L3_REVIEW
+
+    L3_APPROVE --> LOG_L3[Log Approval:<br/>- Timestamp<br/>- Executive approver<br/>- Strategic notes<br/>- Budget allocation]
+    LOG_L3 --> UPDATE_STATUS_L3[Update Document Status<br/>Status: APPROVED<br/>Executive Approved]
+    UPDATE_STATUS_L3 --> NOTIFY_SUCCESS_L3[Notify All Stakeholders<br/>Approval Granted]
+    NOTIFY_SUCCESS_L3 --> NEXT_STEP_L3[Proceed to Next Step<br/>High-priority Processing]
+
+    L3_REJECT --> LOG_REJECT_L3[Log Rejection:<br/>- Timestamp<br/>- Executive reason<br/>- Strategic alternatives]
+    LOG_REJECT_L3 --> UPDATE_STATUS_REJ_L3[Update Document Status<br/>Status: REJECTED<br/>Executive Decision]
+    UPDATE_STATUS_REJ_L3 --> NOTIFY_REJECT_L3[Notify All Stakeholders<br/>Executive Rejection]
+    NOTIFY_REJECT_L3 --> END_REJECT
+
+    L3_DEFER --> BOARD_REVIEW[Schedule Board Review<br/>Agenda Item Created]
+    BOARD_REVIEW --> BOARD_DECISION{Board Decision}
+    BOARD_DECISION -->|Approve| L3_APPROVE
+    BOARD_DECISION -->|Reject| L3_REJECT
+
+    %% SPECIAL CASES
+    DETERMINE -->|Theft Report| THEFT_ROUTE[Always Route to L3<br/>Mandatory Executive Review]
+    THEFT_ROUTE --> L3_ROUTE
+
+    DETERMINE -->|Capital Purchase| CAPITAL_ROUTE[Always Route to L3<br/>Asset Acquisition Review]
+    CAPITAL_ROUTE --> L3_ROUTE
+
+    DETERMINE -->|Emergency Purchase| EMERGENCY_ROUTE[Parallel L1 + L2 + L3<br/>Expedited Review]
+    EMERGENCY_ROUTE --> EMERGENCY_PROCESS[All Approvers Notified<br/>First to Approve Proceeds]
+    EMERGENCY_PROCESS --> EMERGENCY_DECISION{First Approver<br/>with Authority}
+    EMERGENCY_DECISION --> L3_APPROVE
+
+    %% TIMEOUT HANDLING
+    L1_NOTIFY --> TIMEOUT_L1{Response<br/>within 24h?}
+    TIMEOUT_L1 -->|No Response| ESCALATE_L1[Auto-Escalate to L2<br/>Email + Alert to L1 Manager]
+    TIMEOUT_L1 -->|Response Received| L1_REVIEW
+    ESCALATE_L1 --> L2_ROUTE
+
+    L2_NOTIFY --> TIMEOUT_L2{Response<br/>within 48h?}
+    TIMEOUT_L2 -->|No Response| ESCALATE_L2[Auto-Escalate to L3<br/>Email + Alert to Executive]
+    TIMEOUT_L2 -->|Response Received| L2_REVIEW
+    ESCALATE_L2 --> L3_ROUTE
+
+    L3_NOTIFY --> TIMEOUT_L3{Response<br/>within 72h?}
+    TIMEOUT_L3 -->|No Response| CRITICAL_ALERT[Critical Alert<br/>CEO Notification]
+    TIMEOUT_L3 -->|Response Received| L3_REVIEW
+    CRITICAL_ALERT --> L3_REVIEW
+
+    %% PARALLEL APPROVAL (for specific scenarios)
+    DETERMINE -->|Multi-Department<br/>Impact| PARALLEL_ROUTE[Parallel Approval Required]
+    PARALLEL_ROUTE --> DEPT_1[Department 1<br/>Head Approval]
+    PARALLEL_ROUTE --> DEPT_2[Department 2<br/>Head Approval]
+    PARALLEL_ROUTE --> DEPT_3[Department 3<br/>Head Approval]
+
+    DEPT_1 --> ALL_DEPT{All Departments<br/>Approved?}
+    DEPT_2 --> ALL_DEPT
+    DEPT_3 --> ALL_DEPT
+
+    ALL_DEPT -->|Yes| PROCEED_AMOUNT[Proceed to<br/>Amount-based Routing]
+    ALL_DEPT -->|Any Rejection| END_REJECT
+    PROCEED_AMOUNT --> DETERMINE
+
+    %% SUCCESS PATHS
+    NEXT_STEP_L1 --> TRACK_METRICS[Track Approval Metrics:<br/>- Approval time<br/>- Approver performance<br/>- Document velocity]
+    NEXT_STEP_L2 --> TRACK_METRICS
+    NEXT_STEP_L3 --> TRACK_METRICS
+
+    TRACK_METRICS --> UPDATE_DASHBOARD[Update Approval<br/>Dashboard KPIs]
+    UPDATE_DASHBOARD --> END_SUCCESS[End: Document Approved ✓<br/>Ready for Processing]
+
+    %% AUDIT TRAIL
+    LOG_L1 --> AUDIT_LOG[Append to Audit Trail]
+    LOG_L2 --> AUDIT_LOG
+    LOG_L3 --> AUDIT_LOG
+    LOG_REJECT_L1 --> AUDIT_LOG
+    LOG_REJECT_L2 --> AUDIT_LOG
+    LOG_REJECT_L3 --> AUDIT_LOG
+
+    AUDIT_LOG --> COMPLIANCE[Compliance Check:<br/>- Regulatory requirements<br/>- Internal policies<br/>- Segregation of duties]
+
+    style START fill:#e1f5e1
+    style L1_APPROVE fill:#c8e6c9
+    style L2_APPROVE fill:#c8e6c9
+    style L3_APPROVE fill:#c8e6c9
+    style END_SUCCESS fill:#4caf50,color:#fff
+    style L1_REJECT fill:#ffcdd2
+    style L2_REJECT fill:#ffcdd2
+    style L3_REJECT fill:#ffcdd2
+    style END_REJECT fill:#f44336,color:#fff
+    style L1_REVIEW fill:#fff3e0
+    style L2_REVIEW fill:#ffe0b2
+    style L3_REVIEW fill:#ffccbc
+    style EMERGENCY_PROCESS fill:#ff9800,color:#fff
+    style CRITICAL_ALERT fill:#d32f2f,color:#fff
+    style AUDIT_LOG fill:#e3f2fd
+    style COMPLIANCE fill:#e3f2fd

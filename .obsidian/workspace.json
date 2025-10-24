@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/AUTHENTICATION_SETUP.md",
+                "file": "RAHAH24-COVERAGE-ANALYSIS.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "AUTHENTICATION_SETUP"
+              "title": "RAHAH24-COVERAGE-ANALYSIS"
             }
           }
         ]
@@ -170,5 +170,36 @@
     }
   },
   "active": "385d5aa418d4ce49",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "docs/modules/operations/inventory/DATABASE_DESIGN.md",
+    "docs/modules/operations/inventory/diagrams/stock-movement-flow.mmd",
+    "docs/phase-1-development/TRANSITION_TO_PRODUCTION.md",
+    "docs/modules/operations/inventory/diagrams/approval-workflow.mmd",
+    "docs/GETTING_STARTED.md",
+    "docs/modules/operations/inventory/diagrams/purchase-workflow.mmd",
+    "docs/modules/operations/inventory/diagrams/entity-relationship-diagram.mmd",
+    "docs/architecture/API_DESIGN.md",
+    "frontend/README.md",
+    "backend/README.md",
+    "docs/modules/operations/inventory/ARCHITECTURE.md",
+    "backend/requirements.txt",
+    "frontend/frontend.md",
+    "backend/backend.md",
+    "docs/architecture/PROJECT_STRUCTURE.md",
+    "frontend",
+    "backend",
+    "docs/modules/operations/inventory/TDD.md",
+    "docs/modules/operations/inventory/TDD.md.tmp.5032.1761343747287",
+    "docs/modules/operations/inventory/SCOPE.md",
+    "CLAUDE.md.tmp.5032.1761343097442",
+    "docs/client-presentations/rahah24-comprehensive-overview.md",
+    "docs/phase-1-development/bugs.md",
+    "docs/phase-1-development/tasks.md",
+    "docs/AUTHENTICATION_SETUP.md",
+    "docs/modules/operations/inventory/README.md",
+    "docs/modules/operations/inventory/LEGACY_NOTES.md",
+    "docs/modules/operations/inventory/WORKFLOWS.md",
+    "docs/modules/operations/inventory/INVENTORY_DEVELOPMENT_PLAN.md",
+    "docs/modules/operations/inventory/Inventory_Management_System_Proposal_15_10_25.pdf"
+  ]
 }

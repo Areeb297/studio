@@ -1,0 +1,740 @@
+%% Inventory Management System - Entity Relationship Diagram
+%% Rahah24 ERP - Complete Database Schema
+%% Last Updated: October 25, 2025
+%% Total Tables: 32
+
+erDiagram
+    %% ========================================
+    %% CORE INVENTORY TABLES
+    %% ========================================
+
+    inventory_categories ||--o{ inventory_items : "categorizes"
+    inventory_categories {
+        uuid id PK
+        varchar code UK "Unique category code"
+        varchar name "Category name"
+        text description
+        uuid parent_category_id FK "For subcategories"
+        boolean is_active
+        integer sort_order
+        jsonb metadata
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    inventory_items ||--o{ stock_movements : "tracks"
+    inventory_items ||--o{ item_batches : "contains"
+    inventory_items ||--o{ purchase_order_items : "ordered_in"
+    inventory_items ||--o{ requisition_items : "requested_in"
+    inventory_items ||--o{ recipe_ingredients : "used_in"
+    inventory_items {
+        uuid id PK
+        varchar item_code UK "CONCROCKERY-0004/0009"
+        varchar name "LASSI GLASS"
+        text description
+        uuid category_id FK
+        varchar unit_of_measure "PCS, KG, LTR"
+        decimal current_stock "Available quantity"
+        decimal reserved_stock "Reserved for orders"
+        decimal available_stock "Generated: current - reserved"
+        decimal minimum_stock "Min threshold"
+        decimal maximum_stock "Max threshold"
+        decimal reorder_level "Reorder point"
+        decimal reorder_quantity "Qty to reorder"
+        decimal unit_cost "Current cost"
+        decimal average_cost "Weighted average"
+        decimal last_purchase_price
+        decimal total_value "Generated: stock * avg_cost"
+        uuid primary_location_id FK
+        varchar storage_location_code "ZONE-AISLE-RACK-BIN"
+        boolean has_expiry
+        integer shelf_life_days
+        boolean has_batch
+        boolean has_serial
+        enum stock_status "IN_STOCK, LOW_STOCK, etc"
+        boolean is_perishable
+        boolean is_consumable
+        boolean is_asset
+        varchar barcode
+        varchar sku
+        varchar hsn_code "Tax classification"
+        decimal gst_rate
+        jsonb metadata
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by FK
+        uuid updated_by FK
+    }
+
+    item_batches ||--o{ stock_movements : "tracked_in"
+    item_batches {
+        uuid id PK
+        uuid item_id FK
+        varchar batch_number UK
+        date manufacturing_date
+        date expiry_date
+        decimal quantity_received
+        decimal quantity_remaining
+        decimal unit_cost
+        varchar supplier_batch_number
+        uuid vendor_id FK
+        uuid grn_id FK
+        enum status "ACTIVE, EXPIRED, DISPOSED"
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    item_serials {
+        uuid id PK
+        uuid item_id FK
+        uuid batch_id FK
+        varchar serial_number UK
+        date warranty_start_date
+        date warranty_end_date
+        integer warranty_months
+        enum status "IN_STOCK, ISSUED, DAMAGED"
+        uuid current_location_id FK
+        uuid assigned_to FK "User or department"
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    storage_locations ||--o{ storage_locations : "parent_child"
+    storage_locations ||--o{ inventory_items : "stores"
+    storage_locations {
+        uuid id PK
+        varchar code UK "ZONE-A, A-AISLE-1, etc"
+        varchar name
+        enum type "ZONE, AISLE, RACK, BIN"
+        uuid parent_location_id FK "Hierarchical"
+        varchar full_path "A-AISLE1-RACK2-BIN5"
+        decimal capacity "Max units"
+        decimal occupied "Current units"
+        decimal available "Generated: capacity - occupied"
+        boolean is_temperature_controlled
+        decimal temperature_min
+        decimal temperature_max
+        boolean is_active
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% ========================================
+    %% STOCK MOVEMENT TABLES
+    %% ========================================
+
+    stock_movements ||--o{ stock_movement_items : "contains"
+    stock_movements {
+        uuid id PK
+        varchar movement_number UK "SM-2025-00001"
+        enum movement_type "PURCHASE, TRANSFER, ADJUSTMENT, ISSUE, RETURN, COUNT"
+        date movement_date
+        uuid from_location_id FK
+        uuid to_location_id FK
+        uuid department_id FK
+        uuid reference_id "GRN, PO, PR, etc ID"
+        varchar reference_type "GRN, PO, PR, ISSUE"
+        enum status "DRAFT, PENDING, APPROVED, POSTED, CANCELLED"
+        text reason
+        text notes
+        uuid approved_by FK
+        timestamp approved_at
+        uuid posted_by FK
+        timestamp posted_at
+        uuid created_by FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    stock_movement_items {
+        uuid id PK
+        uuid movement_id FK
+        uuid item_id FK
+        uuid batch_id FK
+        decimal quantity
+        decimal unit_cost
+        decimal total_cost
+        uuid from_bin_id FK
+        uuid to_bin_id FK
+        text notes
+    }
+
+    %% ========================================
+    %% VENDOR MANAGEMENT TABLES
+    %% ========================================
+
+    vendors ||--o{ purchase_orders : "supplies"
+    vendors ||--o{ vendor_contacts : "has"
+    vendors ||--o{ vendor_performance : "rated_by"
+    vendors {
+        uuid id PK
+        varchar vendor_code UK "VEN-0001"
+        varchar company_name
+        varchar contact_person
+        varchar phone
+        varchar email
+        varchar mobile
+        text address
+        varchar city
+        varchar state
+        varchar country
+        varchar postal_code
+        varchar tax_id "NTN, STRN"
+        varchar gst_number
+        enum payment_terms "CASH, CREDIT, BANK_TRANSFER"
+        integer credit_days
+        decimal credit_limit
+        decimal late_fee_percentage
+        enum vendor_type "OPEN_MARKET, CREDIT, CASH"
+        enum status "ACTIVE, PENDING_APPROVAL, SUSPENDED, BLACKLISTED"
+        decimal performance_rating "1-5 scale"
+        integer on_time_delivery_count
+        integer total_delivery_count
+        decimal on_time_percentage "Generated"
+        varchar bank_name
+        varchar bank_account_number
+        varchar bank_branch
+        varchar ifsc_code
+        boolean is_approved
+        uuid approved_by FK
+        timestamp approved_at
+        text approval_notes
+        jsonb metadata
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by FK
+    }
+
+    vendor_contacts {
+        uuid id PK
+        uuid vendor_id FK
+        varchar name
+        varchar designation
+        varchar email
+        varchar phone
+        varchar mobile
+        boolean is_primary
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    vendor_performance {
+        uuid id PK
+        uuid vendor_id FK
+        date evaluation_date
+        integer quality_rating "1-5"
+        integer delivery_rating "1-5"
+        integer price_rating "1-5"
+        integer service_rating "1-5"
+        decimal overall_rating "Average"
+        text comments
+        uuid evaluated_by FK
+        timestamp created_at
+    }
+
+    %% ========================================
+    %% PURCHASE & PROCUREMENT TABLES
+    %% ========================================
+
+    purchase_requisitions ||--o{ purchase_orders : "converts_to"
+    purchase_requisitions ||--o{ requisition_items : "contains"
+    purchase_requisitions ||--o{ approval_workflows : "requires"
+    purchase_requisitions {
+        uuid id PK
+        varchar pr_number UK "PR-2025-00001"
+        date pr_date
+        uuid department_id FK
+        uuid requested_by FK
+        enum pr_type "REGULAR, URGENT, CAPITAL"
+        enum priority "LOW, MEDIUM, HIGH, URGENT"
+        date required_date
+        text justification
+        enum status "DRAFT, PENDING_L1, PENDING_L2, PENDING_L3, APPROVED, REJECTED, CONVERTED"
+        decimal total_amount
+        uuid current_approver_id FK
+        integer approval_level "1, 2, or 3"
+        text rejection_reason
+        uuid converted_to_po_id FK
+        timestamp converted_at
+        jsonb metadata
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by FK
+    }
+
+    requisition_items {
+        uuid id PK
+        uuid pr_id FK
+        uuid item_id FK
+        decimal quantity_requested
+        varchar unit_of_measure
+        decimal estimated_unit_price
+        decimal estimated_total
+        text specification
+        text notes
+    }
+
+    purchase_orders ||--o{ purchase_order_items : "contains"
+    purchase_orders ||--o{ goods_receipt_notes : "received_via"
+    purchase_orders ||--o{ approval_workflows : "requires"
+    purchase_orders {
+        uuid id PK
+        varchar po_number UK "PO-2025-00001"
+        date po_date
+        uuid vendor_id FK
+        uuid pr_id FK "Source requisition"
+        date delivery_date
+        varchar delivery_address
+        enum payment_terms "CASH, CREDIT, BANK_TRANSFER"
+        integer credit_days
+        decimal subtotal
+        decimal tax_amount
+        decimal discount_amount
+        decimal shipping_charges
+        decimal total_amount
+        enum status "DRAFT, PENDING_L1, PENDING_L2, PENDING_L3, APPROVED, SENT, PARTIALLY_RECEIVED, RECEIVED, CLOSED, CANCELLED"
+        decimal price_variance_percentage
+        boolean variance_approved
+        uuid variance_approved_by FK
+        timestamp variance_approved_at
+        integer approval_level "1, 2, or 3"
+        uuid current_approver_id FK
+        text terms_and_conditions
+        text notes
+        timestamp sent_to_vendor_at
+        jsonb metadata
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by FK
+    }
+
+    purchase_order_items {
+        uuid id PK
+        uuid po_id FK
+        uuid item_id FK
+        uuid pr_item_id FK "Link to requisition"
+        decimal quantity_ordered
+        varchar unit_of_measure
+        decimal unit_price
+        decimal tax_rate
+        decimal tax_amount
+        decimal discount_percentage
+        decimal discount_amount
+        decimal line_total
+        decimal last_purchase_price "For variance calc"
+        decimal price_variance_percentage "Generated"
+        text specification
+        text notes
+    }
+
+    goods_receipt_notes ||--o{ grn_items : "contains"
+    goods_receipt_notes {
+        uuid id PK
+        varchar grn_number UK "GRN-2025-00001"
+        date grn_date
+        uuid po_id FK
+        uuid vendor_id FK
+        varchar vendor_invoice_number
+        date vendor_invoice_date
+        uuid received_by FK
+        uuid inspected_by FK
+        enum inspection_status "PENDING, PASSED, FAILED, PARTIAL"
+        text inspection_notes
+        uuid storage_location_id FK
+        enum status "DRAFT, INSPECTED, POSTED, CANCELLED"
+        decimal total_accepted_value
+        decimal total_rejected_value
+        text rejection_reason
+        uuid posted_by FK
+        timestamp posted_at
+        jsonb metadata
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    grn_items {
+        uuid id PK
+        uuid grn_id FK
+        uuid po_item_id FK
+        uuid item_id FK
+        uuid batch_id FK "Created batch"
+        decimal quantity_ordered
+        decimal quantity_received
+        decimal quantity_accepted
+        decimal quantity_rejected
+        decimal unit_price
+        decimal tax_amount
+        decimal line_total
+        enum quality_status "ACCEPTED, REJECTED, HOLD"
+        text quality_notes
+        text rejection_reason
+    }
+
+    %% ========================================
+    %% DEPARTMENT & REQUISITION TABLES
+    %% ========================================
+
+    departments ||--o{ department_requisitions : "requests"
+    departments ||--o{ department_stat_levels : "maintains"
+    departments {
+        uuid id PK
+        varchar code UK "CONT, CHINESE, BBQ"
+        varchar name "Continental Kitchen"
+        enum type "RESTAURANT, EDUCATION, ADMIN, CONSTRUCTION, KITCHEN"
+        uuid parent_department_id FK
+        uuid department_head_id FK
+        boolean is_active
+        text description
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    department_requisitions ||--o{ department_requisition_items : "contains"
+    department_requisitions ||--o{ issue_slips : "issued_via"
+    department_requisitions {
+        uuid id PK
+        varchar requisition_number UK "DEPT-REQ-2025-00001"
+        date requisition_date
+        uuid department_id FK
+        uuid requested_by FK
+        date required_date
+        enum priority "LOW, MEDIUM, HIGH, URGENT"
+        enum status "DRAFT, PENDING_APPROVAL, APPROVED, PARTIALLY_ISSUED, ISSUED, CLOSED, REJECTED"
+        text purpose
+        uuid approved_by FK
+        timestamp approved_at
+        text rejection_reason
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    department_requisition_items {
+        uuid id PK
+        uuid requisition_id FK
+        uuid item_id FK
+        decimal quantity_requested
+        decimal quantity_approved
+        decimal quantity_issued
+        varchar unit_of_measure
+        text notes
+    }
+
+    department_stat_levels {
+        uuid id PK
+        uuid department_id FK
+        uuid item_id FK
+        decimal stat_level "Min required stock"
+        decimal par_level "Max desired stock"
+        decimal current_stock
+        boolean auto_reorder
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    issue_slips ||--o{ issue_slip_items : "contains"
+    issue_slips {
+        uuid id PK
+        varchar issue_number UK "ISSUE-2025-00001"
+        date issue_date
+        uuid department_requisition_id FK
+        uuid department_id FK
+        uuid issued_by FK
+        uuid received_by FK
+        uuid storage_location_id FK
+        enum status "DRAFT, ISSUED, ACKNOWLEDGED, CANCELLED"
+        boolean fefo_enforced "First Expired First Out"
+        timestamp acknowledged_at
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    issue_slip_items {
+        uuid id PK
+        uuid issue_slip_id FK
+        uuid item_id FK
+        uuid batch_id FK "FEFO enforcement"
+        uuid requisition_item_id FK
+        decimal quantity_issued
+        decimal unit_cost
+        date batch_expiry_date
+        varchar bin_location
+        text notes
+    }
+
+    %% ========================================
+    %% RECIPE & COSTING TABLES
+    %% ========================================
+
+    recipes ||--o{ recipe_ingredients : "uses"
+    recipes ||--o{ recipe_versions : "versioned_as"
+    recipes {
+        uuid id PK
+        varchar recipe_code UK "RECIPE-BIRYANI-001"
+        varchar name "Chicken Biryani"
+        uuid department_id FK "Continental, Chinese"
+        text description
+        integer portion_size "Number of servings"
+        decimal ideal_food_cost_percentage
+        decimal actual_food_cost_percentage
+        decimal variance_tolerance_percentage
+        enum status "ACTIVE, DRAFT, ARCHIVED"
+        integer version_number
+        text preparation_notes
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by FK
+    }
+
+    recipe_ingredients {
+        uuid id PK
+        uuid recipe_id FK
+        uuid item_id FK
+        decimal quantity_required
+        varchar unit_of_measure
+        decimal unit_cost
+        decimal ingredient_cost
+        text preparation_notes
+    }
+
+    recipe_versions {
+        uuid id PK
+        uuid recipe_id FK
+        integer version_number
+        date effective_date
+        jsonb ingredients_snapshot "Historical ingredients"
+        decimal total_cost_snapshot
+        text change_notes
+        uuid created_by FK
+        timestamp created_at
+    }
+
+    %% ========================================
+    %% PHYSICAL COUNT & THEFT TABLES
+    %% ========================================
+
+    physical_counts ||--o{ physical_count_items : "counts"
+    physical_counts {
+        uuid id PK
+        varchar count_number UK "COUNT-2025-00001"
+        enum count_type "CYCLE, FULL, SPOT"
+        date count_date
+        date scheduled_date
+        uuid storage_location_id FK
+        uuid department_id FK
+        uuid counted_by FK
+        uuid verified_by FK
+        enum status "SCHEDULED, IN_PROGRESS, COMPLETED, POSTED, CANCELLED"
+        decimal total_variance_value
+        boolean has_variances
+        uuid approved_by FK
+        timestamp approved_at
+        uuid posted_by FK
+        timestamp posted_at
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    physical_count_items {
+        uuid id PK
+        uuid count_id FK
+        uuid item_id FK
+        uuid batch_id FK
+        decimal system_quantity
+        decimal counted_quantity
+        decimal variance_quantity "Generated"
+        decimal unit_cost
+        decimal variance_value "Generated"
+        enum variance_type "OVERAGE, SHORTAGE, MATCH"
+        text variance_reason
+        varchar bin_location
+        text notes
+    }
+
+    theft_reports {
+        uuid id PK
+        varchar report_number UK "THEFT-2025-00001"
+        date incident_date
+        date reported_date
+        uuid storage_location_id FK
+        uuid department_id FK
+        uuid reported_by FK
+        enum status "REPORTED, UNDER_INVESTIGATION, RESOLVED, CLOSED"
+        text incident_description
+        decimal estimated_value
+        varchar photo_attachments "Comma-separated URLs"
+        uuid investigating_officer_id FK
+        text investigation_notes
+        text resolution
+        uuid approved_by FK "L3 Approver"
+        timestamp approved_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    %% ========================================
+    %% DONATION & DONOR TABLES
+    %% ========================================
+
+    donors ||--o{ donations : "makes"
+    donors {
+        uuid id PK
+        varchar donor_code UK "DONOR-0001"
+        varchar name
+        varchar company_name
+        varchar email
+        varchar phone
+        varchar mobile
+        text address
+        varchar city
+        varchar country
+        enum donor_type "INDIVIDUAL, CORPORATE, ORGANIZATION"
+        boolean is_recurring
+        integer total_donations_count
+        decimal total_donations_value
+        date last_donation_date
+        text notes
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    donations ||--o{ donation_items : "contains"
+    donations {
+        uuid id PK
+        varchar donation_number UK "DON-GRN-2025-00001"
+        date donation_date
+        uuid donor_id FK
+        uuid received_by FK
+        uuid storage_location_id FK
+        decimal total_estimated_value
+        enum status "RECEIVED, INSPECTED, POSTED"
+        text purpose
+        text acknowledgement_sent
+        timestamp posted_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    donation_items {
+        uuid id PK
+        uuid donation_id FK
+        uuid item_id FK
+        uuid batch_id FK "Created batch"
+        decimal quantity_received
+        decimal estimated_unit_value
+        decimal total_estimated_value
+        text item_condition
+        text notes
+    }
+
+    %% ========================================
+    %% USER ACTIVITY & KPI TABLES
+    %% ========================================
+
+    user_activities {
+        uuid id PK
+        uuid user_id FK
+        date activity_date
+        enum activity_type "GRN, ISSUE, ADJUSTMENT, COUNT, REQUISITION"
+        uuid reference_id "GRN_ID, ISSUE_ID, etc"
+        varchar reference_type
+        integer transaction_count
+        decimal hours_worked
+        decimal expected_hours
+        decimal utilization_percentage "Generated"
+        timestamp created_at
+    }
+
+    %% ========================================
+    %% APPROVAL WORKFLOW TABLES
+    %% ========================================
+
+    approval_workflows {
+        uuid id PK
+        uuid document_id FK "PR_ID, PO_ID, etc"
+        varchar document_type "PR, PO, VARIANCE, THEFT"
+        varchar document_number "PR-2025-00001"
+        integer approval_level "1, 2, or 3"
+        enum status "PENDING, APPROVED, REJECTED"
+        uuid approver_id FK
+        timestamp submitted_at
+        timestamp responded_at
+        text comments
+        text rejection_reason
+        jsonb metadata "Additional context"
+        timestamp created_at
+    }
+
+    %% ========================================
+    %% ALERT CONFIGURATION TABLES
+    %% ========================================
+
+    alert_configurations {
+        uuid id PK
+        enum alert_type "LOW_STOCK, REORDER, EXPIRY, PRICE_VARIANCE, etc"
+        varchar alert_name
+        text description
+        jsonb threshold_config "Min stock: 10, Days: 30"
+        boolean is_active
+        varchar notification_channels "EMAIL, SMS, IN_APP"
+        jsonb recipient_roles "STORE_KEEPER, DEPT_HEAD"
+        integer frequency_minutes "Check frequency"
+        timestamp last_run_at
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by FK
+    }
+
+    alerts {
+        uuid id PK
+        uuid config_id FK
+        enum alert_type "LOW_STOCK, REORDER, EXPIRY"
+        enum severity "INFO, WARNING, CRITICAL"
+        varchar title
+        text message
+        jsonb metadata "Item details, thresholds"
+        uuid item_id FK
+        uuid department_id FK
+        uuid assigned_to FK
+        enum status "NEW, ACKNOWLEDGED, RESOLVED, DISMISSED"
+        timestamp acknowledged_at
+        uuid acknowledged_by FK
+        timestamp resolved_at
+        text resolution_notes
+        timestamp created_at
+    }
+
+    %% ========================================
+    %% RELATIONSHIPS
+    %% ========================================
+
+    inventory_items ||--o{ item_serials : "tracked_by"
+    vendors ||--o{ item_batches : "supplies"
+    departments ||--o{ users : "employs"
+    users ||--o{ purchase_requisitions : "creates"
+    users ||--o{ purchase_orders : "creates"
+    users ||--o{ goods_receipt_notes : "receives"
+    users ||--o{ issue_slips : "issues"
+    users ||--o{ physical_counts : "counts"
+    users ||--o{ theft_reports : "reports"
+    users ||--o{ user_activities : "performs"
+    users ||--o{ approval_workflows : "approves"
+    inventory_items ||--o{ department_stat_levels : "stocked_at"
+    recipes ||--o{ recipe_ingredients : "requires"
+    alert_configurations ||--o{ alerts : "generates"
+
+    %% User table reference (simplified)
+    users {
+        uuid id PK
+        varchar email UK
+        varchar full_name
+        enum role "STORE_KEEPER, DEPT_HEAD, PURCHASING, APPROVER_L1, APPROVER_L2, APPROVER_L3, FINANCE, ADMIN, AUDITOR"
+        uuid department_id FK
+        boolean is_active
+    }

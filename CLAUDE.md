@@ -90,6 +90,42 @@ Organized into sections:
 - Operations (Inventory, Procurement, Facilities)
 - Islamic Services (Qurbani, Donations, Events)
 
+## Important Development Rules
+
+### Currency Standard
+**CRITICAL**: This application is for a Pakistani institution and uses Pakistani Rupees (PKR) as the primary currency.
+
+1. **ALWAYS use PKR (Pakistani Rupees)** for all financial values
+2. **NEVER use USD ($)** or other currencies unless explicitly specified
+3. **Currency formatting**: Use "PKR" prefix or "Rs." prefix for Pakistani Rupees
+4. **Example formats**:
+   - ✅ CORRECT: "PKR 18,750" or "Rs. 18,750"
+   - ❌ WRONG: "$18,750" or "USD 18,750"
+
+**Important**: All financial displays, reports, dashboards, and documentation should default to PKR. This includes:
+- Dashboard KPIs and metrics
+- Financial reports and statements
+- Invoice and receipt generation
+- Budget and expense tracking
+- Revenue and cost analysis
+
+### Getting Current Date/Time
+**CRITICAL**: When you need the current date or time for any purpose (documentation, timestamps, date calculations, etc.):
+
+1. **NEVER use your knowledge cutoff date** (January 2025)
+2. **ALWAYS use one of these methods**:
+   - **WebSearch**: Perform a web search to get today's date
+   - **Bash Command**: Run `date` command on the system
+   - **Python**: Use `from datetime import datetime; datetime.now()`
+
+**Example Scenarios**:
+- ❌ WRONG: "Document Date: January 2025" (based on knowledge cutoff)
+- ✅ CORRECT: Use WebSearch or `date` command, then "Document Date: January 21, 2025"
+
+**Rationale**: Your knowledge cutoff is January 2025, but the actual current date may be different. Always fetch the real current date dynamically.
+
+---
+
 ## Development Guidelines
 
 ### File Naming
@@ -117,3 +153,66 @@ Organized into sections:
 - Use existing Genkit flows when possible
 - Follow the pattern in `src/ai/flows/` for new AI features
 - Integrate AI insights contextually within business workflows
+
+## Development Phases & Current Focus
+
+### **Phase 1 Focus: Operations Management & Inventory System** 🎯
+**Status**: Active Development | **Priority**: HIGHEST
+
+The primary focus for Phase 1 is implementing the comprehensive **Operations Management module**, specifically the **Inventory Management System** with all 14 sub-modules as defined in the requirements gathered by the Pakistani team.
+
+**Why Operations/Inventory First?**
+- ✅ Complete requirements documentation available
+- ✅ Detailed BRD, TDD, and specifications ready
+- ✅ 14 clearly defined sub-modules with scope
+- ✅ Database schema designed (30+ tables)
+- ✅ Immediate business impact and ROI
+- ✅ Foundation for other modules (Procurement, Facilities)
+
+**Phase 1 Deliverables** (12 weeks):
+1. Complete database schema implementation (30+ tables)
+2. All 14 inventory sub-modules
+3. Purchase & Approval workflows (3-level)
+4. Vendor management (15+ fields)
+5. Recipe costing and variance tracking
+6. Comprehensive reporting (16 report types)
+7. Automated alerts (10 alert types)
+8. Role-based permissions (7 user roles)
+9. Testing and deployment
+10. User training and documentation
+
+**Investment**: PKR 500,000 | **Timeline**: 12 weeks | **ROI**: 600%
+
+**Other modules** (Financial, Academic, HR, Islamic Services, Events) will be implemented in subsequent phases after Operations/Inventory is fully functional.
+
+---
+
+## Rube MCP & Database Configuration
+
+### Default Database Credentials
+**IMPORTANT**: When the user mentions "database" or asks to connect via Rube MCP, always refer to these credentials by default:
+
+- **Project Name**: Rahah24
+- **Project Reference ID**: `bfewxhtlrxedlifiakok`
+- **Database Host**: `db.bfewxhtlrxedlifiakok.supabase.co`
+- **Region**: `us-east-2`
+- **PostgreSQL Version**: 17.4.1.074
+- **Status**: ACTIVE_HEALTHY
+- **Organization ID**: `fosvxczfygemwxfmejhu`
+
+### Database Access via Rube MCP
+- Supabase toolkit is connected and active
+- Use `RUBE_SEARCH_TOOLS` to discover available database operations
+- Use `RUBE_MULTI_EXECUTE_TOOL` to execute Supabase tools
+- Session ID for workflow continuity: Always pass session_id in meta tool calls
+- Available Supabase tools:
+  - `SUPABASE_LIST_TABLES` - List all tables in the database
+  - `SUPABASE_GET_TABLE_SCHEMAS` - Get detailed schema information
+  - `SUPABASE_SELECT_FROM_TABLE` - Query data from tables
+  - `SUPABASE_BETA_RUN_SQL_QUERY` - Execute custom SQL queries
+  - `SUPABASE_GENERATE_TYPE_SCRIPT_TYPES` - Generate TypeScript types
+
+### Database Schema Overview
+- **auth** schema: 19 tables (user authentication, sessions, tokens)
+- **public** schema: 2 tables (organization_units, user_profiles)
+- **storage** schema: 7 tables (file storage infrastructure)

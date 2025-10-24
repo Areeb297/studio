@@ -1,0 +1,197 @@
+%% Stock Movement and FEFO Enforcement Flow
+%% Rahah24 ERP - Inventory Management System
+%% Last Updated: October 25, 2025
+
+flowchart TD
+    START[Stock Movement<br/>Initiated]
+
+    START --> MOVEMENT_TYPE{Select Movement<br/>Type}
+
+    %% PURCHASE PATH
+    MOVEMENT_TYPE -->|Purchase/GRN| GRN_START[Goods Receipt Note<br/>Processing]
+    GRN_START --> GRN_SCAN[Scan/Enter Items:<br/>- Item codes<br/>- Quantities<br/>- Batch info]
+    GRN_SCAN --> GRN_BATCH[Create Batches:<br/>- Manufacturing date<br/>- Expiry date<br/>- Batch number]
+    GRN_BATCH --> GRN_LOCATION[Assign Storage Location:<br/>Zone-Aisle-Rack-Bin]
+    GRN_LOCATION --> GRN_UPDATE[Update Stock Levels:<br/>Current Stock +<br/>Available Stock +]
+    GRN_UPDATE --> GRN_COST[Update Costing:<br/>Weighted Average Cost]
+    GRN_COST --> CREATE_MOVEMENT_GRN[Create Stock Movement<br/>Type: PURCHASE]
+    CREATE_MOVEMENT_GRN --> SUCCESS
+
+    %% TRANSFER PATH
+    MOVEMENT_TYPE -->|Transfer| TRANSFER_START[Inter-location Transfer]
+    TRANSFER_START --> TRANSFER_FROM[Select Source Location<br/>Zone-Aisle-Rack-Bin]
+    TRANSFER_FROM --> TRANSFER_ITEMS[Select Items to Transfer]
+    TRANSFER_ITEMS --> CHECK_AVAIL{Check Stock<br/>Availability}
+    CHECK_AVAIL -->|Insufficient| TRANSFER_ERROR[Error: Insufficient Stock<br/>Available: X, Requested: Y]
+    CHECK_AVAIL -->|Available| TRANSFER_TO[Select Destination Location]
+    TRANSFER_TO --> TRANSFER_QTY[Enter Quantities<br/>Select Batches]
+    TRANSFER_QTY --> TRANSFER_APPROVE{Approval<br/>Required?}
+    TRANSFER_APPROVE -->|Yes - High Value| TRANSFER_APPROVAL[Route to Approver]
+    TRANSFER_APPROVE -->|No| TRANSFER_POST
+    TRANSFER_APPROVAL --> TRANSFER_POST[Post Transfer]
+    TRANSFER_POST --> TRANSFER_UPDATE[Update Stock Levels:<br/>From Location -<br/>To Location +]
+    TRANSFER_UPDATE --> CREATE_MOVEMENT_TRANSFER[Create Stock Movement<br/>Type: TRANSFER]
+    CREATE_MOVEMENT_TRANSFER --> SUCCESS
+
+    %% ADJUSTMENT PATH
+    MOVEMENT_TYPE -->|Adjustment| ADJUST_START[Stock Adjustment]
+    ADJUST_START --> ADJUST_REASON{Select Reason}
+    ADJUST_REASON -->|Theft| ADJUST_THEFT[Create Theft Report:<br/>- Incident details<br/>- Photo evidence<br/>- Investigation notes]
+    ADJUST_REASON -->|Damage| ADJUST_DAMAGE[Create Damage Report:<br/>- Damage description<br/>- Cause analysis<br/>- Prevention notes]
+    ADJUST_REASON -->|Expiry| ADJUST_EXPIRY[Expiry Disposal:<br/>- Expired batch details<br/>- Disposal method<br/>- Photo documentation]
+    ADJUST_REASON -->|Obsolete| ADJUST_OBSOLETE[Obsolete Item:<br/>- Obsolescence reason<br/>- Alternative items<br/>- Disposal plan]
+    ADJUST_REASON -->|Count Variance| ADJUST_COUNT[Physical Count Variance:<br/>- Count reference<br/>- Variance justification]
+    ADJUST_REASON -->|Other| ADJUST_OTHER[Other Adjustment:<br/>- Detailed explanation<br/>- Supporting documents]
+
+    ADJUST_THEFT --> ADJUST_APPROVAL[L3 Approval Required<br/>Executive Review]
+    ADJUST_DAMAGE --> ADJUST_APPROVAL
+    ADJUST_EXPIRY --> ADJUST_AUTO[Auto-approved<br/>System Batch Check]
+    ADJUST_OBSOLETE --> ADJUST_APPROVAL
+    ADJUST_COUNT --> ADJUST_APPROVAL
+    ADJUST_OTHER --> ADJUST_APPROVAL
+
+    ADJUST_APPROVAL --> ADJUST_DECISION{Approval<br/>Decision}
+    ADJUST_DECISION -->|Approved| ADJUST_POST
+    ADJUST_DECISION -->|Rejected| ADJUST_REJECT[Adjustment Rejected<br/>Return to Requester]
+    ADJUST_AUTO --> ADJUST_POST
+
+    ADJUST_POST[Post Adjustment]
+    ADJUST_POST --> ADJUST_UPDATE[Update Stock Levels:<br/>+/- Adjustment Quantity]
+    ADJUST_UPDATE --> CREATE_MOVEMENT_ADJUST[Create Stock Movement<br/>Type: ADJUSTMENT]
+    CREATE_MOVEMENT_ADJUST --> SUCCESS
+
+    %% ISSUE PATH (FEFO ENFORCEMENT)
+    MOVEMENT_TYPE -->|Department Issue| ISSUE_START[Department Issue Slip]
+    ISSUE_START --> ISSUE_DEPT[Select Department:<br/>Continental, Chinese, BBQ, etc]
+    ISSUE_DEPT --> ISSUE_REQ{Linked to<br/>Requisition?}
+    ISSUE_REQ -->|Yes| ISSUE_LOAD_REQ[Load Items from<br/>Department Requisition]
+    ISSUE_REQ -->|No| ISSUE_MANUAL[Manual Item Selection]
+
+    ISSUE_LOAD_REQ --> ISSUE_ITEMS[Items to Issue List]
+    ISSUE_MANUAL --> ISSUE_ITEMS
+
+    ISSUE_ITEMS --> ISSUE_CHECK_PERISHABLE{Item<br/>Perishable?}
+    ISSUE_CHECK_PERISHABLE -->|Yes - FEFO Required| FEFO_ENFORCE[FEFO Enforcement:<br/>First Expired, First Out]
+    ISSUE_CHECK_PERISHABLE -->|No| REGULAR_ISSUE[Regular Issue<br/>Any Batch]
+
+    FEFO_ENFORCE --> FEFO_QUERY[Query Batches:<br/>ORDER BY expiry_date ASC<br/>WHERE quantity > 0]
+    FEFO_QUERY --> FEFO_SELECT[Auto-Select<br/>Earliest Expiring Batch]
+    FEFO_SELECT --> FEFO_ALERT{Batch Expiring<br/>< 30 Days?}
+    FEFO_ALERT -->|Yes| FEFO_WARNING[Warning Alert:<br/>Batch expires soon<br/>Expiry: YYYY-MM-DD]
+    FEFO_ALERT -->|No| FEFO_OK[Batch OK]
+    FEFO_WARNING --> FEFO_CONFIRM[Confirm Issue<br/>Acknowledge Warning]
+    FEFO_OK --> FEFO_CONFIRM
+    FEFO_CONFIRM --> FEFO_COMPLETE[FEFO Batch Selected]
+
+    REGULAR_ISSUE --> REGULAR_SELECT[Select Any Available Batch]
+    REGULAR_SELECT --> FEFO_COMPLETE
+
+    FEFO_COMPLETE --> ISSUE_BIN[Select Bin Location:<br/>Zone-Aisle-Rack-Bin]
+    ISSUE_BIN --> ISSUE_QTY[Enter Issue Quantity]
+    ISSUE_QTY --> ISSUE_VALIDATE{Quantity<br/>Available?}
+    ISSUE_VALIDATE -->|No| ISSUE_ERROR[Error: Insufficient Stock<br/>in Selected Batch/Bin]
+    ISSUE_VALIDATE -->|Yes| ISSUE_RECEIVER[Select Receiver:<br/>Department Staff Member]
+    ISSUE_RECEIVER --> ISSUE_POST[Post Issue Slip]
+    ISSUE_POST --> ISSUE_UPDATE[Update Stock Levels:<br/>Current Stock -<br/>Reserved Stock - (if requisition)]
+    ISSUE_UPDATE --> ISSUE_BATCH_UPDATE[Update Batch Quantity:<br/>Batch Remaining -]
+    ISSUE_BATCH_UPDATE --> CREATE_MOVEMENT_ISSUE[Create Stock Movement<br/>Type: ISSUE<br/>FEFO Enforced: Yes/No]
+    CREATE_MOVEMENT_ISSUE --> ISSUE_DEPT_STAT[Update Department<br/>Stat/Par Levels]
+    ISSUE_DEPT_STAT --> SUCCESS
+
+    %% RETURN PATH
+    MOVEMENT_TYPE -->|Return| RETURN_START[Department Return]
+    RETURN_START --> RETURN_ORIGINAL{Link to<br/>Original Issue?}
+    RETURN_ORIGINAL -->|Yes| RETURN_LOAD[Load Original Issue<br/>Details]
+    RETURN_ORIGINAL -->|No| RETURN_ERROR_NO_LINK[Error: Return must<br/>link to Issue Slip]
+    RETURN_LOAD --> RETURN_ITEMS[Select Items to Return]
+    RETURN_ITEMS --> RETURN_REASON[Enter Return Reason:<br/>- Excess<br/>- Damaged<br/>- Wrong item]
+    RETURN_REASON --> RETURN_CONDITION{Item<br/>Condition?}
+    RETURN_CONDITION -->|Good| RETURN_GOOD[Return to Stock<br/>Same Batch]
+    RETURN_CONDITION -->|Damaged| RETURN_DAMAGED[Create Damage Report<br/>Adjust as Damaged]
+    RETURN_GOOD --> RETURN_BIN[Return to Bin Location]
+    RETURN_BIN --> RETURN_POST[Post Return]
+    RETURN_POST --> RETURN_UPDATE[Update Stock Levels:<br/>Current Stock +<br/>Batch Quantity +]
+    RETURN_UPDATE --> CREATE_MOVEMENT_RETURN[Create Stock Movement<br/>Type: RETURN]
+    CREATE_MOVEMENT_RETURN --> SUCCESS
+
+    RETURN_DAMAGED --> ADJUST_DAMAGE
+
+    %% PHYSICAL COUNT PATH
+    MOVEMENT_TYPE -->|Physical Count| COUNT_START[Physical Count]
+    COUNT_START --> COUNT_TYPE{Count Type}
+    COUNT_TYPE -->|Cycle Count| COUNT_CYCLE[Cycle Count:<br/>ABC Analysis<br/>High-value items]
+    COUNT_TYPE -->|Full Count| COUNT_FULL[Full Stock Count:<br/>All items]
+    COUNT_TYPE -->|Spot Count| COUNT_SPOT[Spot Count:<br/>Selected items]
+
+    COUNT_CYCLE --> COUNT_ITEMS[Generate Count Sheet:<br/>Items to count]
+    COUNT_FULL --> COUNT_ITEMS
+    COUNT_SPOT --> COUNT_ITEMS
+
+    COUNT_ITEMS --> COUNT_EXECUTE[Count Team Counts:<br/>- Scan items<br/>- Enter quantities<br/>- Verify batches]
+    COUNT_EXECUTE --> COUNT_VERIFY[Verifier Re-counts:<br/>Sample verification]
+    COUNT_VERIFY --> COUNT_VARIANCE{Variance<br/>Detected?}
+
+    COUNT_VARIANCE -->|No - Match| COUNT_POST_MATCH[Post Count<br/>No Adjustment Needed]
+    COUNT_POST_MATCH --> SUCCESS
+
+    COUNT_VARIANCE -->|Yes - Discrepancy| COUNT_ANALYZE[Analyze Variance:<br/>System: X<br/>Counted: Y<br/>Variance: Z]
+    COUNT_ANALYZE --> COUNT_VALUE{Variance<br/>Value?}
+    COUNT_VALUE -->|< PKR 5,000| COUNT_AUTO_APPROVE[Auto-approve<br/>Minor Variance]
+    COUNT_VALUE -->|PKR 5,000-50,000| COUNT_L2_APPROVE[L2 Approval Required]
+    COUNT_VALUE -->|> PKR 50,000| COUNT_L3_APPROVE[L3 Approval Required<br/>Investigation Mandatory]
+
+    COUNT_AUTO_APPROVE --> COUNT_ADJUST[Post Count Adjustment]
+    COUNT_L2_APPROVE --> COUNT_APPROVAL_DECISION{Approval<br/>Decision}
+    COUNT_L3_APPROVE --> COUNT_APPROVAL_DECISION
+    COUNT_APPROVAL_DECISION -->|Approved| COUNT_ADJUST
+    COUNT_APPROVAL_DECISION -->|Rejected| COUNT_INVESTIGATE[Initiate Investigation<br/>Recount Required]
+    COUNT_INVESTIGATE --> COUNT_EXECUTE
+
+    COUNT_ADJUST --> COUNT_UPDATE[Update Stock Levels:<br/>System Quantity = Counted]
+    COUNT_UPDATE --> CREATE_MOVEMENT_COUNT[Create Stock Movement<br/>Type: PHYSICAL_COUNT<br/>Variance Details]
+    CREATE_MOVEMENT_COUNT --> SUCCESS
+
+    %% SUCCESS PATH
+    SUCCESS[Stock Movement Created]
+    SUCCESS --> GL_ENTRY[Create GL Entry:<br/>Dr/Cr based on type]
+    GL_ENTRY --> ALERT_CHECK{Trigger<br/>Alerts?}
+
+    ALERT_CHECK -->|Stock < Minimum| ALERT_LOW[Alert: Low Stock<br/>Item below minimum]
+    ALERT_CHECK -->|Stock < Reorder| ALERT_REORDER[Alert: Reorder Level<br/>Create PR suggestion]
+    ALERT_CHECK -->|Stock > Maximum| ALERT_OVER[Alert: Over Stock<br/>Excess inventory]
+    ALERT_CHECK -->|Batch Expiring < 30d| ALERT_EXPIRY_30[Alert: Expiry Warning<br/>30 days notice]
+    ALERT_CHECK -->|Batch Expiring < 60d| ALERT_EXPIRY_60[Alert: Expiry Warning<br/>60 days notice]
+    ALERT_CHECK -->|None| COMPLETE
+
+    ALERT_LOW --> NOTIFY_ALERTS[Send Notifications:<br/>Email, SMS, In-App]
+    ALERT_REORDER --> AUTO_PR{Auto PR<br/>Enabled?}
+    AUTO_PR -->|Yes| CREATE_AUTO_PR[Auto-create PR<br/>Based on reorder qty]
+    AUTO_PR -->|No| NOTIFY_ALERTS
+    CREATE_AUTO_PR --> NOTIFY_ALERTS
+    ALERT_OVER --> NOTIFY_ALERTS
+    ALERT_EXPIRY_30 --> NOTIFY_ALERTS
+    ALERT_EXPIRY_60 --> NOTIFY_ALERTS
+
+    NOTIFY_ALERTS --> COMPLETE[Movement Complete ✓<br/>Audit Trail Logged]
+
+    %% ERROR PATHS
+    TRANSFER_ERROR --> ERROR_END[End: Movement Failed]
+    ISSUE_ERROR --> ERROR_END
+    RETURN_ERROR_NO_LINK --> ERROR_END
+    ADJUST_REJECT --> ERROR_END
+
+    style START fill:#e1f5e1
+    style FEFO_ENFORCE fill:#fff9c4
+    style FEFO_SELECT fill:#fff59d
+    style FEFO_WARNING fill:#ff9800,color:#fff
+    style SUCCESS fill:#c8e6c9
+    style COMPLETE fill:#4caf50,color:#fff
+    style ERROR_END fill:#f44336,color:#fff
+    style ADJUST_THEFT fill:#ffccbc
+    style COUNT_L3_APPROVE fill:#ffccbc
+    style ALERT_LOW fill:#ffeb3b
+    style ALERT_REORDER fill:#ffc107
+    style ALERT_OVER fill:#ff9800,color:#fff
+    style ALERT_EXPIRY_30 fill:#f44336,color:#fff
+    style ALERT_EXPIRY_60 fill:#ff5722,color:#fff
+    style CREATE_AUTO_PR fill:#8bc34a

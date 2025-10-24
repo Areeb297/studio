@@ -352,15 +352,6 @@ export default function ExecutiveDashboard() {
                       borderRadius: '8px'
                     }}
                   />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    height={36}
-                    formatter={(value, entry) => (
-                      <span style={{ color: entry.color }}>
-                        {value} ({entry.payload?.value || 0}%)
-                      </span>
-                    )}
-                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>

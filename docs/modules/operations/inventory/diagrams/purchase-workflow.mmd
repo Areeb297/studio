@@ -1,0 +1,122 @@
+%% Purchase Requisition → Purchase Order → GRN → Invoice Workflow
+%% Rahah24 ERP - Inventory Management System
+%% Last Updated: October 25, 2025
+
+flowchart TD
+    START[Purchase Need Identified]
+
+    START --> CREATE_PR[Department Head<br/>Creates Purchase Requisition]
+    CREATE_PR --> PR_DETAILS[Enter PR Details:<br/>- Items & quantities<br/>- Justification<br/>- Required date<br/>- Priority]
+
+    PR_DETAILS --> CALC_AMOUNT[Calculate Total Amount]
+    CALC_AMOUNT --> ROUTE_APPROVAL{Determine<br/>Approval Level}
+
+    ROUTE_APPROVAL -->|Amount < PKR 50,000| L1_APPROVE[Level 1 Approver<br/>Review & Approve]
+    ROUTE_APPROVAL -->|PKR 50,001 - 200,000| L2_APPROVE[Level 2 Approver<br/>Review & Approve]
+    ROUTE_APPROVAL -->|Amount > PKR 200,000| L3_APPROVE[Level 3 Approver<br/>Review & Approve]
+
+    L1_APPROVE --> L1_DECISION{L1 Decision}
+    L2_APPROVE --> L2_DECISION{L2 Decision}
+    L3_APPROVE --> L3_DECISION{L3 Decision}
+
+    L1_DECISION -->|Approved| PR_APPROVED[PR Approved]
+    L1_DECISION -->|Rejected| PR_REJECTED[PR Rejected<br/>Reason documented]
+    L2_DECISION -->|Approved| PR_APPROVED
+    L2_DECISION -->|Rejected| PR_REJECTED
+    L3_DECISION -->|Approved| PR_APPROVED
+    L3_DECISION -->|Rejected| PR_REJECTED
+
+    PR_REJECTED --> NOTIFY_REQUESTER[Notify Department Head<br/>Email + In-App Alert]
+    NOTIFY_REQUESTER --> END_REJECTED[End: PR Rejected]
+
+    PR_APPROVED --> CREATE_PO[Purchasing Officer<br/>Creates Purchase Order]
+    CREATE_PO --> SELECT_VENDOR[Select Vendor:<br/>- Price comparison<br/>- Performance rating<br/>- Payment terms]
+
+    SELECT_VENDOR --> ENTER_PO[Enter PO Details:<br/>- Vendor details<br/>- Delivery date<br/>- Payment terms<br/>- Line items with prices]
+
+    ENTER_PO --> PRICE_CHECK{Check Price<br/>Variance}
+    PRICE_CHECK -->|Variance ≤ 5%| PO_ROUTE_NORMAL[Route to Normal Approval]
+    PRICE_CHECK -->|Variance 5-10%| PO_ROUTE_L2[Route to L2<br/>for Variance Approval]
+    PRICE_CHECK -->|Variance > 10%| PO_ROUTE_L3[Route to L3<br/>for Variance Approval]
+
+    PO_ROUTE_NORMAL --> PO_AMOUNT_CHECK{PO Amount<br/>Check}
+    PO_AMOUNT_CHECK -->|< PKR 50,000| PO_L1[L1 Approver]
+    PO_AMOUNT_CHECK -->|< PKR 200,000| PO_L2[L2 Approver]
+    PO_AMOUNT_CHECK -->|≥ PKR 200,000| PO_L3[L3 Approver]
+
+    PO_L1 --> PO_DECISION{PO Decision}
+    PO_L2 --> PO_DECISION
+    PO_L3 --> PO_DECISION
+    PO_ROUTE_L2 --> PO_L2
+    PO_ROUTE_L3 --> PO_L3
+
+    PO_DECISION -->|Approved| PO_APPROVED[PO Approved]
+    PO_DECISION -->|Rejected| PO_REJECTED[PO Rejected<br/>Return to Purchasing]
+    PO_REJECTED --> SELECT_VENDOR
+
+    PO_APPROVED --> SEND_PO[Send PO to Vendor<br/>Email + PDF]
+    SEND_PO --> VENDOR_PROCESS[Vendor Processes Order]
+
+    VENDOR_PROCESS --> VENDOR_DELIVERY[Vendor Delivers Goods<br/>with Invoice]
+    VENDOR_DELIVERY --> RECEIVE_GOODS[Store Keeper<br/>Receives Goods]
+
+    RECEIVE_GOODS --> CREATE_GRN[Create Goods Receipt Note<br/>- GRN number generated<br/>- Link to PO<br/>- Vendor invoice details]
+
+    CREATE_GRN --> INSPECT_GOODS{Inspect Goods<br/>Quality Check}
+    INSPECT_GOODS -->|Quality Pass| ACCEPT_ALL[Accept All Items]
+    INSPECT_GOODS -->|Quality Fail| PARTIAL_REJECT{Partial or<br/>Full Reject?}
+    PARTIAL_REJECT -->|Partial| ACCEPT_PARTIAL[Accept Good Items<br/>Reject Defective]
+    PARTIAL_REJECT -->|Full| REJECT_ALL[Reject All Items<br/>Return to Vendor]
+
+    REJECT_ALL --> NOTIFY_VENDOR_REJECT[Notify Vendor<br/>Debit Note]
+    NOTIFY_VENDOR_REJECT --> END_REJECTED_GRN[End: GRN Rejected]
+
+    ACCEPT_ALL --> CREATE_BATCHES[Create Item Batches<br/>- Batch numbers<br/>- Expiry dates<br/>- Mfg dates]
+    ACCEPT_PARTIAL --> CREATE_BATCHES
+
+    CREATE_BATCHES --> UPDATE_LOCATION[Assign Storage Location<br/>Zone-Aisle-Rack-Bin]
+    UPDATE_LOCATION --> POST_GRN[Post GRN]
+
+    POST_GRN --> UPDATE_STOCK[Update Stock Levels:<br/>- Current stock +<br/>- Available stock +<br/>- Weighted average cost]
+
+    UPDATE_STOCK --> CREATE_STOCK_MOVEMENT[Create Stock Movement<br/>Type: PURCHASE<br/>Reference: GRN]
+
+    CREATE_STOCK_MOVEMENT --> INVOICE_MATCH[Finance: 3-Way Match<br/>PO ↔ GRN ↔ Invoice]
+    INVOICE_MATCH --> MATCH_CHECK{Match<br/>Successful?}
+
+    MATCH_CHECK -->|Yes - Perfect Match| CREATE_GL[Create Journal Entry<br/>Dr: Inventory Asset<br/>Cr: Accounts Payable]
+    MATCH_CHECK -->|Discrepancy| FLAG_REVIEW[Flag for Finance Review<br/>Price/Quantity mismatch]
+
+    FLAG_REVIEW --> RESOLVE_DISC[Finance Resolves<br/>Discrepancy]
+    RESOLVE_DISC --> CREATE_GL
+
+    CREATE_GL --> SCHEDULE_PAYMENT[Schedule Payment:<br/>- Cash immediate<br/>- Credit based on terms<br/>- Bank transfer]
+
+    SCHEDULE_PAYMENT --> PROCESS_PAYMENT[Process Payment<br/>to Vendor]
+    PROCESS_PAYMENT --> UPDATE_VENDOR_PERF[Update Vendor Performance:<br/>- On-time delivery<br/>- Quality rating<br/>- Price compliance]
+
+    UPDATE_VENDOR_PERF --> TRIGGER_ALERTS{Trigger<br/>Alerts?}
+    TRIGGER_ALERTS -->|Stock at Reorder Level| ALERT_REORDER[Alert: Reorder Suggested]
+    TRIGGER_ALERTS -->|Stock Over Maximum| ALERT_OVER[Alert: Over Stock]
+    TRIGGER_ALERTS -->|Expiry < 30 Days| ALERT_EXPIRY[Alert: Expiry Warning]
+    TRIGGER_ALERTS -->|None| END_SUCCESS[End: Purchase Complete ✓]
+
+    ALERT_REORDER --> END_SUCCESS
+    ALERT_OVER --> END_SUCCESS
+    ALERT_EXPIRY --> END_SUCCESS
+
+    style START fill:#e1f5e1
+    style PR_APPROVED fill:#c8e6c9
+    style PO_APPROVED fill:#c8e6c9
+    style POST_GRN fill:#c8e6c9
+    style END_SUCCESS fill:#4caf50,color:#fff
+    style PR_REJECTED fill:#ffcdd2
+    style PO_REJECTED fill:#ffcdd2
+    style REJECT_ALL fill:#ffcdd2
+    style END_REJECTED fill:#f44336,color:#fff
+    style END_REJECTED_GRN fill:#f44336,color:#fff
+    style L1_APPROVE fill:#fff3e0
+    style L2_APPROVE fill:#fff3e0
+    style L3_APPROVE fill:#fff3e0
+    style INVOICE_MATCH fill:#e3f2fd
+    style CREATE_GL fill:#e3f2fd
