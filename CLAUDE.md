@@ -158,6 +158,8 @@ Organized into sections:
 
 ### **Phase 1 Focus: Operations Management & Inventory System** 🎯
 **Status**: Active Development | **Priority**: HIGHEST
+**Timeline**: October 2025 - December 2025 (12 weeks)
+**Go-Live Target**: December 2025
 
 The primary focus for Phase 1 is implementing the comprehensive **Operations Management module**, specifically the **Inventory Management System** with all 14 sub-modules as defined in the requirements gathered by the Pakistani team.
 
@@ -165,25 +167,110 @@ The primary focus for Phase 1 is implementing the comprehensive **Operations Man
 - ✅ Complete requirements documentation available
 - ✅ Detailed BRD, TDD, and specifications ready
 - ✅ 14 clearly defined sub-modules with scope
-- ✅ Database schema designed (30+ tables)
+- ✅ Database schema designed (32 tables)
 - ✅ Immediate business impact and ROI
 - ✅ Foundation for other modules (Procurement, Facilities)
 
 **Phase 1 Deliverables** (12 weeks):
-1. Complete database schema implementation (30+ tables)
-2. All 14 inventory sub-modules
-3. Purchase & Approval workflows (3-level)
-4. Vendor management (15+ fields)
-5. Recipe costing and variance tracking
-6. Comprehensive reporting (16 report types)
-7. Automated alerts (10 alert types)
-8. Role-based permissions (7 user roles)
-9. Testing and deployment
-10. User training and documentation
+1. **Database Schema**: 32 tables (created incrementally, NOT all at once)
+2. **All 14 inventory sub-modules**: Stock, Procurement, Vendor, Reports, Alerts
+3. **Purchase & Approval workflows**: 3-level approval system
+4. **Vendor management**: Complete vendor lifecycle
+5. **Recipe costing**: Integration with kitchen inventory
+6. **Comprehensive reporting**: 16 report types
+7. **Automated alerts**: 10 alert types with AI capabilities
+8. **Role-based permissions**: 9 user roles (increased from 7)
+9. **Testing and deployment**: End-to-end workflow validation
+10. **User training and documentation**: Complete user guides
 
 **Investment**: PKR 500,000 | **Timeline**: 12 weeks | **ROI**: 600%
 
 **Other modules** (Financial, Academic, HR, Islamic Services, Events) will be implemented in subsequent phases after Operations/Inventory is fully functional.
+
+---
+
+## Phase 1 Implementation Approach: INCREMENTAL DATABASE CREATION
+
+### **CRITICAL: Incremental Table Creation** 🚨
+**DO NOT create all 32 database tables at once!** This will cause integration issues and make testing difficult.
+
+**Approach:**
+- **Week 2**: Create 5 core tables (items, locations, categories, UoM, stock_levels)
+- **Week 3**: Add 3 stock tables (adjustments, reasons, batches)
+- **Week 4**: Add 3 transfer tables (transfers, counts, variances)
+- **Week 5**: Add 4 requisition tables (PR header, items, approvals, workflow)
+- **Week 6**: Add 3 PO tables (header, items, price variances)
+- **Week 7**: Add 4 GRN tables (header, items, discrepancies, invoice matching)
+- **Week 8**: Add 3 vendor tables (approvals, evaluations, contracts)
+- **Week 9**: Add 2 analytics tables (price history, delivery performance)
+- **Week 10**: Add 2 reporting tables (configurations, scheduled reports)
+- **Week 11**: Add 3 alert tables (rules, history, preferences)
+
+**Rationale**: Create tables only when building the feature that needs them. This allows for:
+- Testing at each step
+- Easy rollback if issues occur
+- Better understanding of dependencies
+- Incremental integration with existing tables
+
+---
+
+## User Management & Email Domain
+
+### **All Users on @rahah24.com Domain** 📧
+**CRITICAL**: All user accounts in this system MUST use the @rahah24.com email domain.
+
+**Current Users:**
+- admin@rahah24.com (System Administrator - Full Access)
+
+**Phase 1 Inventory & Procurement Users** (to be created):
+1. storekeeper@rahah24.com (Store Keeper)
+2. deptheadkitchen@rahah24.com (Department Head - Kitchen)
+3. purchasing@rahah24.com (Purchasing Officer)
+4. approverl1@rahah24.com (Approver Level 1)
+5. approverl2@rahah24.com (Approver Level 2)
+6. gm@rahah24.com (General Manager / Approver Level 3)
+7. finance@rahah24.com (Finance Officer)
+8. auditor@rahah24.com (Auditor - Read Only)
+
+**User Naming Convention:**
+- Lowercase only
+- No spaces or special characters
+- Descriptive of role (e.g., purchasing, finance, auditor)
+- Format: `<role>@rahah24.com`
+
+**Additional Users** (Future Phases):
+- deptheadacademic@rahah24.com (Academic Department Head)
+- deptheadevents@rahah24.com (Events Department Head)
+- deptheadgym@rahah24.com (Gym Department Head)
+- accountant@rahah24.com (Staff Accountant)
+- hrassistant@rahah24.com (HR Assistant)
+
+---
+
+## Task & Bug Tracking: TASKS_AND_BUGS.md
+
+### **Brief Descriptions ONLY** 📝
+**IMPORTANT**: Keep all task and bug descriptions in TASKS_AND_BUGS.md **extremely brief** to allow file scalability.
+
+**Format Guidelines:**
+- **Task Title**: 1-5 words maximum
+- **Description**: 1-2 sentences maximum (20-30 words)
+- **No detailed explanations** - link to detailed docs if needed
+- **No duplicate information** already in code comments
+
+**Example - TOO VERBOSE** ❌:
+```markdown
+## Task: Implement Stock Adjustment Form
+**Description**: Create a comprehensive stock adjustment form that allows users to adjust inventory quantities for various reasons including theft, damage, expiry, or miscounting. The form should include validation for all fields, support for batch selection, reason codes, approval workflows if adjustment exceeds certain thresholds, and automatic GL posting upon approval. Integration with the inventory_stock_levels table and stock_adjustments table is required. The form should also support attachments for supporting documentation such as photos or incident reports.
+```
+
+**Example - CORRECT** ✅:
+```markdown
+## Task: Stock Adjustment Form
+**Desc**: Create form for qty adjustments with reason codes, batch support, and GL integration. Approval req'd if >threshold.
+```
+
+**Rationale**: Brief descriptions allow TASKS_AND_BUGS.md to scale to hundreds of entries without becoming unmanageable. Detailed specs belong in BRD/TDD documents or code comments, not tracking files.
 
 ---
 

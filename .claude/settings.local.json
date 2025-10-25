@@ -19,7 +19,10 @@
       "mcp__rube__RUBE_MULTI_EXECUTE_TOOL",
       "mcp__context7__resolve-library-id",
       "mcp__context7__get-library-docs",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(xcopy:*)",
+      "WebSearch",
+      "Bash(timeout /t 5)"
     ],
     "deny": []
   }

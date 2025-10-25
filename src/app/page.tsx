@@ -39,6 +39,24 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Role-based default landing pages - must match middleware.ts
+  const getRoleDefaultRoute = (role: string): string => {
+    const roleRoutes: Record<string, string> = {
+      admin: '/dashboard',
+      store_keeper: '/dashboard/inventory',
+      dept_head_kitchen: '/dashboard/inventory/recipe-costing',
+      purchasing_officer: '/dashboard/procurement/requisitions',
+      approver_l1: '/dashboard/procurement/requisitions',
+      approver_l2: '/dashboard/procurement/requisitions',
+      gm: '/dashboard/inventory',
+      finance_officer: '/dashboard/finance',
+      auditor: '/dashboard/finance/reports',
+      manager: '/dashboard',
+      staff: '/dashboard/business/restaurant',
+    };
+    return roleRoutes[role] || '/dashboard';
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -48,8 +66,10 @@ export default function LandingPage() {
       const { authService } = await import('@/lib/auth');
       const result = await authService.login(loginForm);
 
-      if (result.success) {
-        router.push('/dashboard');
+      if (result.success && result.user) {
+        // Redirect to role-specific default dashboard
+        const defaultRoute = getRoleDefaultRoute(result.user.role);
+        router.push(defaultRoute);
       } else {
         setError(result.error || 'Login failed');
       }

@@ -170,20 +170,32 @@ class AuthService {
    */
   hasModuleAccess(user: UserProfile, module: string): boolean {
     if (!user || !user.is_active) return false
-    
+
     // Admin has access to all modules
     if (user.role === 'admin') return true
-    
-    // Role-based module access
+
+    // Role-based module access - Updated for all 11 roles
     const roleModuleMap: Record<string, string[]> = {
-      'manager': ['dashboard', 'reports', 'finance', 'procurement', 'hr'],
+      // Inventory & Procurement Users
+      'store_keeper': ['inventory', 'procurement'],
+      'dept_head_kitchen': ['inventory', 'procurement', 'business'],
+      'purchasing_officer': ['inventory', 'procurement'],
+      'approver_l1': ['inventory', 'procurement'],
+      'approver_l2': ['inventory', 'procurement'],
+      'gm': ['inventory', 'procurement'],
+      'finance_officer': ['finance', 'inventory', 'procurement'],
+      'auditor': ['finance', 'inventory', 'procurement'],
+
+      // Other Roles
+      'manager': ['dashboard', 'reports', 'finance', 'procurement', 'hr', 'business', 'facilities', 'academic', 'inventory'],
+      'staff': ['business', 'inventory', 'procurement'],
+
+      // Legacy roles (for backward compatibility)
       'accountant': ['dashboard', 'finance', 'reports'],
-      'procurement': ['dashboard', 'procurement', 'inventory'],
       'teacher': ['dashboard', 'academic', 'students'],
-      'staff': ['dashboard', 'pos', 'events', 'gym']
     }
 
-    const allowedModules = roleModuleMap[user.role] || ['dashboard']
+    const allowedModules = roleModuleMap[user.role] || []
     return allowedModules.includes(module)
   }
 
@@ -321,50 +333,110 @@ export const DEFAULT_CREDENTIALS = {
   }
 } as const
 
-// Role permissions configuration
+// Role permissions configuration - Updated for all 11 roles
 export const ROLE_PERMISSIONS = {
+  // System Administrator
   admin: {
     all_modules: true,
     user_management: true,
+    role_management: true,
     system_settings: true,
     financial_reports: true,
     procurement_approval: true,
-    academic_management: true
+    academic_management: true,
+    inventory_management: true,
   },
+
+  // Inventory & Procurement Users
+  store_keeper: {
+    inventory: true,
+    stock_management: true,
+    stock_issues: true,
+    stock_adjustments: true,
+    stock_counts: true,
+    procurement_view: true,
+  },
+  dept_head_kitchen: {
+    inventory: true,
+    procurement: true,
+    recipe_costing: true,
+    department_requisitions: true,
+    approval_under_50k: true,
+  },
+  purchasing_officer: {
+    inventory: true,
+    procurement: true,
+    purchase_orders: true,
+    vendor_management: true,
+    grn_management: true,
+    invoice_matching: true,
+  },
+  approver_l1: {
+    inventory_view: true,
+    procurement_view: true,
+    approval_under_50k: true,
+  },
+  approver_l2: {
+    inventory_view: true,
+    procurement_view: true,
+    approval_under_200k: true,
+    budget_tracking: true,
+  },
+  gm: {
+    inventory_view: true,
+    procurement_view: true,
+    approval_unlimited: true,
+    executive_reports: true,
+  },
+  finance_officer: {
+    finance: true,
+    inventory_view: true,
+    procurement_view: true,
+    gl_entries: true,
+    invoice_matching: true,
+    payment_processing: true,
+    financial_reports: true,
+  },
+  auditor: {
+    finance_readonly: true,
+    inventory_readonly: true,
+    procurement_readonly: true,
+    audit_trails: true,
+    compliance_reports: true,
+  },
+
+  // Other Roles
   manager: {
     dashboard: true,
     reports: true,
     finance: true,
     procurement: true,
     hr: true,
-    approval_authority: true
-  },
-  accountant: {
-    dashboard: true,
-    finance: true,
-    reports: true,
-    gl_transactions: true,
-    fee_collection: true
-  },
-  procurement: {
-    dashboard: true,
-    procurement: true,
-    inventory: true,
-    purchase_orders: true,
-    vendor_management: true
-  },
-  teacher: {
-    dashboard: true,
-    academic: true,
-    students: true,
-    attendance: true,
-    examinations: true
+    approval_authority: true,
+    business_operations: true,
   },
   staff: {
     dashboard: true,
     pos: true,
     events: true,
     gym: true,
-    basic_reports: true
-  }
+    basic_reports: true,
+    inventory_view: true,
+  },
+
+  // Legacy roles (for backward compatibility)
+  accountant: {
+    dashboard: true,
+    finance: true,
+    reports: true,
+    gl_transactions: true,
+    fee_collection: true,
+  },
+  teacher: {
+    dashboard: true,
+    academic: true,
+    students: true,
+    attendance: true,
+    examinations: true,
+  },
 } as const

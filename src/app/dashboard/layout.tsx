@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -69,6 +69,7 @@ import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Rahah24Chatbot } from "@/components/rahah24-chatbot";
+import { authService } from "@/lib/auth";
 
 interface NavItem {
   href: string;
@@ -98,14 +99,68 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [expandedSections, setExpandedSections] = React.useState<string[]>(['executive', 'business']);
+  const [expandedSections, setExpandedSections] = React.useState<string[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Fetch current user role on mount
+  useEffect(() => {
+    authService.getCurrentUser().then(user => {
+      const role = user?.role || null;
+      setUserRole(role);
+
+      // Set default expanded sections based on role
+      if (role === 'admin') {
+        setExpandedSections(['executive', 'business', 'inventory_procurement']);
+      } else if (['store_keeper', 'purchasing_officer', 'approver_l1', 'approver_l2', 'gm'].includes(role || '')) {
+        setExpandedSections(['inventory_procurement']);
+      } else if (['finance_officer', 'auditor'].includes(role || '')) {
+        setExpandedSections(['financial', 'inventory_procurement']);
+      } else if (role === 'dept_head_kitchen') {
+        setExpandedSections(['business', 'inventory_procurement']);
+      } else if (role === 'manager') {
+        setExpandedSections(['executive', 'business']);
+      } else if (role === 'staff') {
+        setExpandedSections(['business']);
+      }
+    });
+  }, []);
 
   const toggleSection = (sectionLabel: string) => {
-    setExpandedSections(prev => 
-      prev.includes(sectionLabel) 
+    setExpandedSections(prev =>
+      prev.includes(sectionLabel)
         ? prev.filter(s => s !== sectionLabel)
         : [...prev, sectionLabel]
     );
+  };
+
+  // Role-based section visibility
+  const getSectionVisibility = (sectionLabel: string): boolean => {
+    // Admin sees everything
+    if (userRole === 'admin') return true;
+
+    // Role-based permissions mapping based on USER_ROLES.md
+    const rolePermissions: Record<string, string[]> = {
+      // Inventory & Procurement users
+      'store_keeper': ['inventory_procurement'],
+      'dept_head_kitchen': ['inventory_procurement', 'business'], // Has access to Recipe Costing in business
+      'purchasing_officer': ['inventory_procurement'],
+      'approver_l1': ['inventory_procurement'],
+      'approver_l2': ['inventory_procurement'],
+      'gm': ['inventory_procurement'],
+      'finance_officer': ['financial', 'inventory_procurement'],
+      'auditor': ['financial', 'inventory_procurement'],
+      // Other roles
+      'manager': ['executive', 'business', 'financial', 'academic_affairs', 'hr', 'inventory_procurement', 'facilities_operations', 'islamic'],
+      'staff': ['business', 'inventory_procurement'],
+    };
+
+    const allowedSections = rolePermissions[userRole || ''] || [];
+    return allowedSections.includes(sectionLabel);
+  };
+
+  // Check if Settings should be visible (admin only)
+  const canAccessSettings = (): boolean => {
+    return userRole === 'admin';
   };
 
   const navItems: NavItemType[] = [
@@ -132,7 +187,6 @@ export default function DashboardLayout({
         { href: "/dashboard/business/restaurant", icon: ChefHat, label: "Restaurant & Catering" },
         { href: "/dashboard/business/restaurant/pos", icon: Receipt, label: "POS System" },
         { href: "/dashboard/business/restaurant/menu", icon: UtensilsCrossed, label: "Menu Management" },
-        { href: "/dashboard/business/restaurant/recipe-costing", icon: Calculator, label: "Recipe Costing" },
         { href: "/dashboard/business/madrasa", icon: GraduationCap, label: "Academic (Madrasa)" },
         { href: "/dashboard/business/shadi-lawn", icon: CalendarDays, label: "Events (Shadi Lawn)" },
         { href: "/dashboard/business/gym-time", icon: Heart, label: "Fitness (Gym Time)" },
@@ -199,6 +253,7 @@ export default function DashboardLayout({
         { href: "/dashboard/vendor-approvals", icon: UserCheck, label: "Vendor Approvals" },
         { href: "/dashboard/procurement/analytics", icon: LineChart, label: "Procurement Analytics" },
         { href: "/dashboard/inventory/department-requisitions", icon: ClipboardList, label: "Department Requisitions" },
+        { href: "/dashboard/inventory/recipe-costing", icon: Calculator, label: "Recipe Costing" },
         { href: "/dashboard/inventory/expiry-warranty", icon: AlertCircle, label: "Expiry & Warranty Tracking" },
       ]
     },
@@ -234,6 +289,29 @@ export default function DashboardLayout({
     { href: "/dashboard/settings", icon: Settings, label: "Settings & Configuration" },
   ];
 
+  // Filter navigation items based on user role
+  const filteredNavItems = navItems.filter(item => {
+    // During initial load (userRole is null), show nothing to avoid flashing unauthorized content
+    if (userRole === null) return false;
+
+    if ('type' in item) {
+      // Filter sections based on role
+      if (item.type === 'section') {
+        return getSectionVisibility(item.label);
+      }
+      // Show divider only for admin (before Settings)
+      if (item.type === 'divider') {
+        return canAccessSettings();
+      }
+    } else {
+      // Filter Settings link - only admin can access
+      if ('href' in item && item.href === '/dashboard/settings') {
+        return canAccessSettings();
+      }
+    }
+    return true;
+  });
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-background overflow-x-hidden">
@@ -246,7 +324,7 @@ export default function DashboardLayout({
           </SidebarHeader>
           <SidebarContent className="p-2">
             <SidebarMenu>
-              {navItems.map((item, index) => {
+              {filteredNavItems.map((item, index) => {
                 if ('type' in item) {
                   if (item.type === 'divider') {
                     return (
@@ -267,7 +345,7 @@ export default function DashboardLayout({
                         <SidebarMenuItem>
                           <SidebarMenuButton
                             onClick={() => toggleSection(section.label)}
-                            className={`w-full justify-between font-medium text-sm ${hasActiveItem ? 'bg-accent text-accent-foreground' : ''}`}
+                            className={`w-full justify-between font-medium text-sm py-3 ${hasActiveItem ? 'bg-accent text-accent-foreground' : ''}`}
                           >
                             <div className="flex items-center gap-2">
                               {React.createElement(section.icon, { className: "h-4 w-4" })}
@@ -326,14 +404,18 @@ export default function DashboardLayout({
           </SidebarContent>
           <SidebarFooter>
             <Separator className="my-2" />
-             <SidebarMenu>
+            {canAccessSettings() && (
+              <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton>
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </SidebarMenuButton>
+                  <Link href="/dashboard/settings" className="w-full">
+                    <SidebarMenuButton>
+                      <Settings className="h-4 w-4" />
+                      <span>Settings</span>
+                    </SidebarMenuButton>
+                  </Link>
                 </SidebarMenuItem>
-             </SidebarMenu>
+              </SidebarMenu>
+            )}
           </SidebarFooter>
         </Sidebar>
         <div className="flex flex-col flex-1 w-full min-w-0">
