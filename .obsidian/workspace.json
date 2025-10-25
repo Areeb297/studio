@@ -171,6 +171,8 @@
   },
   "active": "645be5cb467c41a2",
   "lastOpenFiles": [
+    "docs/client-presentations/PRESENTATION_SCRIPT.md",
+    "docs/client-presentations/Rahah24_ERP_-_Intelligent_Business_Management[1][1].pdf",
     "src/app/dashboard/settings/page.tsx",
     "src/app/dashboard/settings",
     "src/app/dashboard/donations/zakat/page.tsx",
@@ -180,8 +182,6 @@
     "src/app/dashboard/academic/sponsorship/page.tsx",
     "src/app/dashboard/academic/sponsorship",
     "src/app/dashboard/academic/students/page.tsx",
-    "src/app/dashboard/academic/students",
-    "src/app/dashboard/business/restaurant/recipe-costing/page.tsx",
     "docs/client-presentations/rahah24-comprehensive-overview.md",
     "RAHAH24-COVERAGE-ANALYSIS.md",
     "docs/modules/operations/inventory/DATABASE_DESIGN.md",

@@ -261,6 +261,7 @@ export default function VendorApprovalsPage() {
                     innerRadius={40}
                     outerRadius={80}
                     dataKey="count"
+                    nameKey="status"
                     startAngle={90}
                     endAngle={450}
                   >
@@ -268,15 +269,25 @@ export default function VendorApprovalsPage() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value} vendors`, 'Count']} />
-                  <Legend 
-                    verticalAlign="bottom" 
+                  <Tooltip
+                    formatter={(value, name) => [`${value} vendors`, name]}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
                     height={36}
-                    formatter={(value, entry) => (
-                      <span style={{ color: entry.color }}>
-                        {value}
-                      </span>
-                    )}
+                    formatter={(value, entry: any) => {
+                      const statusData = approvalStats.find(stat => stat.status === value);
+                      return (
+                        <span style={{ color: statusData?.color || '#000' }}>
+                          {value} ({statusData?.count})
+                        </span>
+                      );
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>
