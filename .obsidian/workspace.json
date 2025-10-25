@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RAHAH24-COVERAGE-ANALYSIS.md",
+                "file": "docs/modules/inventory.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RAHAH24-COVERAGE-ANALYSIS"
+              "title": "inventory"
             }
           }
         ]
@@ -169,37 +169,39 @@
       "bases:Create new base": false
     }
   },
-  "active": "385d5aa418d4ce49",
+  "active": "645be5cb467c41a2",
   "lastOpenFiles": [
+    "src/app/dashboard/settings/page.tsx",
+    "src/app/dashboard/settings",
+    "src/app/dashboard/donations/zakat/page.tsx",
+    "src/app/dashboard/donations/zakat",
+    "src/app/dashboard/facilities/maintenance/page.tsx",
+    "src/app/dashboard/facilities/maintenance",
+    "src/app/dashboard/academic/sponsorship/page.tsx",
+    "src/app/dashboard/academic/sponsorship",
+    "src/app/dashboard/academic/students/page.tsx",
+    "src/app/dashboard/academic/students",
+    "src/app/dashboard/business/restaurant/recipe-costing/page.tsx",
+    "docs/client-presentations/rahah24-comprehensive-overview.md",
+    "RAHAH24-COVERAGE-ANALYSIS.md",
     "docs/modules/operations/inventory/DATABASE_DESIGN.md",
-    "docs/modules/operations/inventory/diagrams/stock-movement-flow.mmd",
     "docs/phase-1-development/TRANSITION_TO_PRODUCTION.md",
-    "docs/modules/operations/inventory/diagrams/approval-workflow.mmd",
     "docs/GETTING_STARTED.md",
-    "docs/modules/operations/inventory/diagrams/purchase-workflow.mmd",
-    "docs/modules/operations/inventory/diagrams/entity-relationship-diagram.mmd",
     "docs/architecture/API_DESIGN.md",
     "frontend/README.md",
     "backend/README.md",
     "docs/modules/operations/inventory/ARCHITECTURE.md",
-    "backend/requirements.txt",
     "frontend/frontend.md",
     "backend/backend.md",
     "docs/architecture/PROJECT_STRUCTURE.md",
-    "frontend",
-    "backend",
     "docs/modules/operations/inventory/TDD.md",
-    "docs/modules/operations/inventory/TDD.md.tmp.5032.1761343747287",
     "docs/modules/operations/inventory/SCOPE.md",
-    "CLAUDE.md.tmp.5032.1761343097442",
-    "docs/client-presentations/rahah24-comprehensive-overview.md",
     "docs/phase-1-development/bugs.md",
     "docs/phase-1-development/tasks.md",
     "docs/AUTHENTICATION_SETUP.md",
     "docs/modules/operations/inventory/README.md",
     "docs/modules/operations/inventory/LEGACY_NOTES.md",
     "docs/modules/operations/inventory/WORKFLOWS.md",
-    "docs/modules/operations/inventory/INVENTORY_DEVELOPMENT_PLAN.md",
-    "docs/modules/operations/inventory/Inventory_Management_System_Proposal_15_10_25.pdf"
+    "docs/modules/operations/inventory/INVENTORY_DEVELOPMENT_PLAN.md"
   ]
 }
