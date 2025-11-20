@@ -39,43 +39,18 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Role-based default landing pages - must match middleware.ts
-  const getRoleDefaultRoute = (role: string): string => {
-    const roleRoutes: Record<string, string> = {
-      admin: '/dashboard',
-      store_keeper: '/dashboard/inventory',
-      dept_head_kitchen: '/dashboard/inventory/recipe-costing',
-      purchasing_officer: '/dashboard/procurement/requisitions',
-      approver_l1: '/dashboard/procurement/requisitions',
-      approver_l2: '/dashboard/procurement/requisitions',
-      gm: '/dashboard/inventory',
-      finance_officer: '/dashboard/finance',
-      auditor: '/dashboard/finance/reports',
-      manager: '/dashboard',
-      staff: '/dashboard/business/restaurant',
-    };
-    return roleRoutes[role] || '/dashboard';
-  };
+  const DEFAULT_DASHBOARD_ROUTE = '/dashboard';
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
     try {
-      const { authService } = await import('@/lib/auth');
-      const result = await authService.login(loginForm);
-
-      if (result.success && result.user) {
-        // Redirect to role-specific default dashboard
-        const defaultRoute = getRoleDefaultRoute(result.user.role);
-        router.push(defaultRoute);
-      } else {
-        setError(result.error || 'Login failed');
-      }
+      router.push(DEFAULT_DASHBOARD_ROUTE);
     } catch (err) {
-      setError('An unexpected error occurred');
-      console.error('Login error:', err);
+      setError('Unable to open the dashboard. Please try again.');
+      console.error('Login redirect error:', err);
     } finally {
       setIsLoading(false);
     }

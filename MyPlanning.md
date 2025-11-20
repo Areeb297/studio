@@ -1,5 +1,38 @@
 # 🎯 Project Planning Log
 
+## 📅 Current Session: November 20, 2025 - 16:00 UTC
+**Session ID**: LOGIN-SIMPLIFICATION-002
+**User Request**: Re-apply simplified login flow so landing page no longer depends on Supabase (per attached plan)
+
+### 🎯 Task Breakdown
+- [x] **Task 1**: Record session context and action plan in MyPlanning.md | Complexity: 🟢 Simple | ETA: 10 min
+- [ ] **Task 2**: Update landing-page login handler to bypass Supabase logic | Complexity: 🟢 Simple | ETA: 20 min
+
+### 📊 Impact Assessment
+**Change Category**: 🟢 Simple  
+**Files Affected**:  
+- `MyPlanning.md` (planning log updates)  
+- `src/app/page.tsx` (landing page login handler)  
+
+**Risk Level**: Low  
+**Approval Status**: ✅ Approved (Simplify Login Flow plan)
+
+### ✅ Completed Tasks
+- ✅ Logged session details, tasks, and approval state in MyPlanning.md - 16:05 UTC
+
+### 🚨 Issues & Resolutions
+- _None reported for this session_
+
+### 📋 Next Steps
+1. Remove Supabase dependency from landing page login behaviour
+2. Verify loading/error messaging still works without backend calls
+
+---
+
+## 📅 Current Session: November 20, 2025 - 00:00 UTC
+**Session ID**: LOGIN-SIMPLIFICATION-001
+**User Request**: Remove Supabase login checks and allow direct dashboard access from landing page form
+
 ## 📅 Current Session: December 19, 2024 - 15:30 UTC
 **Session ID**: AUTH-IMPL-001
 **User Request**: Implement login functionality with proper user authentication and password storage
