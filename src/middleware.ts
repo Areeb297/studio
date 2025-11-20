@@ -110,6 +110,13 @@ function hasRouteAccess(userRole: string, requestedPath: string): boolean {
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+  
+  // AUTH BYPASS: Directly return response, skipping all Supabase checks
+  return res
+
+  /*
+   * Supabase authentication checks disabled for bypass
+   *
   const supabase = createMiddlewareClient({ req, res })
 
   // Get current user session
@@ -188,6 +195,7 @@ export async function middleware(req: NextRequest) {
   }
 
   return res
+  */
 }
 
 // Configure which routes the middleware should run on

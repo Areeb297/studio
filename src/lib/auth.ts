@@ -28,78 +28,28 @@ export interface AuthResponse {
 class AuthService {
   private supabase = createClientComponentClient()
 
+  // Mock admin user for bypass
+  private mockAdminUser: UserProfile = {
+    id: 'mock-admin-id',
+    employee_code: 'ADMIN001',
+    full_name: 'System Administrator',
+    role: 'admin',
+    email: 'admin@rahah24.com',
+    job_title: 'System Administrator',
+    department: 'IT',
+    is_active: true,
+    assigned_units: ['all'],
+    permissions: { all: true }
+  }
+
   /**
    * Authenticate user with email and password
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    try {
-      // First, authenticate with Supabase Auth
-      const { data: authData, error: authError } = await this.supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      })
-
-      if (authError) {
-        console.error('Authentication error:', authError)
-        return {
-          success: false,
-          error: this.getErrorMessage(authError.message)
-        }
-      }
-
-      if (!authData.user) {
-        return {
-          success: false,
-          error: 'Authentication failed'
-        }
-      }
-
-      // Get user profile from database
-      const { data: profile, error: profileError } = await this.supabase
-        .from('user_profiles')
-        .select(`
-          id,
-          employee_code,
-          full_name,
-          role,
-          email,
-          job_title,
-          department,
-          is_active,
-          assigned_units,
-          permissions
-        `)
-        .eq('id', authData.user.id)
-        .single()
-
-      if (profileError || !profile) {
-        console.error('Profile fetch error:', profileError)
-        return {
-          success: false,
-          error: 'User profile not found'
-        }
-      }
-
-      // Check if user account is active
-      if (!profile.is_active) {
-        await this.logout() // Sign out inactive user
-        return {
-          success: false,
-          error: 'Account is deactivated. Please contact administrator.'
-        }
-      }
-
-      return {
-        success: true,
-        user: profile as UserProfile
-      }
-
-    } catch (error) {
-      console.error('Login error:', error)
-      return {
-        success: false,
-        error: 'An unexpected error occurred'
-      }
+    // Always return success with mock admin user
+    return {
+      success: true,
+      user: this.mockAdminUser
     }
   }
 
@@ -118,38 +68,8 @@ class AuthService {
    * Get current authenticated user
    */
   async getCurrentUser(): Promise<UserProfile | null> {
-    try {
-      const { data: { user } } = await this.supabase.auth.getUser()
-      
-      if (!user) return null
-
-      const { data: profile, error } = await this.supabase
-        .from('user_profiles')
-        .select(`
-          id,
-          employee_code,
-          full_name,
-          role,
-          email,
-          job_title,
-          department,
-          is_active,
-          assigned_units,
-          permissions
-        `)
-        .eq('id', user.id)
-        .single()
-
-      if (error || !profile) {
-        console.error('Profile fetch error:', error)
-        return null
-      }
-
-      return profile as UserProfile
-    } catch (error) {
-      console.error('Get current user error:', error)
-      return null
-    }
+    // Always return mock admin user
+    return this.mockAdminUser
   }
 
   /**
@@ -203,66 +123,32 @@ class AuthService {
    * Update user password
    */
   async updatePassword(newPassword: string): Promise<AuthResponse> {
-    try {
-      const { error } = await this.supabase.auth.updateUser({
-        password: newPassword
-      })
-
-      if (error) {
-        return {
-          success: false,
-          error: this.getErrorMessage(error.message)
-        }
-      }
-
-      return { success: true }
-    } catch (error) {
-      console.error('Password update error:', error)
-      return {
-        success: false,
-        error: 'Failed to update password'
-      }
-    }
+    // Mock success
+    return { success: true }
   }
 
   /**
    * Send password reset email
    */
   async resetPassword(email: string): Promise<AuthResponse> {
-    try {
-      const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`
-      })
-
-      if (error) {
-        return {
-          success: false,
-          error: this.getErrorMessage(error.message)
-        }
-      }
-
-      return { success: true }
-    } catch (error) {
-      console.error('Password reset error:', error)
-      return {
-        success: false,
-        error: 'Failed to send reset email'
-      }
-    }
+    // Mock success
+    return { success: true }
   }
 
   /**
    * Listen to auth state changes
    */
   onAuthStateChange(callback: (user: UserProfile | null) => void) {
-    return this.supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        const profile = await this.getCurrentUser()
-        callback(profile)
-      } else if (event === 'SIGNED_OUT') {
-        callback(null)
+    // Immediately trigger callback with mock user
+    callback(this.mockAdminUser)
+    
+    return {
+      data: {
+        subscription: {
+          unsubscribe: () => {}
+        }
       }
-    })
+    }
   }
 
   /**
