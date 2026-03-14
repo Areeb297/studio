@@ -1,371 +1,444 @@
-# Rahah24 ERP - Comprehensive Islamic Educational Institution Management System
+# Rahah24 ERP — AI-Enabled Enterprise Resource Planning Platform
 
-## Overview
+> **راحت آپ کے لئے، حساب ہمارے لئے**
+> *Comfort for you, accountability for us.*
 
-Rahah24 ERP is a modern, comprehensive Enterprise Resource Planning solution specifically designed for Jamia Binoria Aalamia, an Islamic educational institution. The system integrates multiple business functions under a unified platform, streamlining operations across all departments while maintaining Islamic principles and cultural requirements.
-
-## Current System Architecture
-
-### Technology Stack
-- **Frontend**: Next.js 15.3.3 with React 18
-- **Backend**: Supabase (PostgreSQL)
-- **UI Framework**: Tailwind CSS with Radix UI components
-- **Charts**: Recharts library
-- **AI Integration**: Google Genkit for intelligent features
-- **State Management**: Tanstack React Query
-- **Authentication**: Supabase Auth
-
-## Currently Implemented Modules
-
-### ✅ Core Business Lines Dashboard
-- **Restaurant Management**: Full POS system with dining & takeaway
-- **Madrasa (Academic)**: Student and educational operations management
-- **Shadi Lawn (Events)**: Wedding and event booking platform
-- **Gym Time (Fitness)**: Membership and fitness center management
-
-### ✅ Operational Modules
-1. **Sales Management**
-   - Real-time sales tracking
-   - Payment processing
-   - Analytics dashboard
-
-2. **Inventory & Procurement** (Basic - Phase 1 Full Implementation in Progress)
-   - Stock level monitoring
-   - Purchase management
-   - Automated alerts
-   - Recipe costing & ingredient tracking
-   - Vendor management
-   - Multi-location storage
-
-3. **Finance & Accounting**
-   - General ledger
-   - Trial balance
-   - Income statements
-   - Balance sheets
-   - Cashflow analysis
-
-4. **Events & Booking**
-   - Event calendar
-   - Booking management
-   - Resource allocation
-
-5. **HR & Staff Management**
-   - Employee records
-   - Department management
-   - Basic payroll tracking
-
-6. **Reports & Analytics**
-   - Comprehensive reporting
-   - Data visualization
-   - Performance metrics
-
-7. **AI-Powered Features**
-   - Demand forecasting
-   - Pricing optimization
-   - Staffing suggestions
-   - Business insights
-   - Integrated chatbot
-
-## Implementation Status & Phased Rollout
-
-### 🎯 PHASE 1: Inventory & Procurement (Oct-Dec 2025) - **IN PROGRESS**
-**Investment**: PKR 500,000 | **Timeline**: 12 weeks | **Expected ROI**: 600%
-
-#### Module Status: Comprehensive Inventory Management System (14 Sub-Modules)
-
-**Core Inventory Features:**
-1. ✅ Stock Level Controls - Min/Max/Reorder automation
-2. 🔄 Purchase & Approval Workflow - 3-level approval system
-3. 🔄 Vendor & Purchasing Management - 15+ vendor fields with performance tracking
-4. 🔄 Department Requisitions & Issues - FEFO enforcement
-5. ✅ **Recipe Costing & Ingredient Tracking** - Ideal vs actual variance
-6. 🔄 Item Location & Storage - Zone/Aisle/Rack/Bin mapping
-7. 🔄 Expiry & Warranty Tracking - Automated 30/60-day alerts
-8. 🔄 Reusable/Saleable Items - Used oil, scrap tracking with margin analysis
-9. 🔄 Theft & Physical Stock Checks - Scheduled counts with variance handling
-10. 🔄 Store Staff KPI & Donation Tracking - Performance metrics
-11. 🔄 Comprehensive Reporting - 16 different report types
-12. 🔄 Alerts & Automation - 10 automated alert types
-13. 🔄 Roles & Permissions - 7 user roles with granular control
-14. 🔄 Test Cases for QA - 14+ automated scenarios
-
-**Why Inventory First?**
-- ✅ Complete requirements documentation available
-- ✅ Detailed BRD, TDD, and specifications ready
-- ✅ Database schema designed (30+ tables)
-- ✅ Immediate business impact and cost savings
-- ✅ Foundation for other operational modules
-
-**Key Highlights:**
-- **Recipe Costing Integration**: Module 5 of the Inventory system provides comprehensive recipe management with ingredient costing, ideal vs actual consumption tracking, food cost percentage calculations, and variance analysis. This will later integrate with the Restaurant POS system in Phase 3.
-- **14 Sub-Modules**: Complete end-to-end inventory management from stock controls to theft tracking
-- **30+ Database Tables**: Comprehensive schema for all inventory operations
-- **80+ API Endpoints**: Full REST API coverage
-- **16 Report Types**: Extensive reporting and analytics
-- **7 User Roles**: Granular permission control with approval workflows
+Rahah24 ERP is a comprehensive, AI-enabled management platform designed for **Jamia Binoria Aalamia** (SITE, Karachi). It unifies restaurant operations, inventory, procurement, donations, finance, HR, and Islamic services into a single cloud-based system.
 
 ---
 
-### 🔜 PHASE 2: Financial Management (Jan-Feb 2026)
-**Investment**: PKR 400,000 | **Timeline**: 8 weeks
+## Technology Stack
 
-**Modules to be Implemented:**
-1. **Enhanced General Ledger & Accounting**
-   - Account payable/receivable integration
-   - Bank reconciliation automation
-   - Budget management and variance analysis
-   - Audit-ready financial reporting
-
-2. **Donation Management System**
-   - Donor registration and tracking
-   - Automated receipt generation
-   - Fund utilization reporting
-   - Zakat and charity management
-   - Campaign tracking and analytics
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15.3.3 (App Router) |
+| UI | React 18 + TypeScript |
+| Styling | Tailwind CSS + shadcn/ui (Radix UI) |
+| Charts | Recharts |
+| AI | Google Genkit (Gemini 2.0 Flash) |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth + RBAC |
+| State | Tanstack React Query |
+| Dev Server | Turbopack (port 9002) |
 
 ---
 
-### 🔜 PHASE 3: Restaurant Operations (Mar-Apr 2026)
-**Investment**: PKR 350,000 | **Timeline**: 8 weeks
+## How the ERP Works
 
-**Modules to be Implemented:**
-1. **Enhanced POS System**
-   - Kitchen display integration
-   - Table management optimization
-   - Order workflow automation
+```mermaid
+flowchart TD
+    subgraph INPUT["📥 Inputs"]
+        POS_IN[Restaurant Orders\nDine-in · Takeaway · Delivery]
+        PROC_IN[Purchase Requisitions\nFrom Departments]
+        DON_IN[Donations\nCash + In-Kind]
+        QUR_IN[Qurbani Bookings\nAnimal + Share Requests]
+        SAL_IN[Sales Orders\nCustomer Invoices]
+    end
 
-2. **Recipe Costing Integration**
-   - Full integration with inventory
-   - Real-time cost updates
-   - Menu pricing optimization
+    subgraph OPS["⚙️ Core Operations"]
+        APPROVAL[3-Level\nApproval Workflow]
+        INVENTORY[Inventory\nStock Management]
+        RECIPE[Recipe Costing\nFood Cost %]
+        KITCHEN[Kitchen Display\nKOT Management]
+        LOYALTY[Loyalty Program\nPoints & Tiers]
+    end
 
----
+    subgraph FINANCE["💰 Financial Layer"]
+        GL[General Ledger]
+        AP[Accounts Payable\nSupplier Payments]
+        AR[Accounts Receivable\nCustomer Receipts]
+        BUDGET[Budget &\nCost Centers]
+    end
 
-### 🔜 PHASE 4: Events & Islamic Services (Apr-May 2026)
-**Investment**: PKR 400,000 | **Timeline**: 8 weeks
+    subgraph OUTPUT["📊 Outputs"]
+        REPORTS[16 Report Types\nAP Aging · Stock · GRN History]
+        ALERTS[Automated Alerts\nLow Stock · Expiry · Cost Variance]
+        AI_OUT[AI Insights\nForecasting · Anomaly Detection]
+        RECEIPTS[Receipts & Slips\nDonation · Qurbani · POS]
+    end
 
-**Modules to be Implemented:**
-1. **Enhanced Shadi Lawn Management**
-   - Advanced booking workflows
-   - Resource allocation optimization
-   - Revenue management
+    POS_IN --> KITCHEN --> INVENTORY --> RECIPE
+    PROC_IN --> APPROVAL --> INVENTORY
+    APPROVAL --> AP
+    DON_IN --> GL
+    QUR_IN --> INVENTORY
+    SAL_IN --> AR
 
-2. **Qurbani Management System**
-   - Participant registration
-   - Animal allocation and tracking
-   - Processing status updates
-   - Distribution management
-   - Automated receipts
+    RECIPE --> FINANCE
+    INVENTORY --> FINANCE
+    LOYALTY --> POS_IN
 
-3. **HR & Time Attendance**
-   - Attendance tracking for events
-   - Staff scheduling optimization
+    FINANCE --> GL --> REPORTS
+    FINANCE --> BUDGET --> ALERTS
+    REPORTS --> AI_OUT
+    GL --> RECEIPTS
 
----
-
-### 🔜 PHASE 5: Final Integration (Jun 2026)
-**Investment**: PKR 200,000 | **Timeline**: 4 weeks
-
-**Deliverables:**
-- Complete system integration
-- User acceptance testing
-- Training and documentation
-- Go-live support and stabilization
-
----
-
-### 📋 Modules Deferred to Future Phases (Post-July 2026)
-
-**Enhanced Academic Management:**
-- Student enrollment system
-- Fee collection and tracking
-- Attendance management
-- Examination and grading
-- Certificate generation
-- Parent portal
-
-**Facilities & Utilities Management:**
-- Maintenance scheduling
-- Rent management
-- Electric/gas billing automation
-- Energy efficiency tracking
-
-**Construction & Project Management:**
-- Project planning and tracking
-- Budget management
-- Resource allocation
-- Timeline monitoring
-
-## Proposed Enhanced Navigation Structure
-
-### 🏠 Main Dashboard Hub
-```
-Rahah24 ERP Home
-├── Business Operations
-│   ├── Restaurant & Catering
-│   ├── Madrasa & Education
-│   ├── Events & Shadi Lawn
-│   └── Gym & Fitness
-├── Financial Management
-│   ├── Accounting & General Ledger
-│   ├── Donations & Zakat
-│   ├── Student Fees
-│   └── Reports & Analytics
-├── Human Resources
-│   ├── Employee Management
-│   ├── Payroll & Benefits
-│   ├── Attendance & Leave
-│   └── Performance Management
-├── Academic Affairs
-│   ├── Student Registration
-│   ├── Curriculum Management
-│   ├── Examinations
-│   └── Certificates
-├── Operations Management (🎯 PHASE 1 - IN PROGRESS)
-│   ├── Inventory & Procurement
-│   │   ├── Inventory Dashboard
-│   │   ├── Stock Level Controls
-│   │   ├── Purchase Requisitions & Orders
-│   │   ├── Vendor Management
-│   │   ├── Recipe Costing & Ingredient Tracking ⭐
-│   │   ├── Department Requisitions
-│   │   ├── Physical Stock Counts
-│   │   └── Comprehensive Reports & Alerts
-│   ├── Facilities & Maintenance (Future)
-│   ├── Utilities Management (Future)
-│   └── Rent & Properties (Future)
-├── Special Services
-│   ├── Qurbani Management
-│   ├── Hajj & Umrah Services
-│   ├── Islamic Events
-│   └── Community Programs
-└── System Administration
-    ├── User Management
-    ├── Settings & Configuration
-    ├── Data Backup
-    └── System Reports
+    style INPUT fill:#f0f9ff,stroke:#0ea5e9
+    style OPS fill:#f0fdf4,stroke:#22c55e
+    style FINANCE fill:#fefce8,stroke:#eab308
+    style OUTPUT fill:#fdf4ff,stroke:#a855f7
 ```
 
-## AI-Powered Features Implementation
+---
 
-### Current AI Capabilities
-- Business insights generation
-- Demand forecasting
-- Pricing optimization
-- Staffing level suggestions
-- Interactive chatbot assistance
+## System Architecture
 
-### Planned AI Enhancements
-- **Donation Trend Analysis**: AI-powered insights into donation patterns
-- **Academic Performance Prediction**: Student success forecasting
-- **Maintenance Scheduling**: Predictive maintenance using IoT data
-- **Energy Optimization**: Smart utility usage recommendations
-- **Qurbani Logistics**: Optimal animal allocation and processing schedules
+```mermaid
+graph TB
+    subgraph Client["Client Layer"]
+        UI[Next.js 15 App Router]
+        TW[Tailwind CSS + shadcn/ui]
+    end
 
-## Database Schema Highlights
+    subgraph Modules["Business Modules"]
+        POS[🍽️ Restaurant POS]
+        INV[📦 Inventory]
+        PRO[🛒 Procurement]
+        FIN[💰 Finance & Donations]
+        QUR[🐑 Qurbani]
+        SAL[🧾 Sales]
+        HR[👥 HR]
+        RPT[📊 Reports]
+        ADM[⚙️ Admin]
+    end
 
-The system utilizes a comprehensive PostgreSQL schema with:
-- **Multi-tenant architecture** supporting all business lines
-- **Role-based access control** with Islamic hierarchy considerations
-- **Audit trails** for all financial transactions
-- **Flexible metadata** storage for Islamic calendar integration
-- **Advanced indexing** for performance optimization
+    subgraph Backend["Backend & Services"]
+        SB[(Supabase PostgreSQL)]
+        AUTH[Supabase Auth RBAC]
+        AI[Google Genkit AI]
+    end
 
-## Development Standards
+    UI --> Modules
+    Modules --> SB
+    Modules --> AUTH
+    Modules --> AI
+```
 
-### UI/UX Guidelines
-- **Modern & Luxurious Design**: Premium quality interface with Islamic aesthetic
-- **Donut Charts**: Preferred over pie charts for better readability
-- **Responsive Design**: Mobile-first approach
-- **Accessibility**: WCAG 2.1 AA compliance
-- **Islamic Themes**: Crescent moon, geometric patterns, Islamic colors
+---
 
-### Technical Standards
-- **TypeScript**: Strict type checking
-- **Component Architecture**: Reusable UI components
-- **API Design**: RESTful endpoints with proper error handling
-- **Security**: Role-based permissions and data encryption
-- **Performance**: Optimized queries and caching strategies
+## Procurement Workflow
 
-## Implementation Roadmap Summary
+```mermaid
+flowchart LR
+    PR[📋 Purchase\nRequisition] -->|3-level approval| APR{Approvals}
+    APR -->|Approved| PO[🛍️ Purchase\nOrder]
+    APR -->|Rejected| REJ[❌ Rejected]
+    PO -->|Goods received| GRN[📦 Goods Receipt\nNote GRN]
+    GRN -->|Invoice matched| INV[🧾 Purchase\nInvoice]
+    INV -->|Finance approved| PAY[💳 Supplier\nPayment]
+    PAY --> LED[📒 GL Ledger\nPosting]
 
-### Phase 1: Inventory & Procurement (Oct-Dec 2025) ✅ IN PROGRESS
-- Complete Inventory Management System (14 sub-modules)
-- Purchase & Approval Workflows
-- Vendor Management & Performance Tracking
-- **Recipe Costing & Ingredient Tracking**
-- Stock Controls & Physical Location Mapping
-- Comprehensive Reporting & Automation
+    style PR fill:#e0f2fe,stroke:#0284c7
+    style PO fill:#fef3c7,stroke:#d97706
+    style GRN fill:#dcfce7,stroke:#16a34a
+    style INV fill:#f3e8ff,stroke:#9333ea
+    style PAY fill:#d1fae5,stroke:#059669
+```
 
-### Phase 2: Financial Management (Jan-Feb 2026)
-- Enhanced General Ledger & Accounting
-- Donation Management System
-- Budget Management & Variance Analysis
-- Audit-Ready Reporting
+---
 
-### Phase 3: Restaurant Operations (Mar-Apr 2026)
-- Enhanced POS System
-- Kitchen Display Integration
-- Recipe Costing Integration with Inventory
-- Menu Pricing Optimization
+## POS Order Flow
 
-### Phase 4: Events & Islamic Services (Apr-May 2026)
-- Enhanced Shadi Lawn Management
-- Qurbani Management System
-- HR & Time Attendance for Events
+```mermaid
+sequenceDiagram
+    participant C as Cashier
+    participant POS as POS Terminal
+    participant KDS as Kitchen Display
+    participant K as Kitchen Staff
 
-### Phase 5: Final Integration & Go-Live (Jun 2026)
-- Complete System Integration
-- User Acceptance Testing
-- Training & Documentation
-- Go-Live Support & Stabilization
+    C->>POS: Select Order Type + Items
+    C->>POS: Apply Discount / Note
+    C->>POS: Print KOT
+    POS->>KDS: KOT appears in NEW column
+    K->>KDS: Click "Start" → PREPARING
+    K->>KDS: Click "Mark Ready" → READY
+    C->>POS: Pay & Close
+    POS-->>C: Receipt printed
+```
 
-## Key Differentiators
+---
 
-1. **Islamic Compliance**: Built with Islamic principles and requirements
-2. **Cultural Sensitivity**: Designed for Islamic educational institutions
-3. **Multi-Business Support**: Handles diverse revenue streams
-4. **AI Integration**: Modern intelligent features for decision-making
-5. **Scalable Architecture**: Supports growth and expansion
-6. **User-Friendly Interface**: Intuitive design for all user levels
+## User Role Hierarchy
+
+```mermaid
+graph TD
+    ADMIN[👑 Admin\nFull Access]
+    MGR[🏢 Manager\nAll except Admin]
+    GM[🎯 General Manager\nOperations + Finance]
+    FIN[💰 Finance Officer\nFinance + Reports]
+    PUR[🛒 Purchasing Officer\nProcurement + Returns]
+    APL1[✅ Approver L1]
+    APL2[✅ Approver L2]
+    SK[🏪 Store Keeper\nInventory + GRN]
+    DH[🍳 Dept Head Kitchen\nPOS + Production]
+    AUD[🔍 Auditor\nRead Only]
+
+    ADMIN --> MGR
+    ADMIN --> GM
+    GM --> FIN
+    GM --> PUR
+    PUR --> APL1
+    APL1 --> APL2
+    APL2 --> SK
+    GM --> DH
+    FIN --> AUD
+```
+
+---
+
+## Module Dependency Map
+
+```mermaid
+graph LR
+    INV[Inventory] --> POS[POS Terminal]
+    INV --> REC[Recipe Costing]
+    REC --> POS
+    PRO[Procurement\nPR→PO→GRN] --> INV
+    PRO --> FIN[Finance & GL]
+    POS --> FIN
+    POS --> KDS[Kitchen Display]
+    POS --> LOY[Loyalty Program]
+    DON[Donations] --> FIN
+    QUR[Qurbani] --> INV
+    SAL[Sales] --> FIN
+    FIN --> RPT[Reports\n16 types]
+    INV --> RPT
+    PRO --> RPT
+```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL 14+
-- Supabase account
-- Google AI API key
+- npm or yarn
 
 ### Installation
 ```bash
 npm install
-npm run dev
+npm run dev        # http://localhost:9002
+npm run build      # Production build
+npm run typecheck  # TypeScript check
 ```
 
-### Environment Setup
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-GOOGLE_GENAI_API_KEY=your-google-ai-key
+### Demo Login
+```
+Email:    admin@rahah24.com
+Password: Admin123!@#
+```
+Or use the quick-login chips on the landing page (Admin / Manager / Finance).
+
+---
+
+## Implemented Modules
+
+### 1. Restaurant POS & Operations
+Full point-of-sale system for a Pakistani restaurant.
+
+| Page | Description |
+|---|---|
+| POS Terminal | 3-panel terminal: order types, menu grid, cart + payment |
+| Kitchen Display | Live KDS — NEW / PREPARING / READY columns with timers |
+| Table Management | Visual floor plan, zone filters, status tracking |
+| Order History | 15+ orders, all 6 types, receipt dialog |
+| KOT History | Kitchen Order Ticket log with reprint |
+| Menu Management | 50 Pakistani dishes, Urdu names, spicy dots, margin calc |
+| Combo Deals | 8 combo bundles with save %, bestseller badges |
+| Loyalty Program | Silver / Gold / Platinum tiers, points, redeem dialog |
+| Cashier Shift | Open/close shift, cash count, variance, Z-report |
+| Voids & Refunds | Manager PIN auth, audit trail |
+| Event Booking | Calendar UI, hall selector |
+
+**Order Types**: Takeaway · Dine-in · Delivery · Booking · Mess · Staff
+**Payments**: Cash · Card · JazzCash · Easypaisa · Bank Transfer
+
+---
+
+### 2. Inventory Management (14 Sub-Modules)
+Complete warehouse and stock management system.
+
+- Inventory Dashboard with KPIs
+- Stock Levels (multi-location)
+- Stock Issues, Transfers, Adjustments
+- Physical Stock Count with variance
+- Items Master & Categories
+- Recipe Costing (BOM, ideal vs actual, food cost %)
+- Reports & Alerts
+
+---
+
+### 3. Procurement & Purchasing
+End-to-end purchasing workflow: PR → PO → GRN → Invoice → Payment.
+
+- Purchase Requisitions (PR-YYYYMM-NNNN)
+- Purchase Orders (PO-YYYYMM-NNNN)
+- Goods Receipt Notes (GRN-YYYYMM-NNNN)
+- Purchase Invoices (PINV-YYYYMM-NNNN)
+- Supplier Payments
+- Vendor / Supplier Master
+
+---
+
+### 4. Approvals
+Multi-level approval workflow system.
+
+- Pending Approvals queue (SLA progress bars)
+- Approve Requisitions, Returns, Finance, Payments, Inventory
+- Approval History (unified log matching real ERP)
+
+---
+
+### 5. Finance & Donations
+- Finance Overview (Cost Centers)
+- Donation Entry (cash + in-kind)
+- Donor Management
+- Income, Expenses, Cashbook, Budget
+- Zakat Management
+
+---
+
+### 6. Qurbani Management (Islamic Services)
+- Animal tracking (Cow, Goat) with share allocation
+- Booking, Slips, Costing, Distribution
+
+---
+
+### 7. Sales
+- Customer Orders, Delivery Notes
+- Sales Invoices, Customer Receipts
+- Customer Master
+
+---
+
+### 8. Production
+- Bill of Materials (BOM)
+- Work Orders with yield management
+
+---
+
+### 9. Returns
+- Purchase Returns (PR-2026-NNNN workflow)
+- Sales Returns
+
+---
+
+### 10. Reports (16 types)
+AP Aging · Stock Position · Stock Ledger · Low Stock · Expiry Alerts · Price History · Dept Performance · Recipe Variance · PO List · GRN History · Invoice History · Internal Requisitions · Stock Valuation · Vendor Performance · Report Builder
+
+---
+
+### 11. Admin Panel
+- Company Settings (multi-entity)
+- Role Master & Permissions Matrix
+- User Management
+- Warehouse Configuration
+- Workflow Configuration
+- Audit Log
+
+---
+
+## Navigation Structure
+
+```
+Dashboard
+├── Point of Sale
+│   ├── POS Terminal
+│   ├── Kitchen Display
+│   ├── Table Management
+│   ├── Order History
+│   ├── KOT History
+│   ├── Menu Management
+│   ├── Combo Deals
+│   ├── Loyalty Program
+│   ├── Cashier Shift
+│   ├── Voids & Refunds
+│   └── Event Booking
+├── Procurement
+│   ├── Purchase Requisitions
+│   ├── Purchase Orders
+│   ├── Goods Receipt Notes
+│   ├── Purchase Invoices
+│   ├── Supplier Payments
+│   └── Vendors / Suppliers
+├── Approvals
+│   ├── Pending Approvals
+│   ├── Approve Requisitions / Returns / Finance / Payments / Inventory
+│   └── Approval History
+├── Inventory (14 sub-modules)
+├── Production (BOM, Work Orders)
+├── Sales (Orders, Invoices, Receipts)
+├── Returns (Purchase, Sales)
+├── Finance & Donations
+├── Qurbani Management
+├── Reports (16 types)
+├── Alerts
+└── Admin (Users, Roles, Settings, Audit)
 ```
 
-## Support & Maintenance
+---
 
-- **Regular Updates**: Monthly feature releases
-- **Bug Fixes**: Immediate response to critical issues
-- **Training**: Comprehensive user training programs
-- **Documentation**: Detailed user manuals in Urdu and English
-- **24/7 Support**: Technical assistance during critical operations
+## User Roles
 
-## Contributing
+| Role | Access |
+|---|---|
+| admin | Full system access |
+| manager | All modules except admin |
+| gm | Procurement, Approvals, Finance, POS, Sales, Reports |
+| purchasing_officer | Procurement, Approvals, Inventory, Returns |
+| approver_l1 / l2 | Procurement, Approvals, Inventory |
+| store_keeper | Procurement, Approvals, Inventory |
+| finance_officer | Finance, Donations, Procurement, Reports |
+| dept_head_kitchen | POS, Inventory, Production, Procurement |
+| auditor | Read-only: Finance, Inventory, Reports |
 
-This project follows Islamic principles of collective benefit (Maslaha) and community service (Khidmat). All contributions should align with the mission of supporting Islamic education.
+---
+
+## Multi-Company Architecture
+
+The system supports multiple entities under one installation:
+- Main System Company
+- JAMIA COMMERCIAL BUSINESS
+- JAMIA BINORIA AALAMIA
+- MADERSA TEHFEEZUL QURAN
+
+---
+
+## AI Features
+
+- Predictive inventory forecasting
+- Food cost variance alerts
+- KPI insights per department
+- Pattern-based fraud monitoring
+- AI chatbot assistant (Rahah24 bot)
+
+---
+
+## Document Numbering (Real ERP Format)
+
+```
+PR-YYYYMM-NNNN    Purchase Requisition
+PO-YYYYMM-NNNN    Purchase Order
+GRN-YYYYMM-NNNN   Goods Receipt Note
+PINV-YYYYMM-NNNN  Purchase Invoice
+LYL-YYYY-NNNN     Loyalty Card
+BKG-NNNN          Event Booking
+KOT-NNNN          Kitchen Order Ticket
+```
+
+---
+
+## Currency
+
+All financial values are displayed in **PKR (Pakistani Rupees)**. Format: `Rs. 18,750` or `PKR 18,750`.
+
+---
 
 ## License
 
 Proprietary software developed for Jamia Binoria Aalamia. All rights reserved.
+© 2026 Rahah24 ERP Systems.
 
 ---
 
-*Built with ❤️ for the Islamic education community*
+*Built for Jamia Binoria Aalamia — SITE, Karachi, Pakistan*
