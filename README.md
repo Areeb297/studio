@@ -367,5 +367,3 @@ This project follows Islamic principles of collective benefit (Maslaha) and comm
 Proprietary software developed for Jamia Binoria Aalamia. All rights reserved.
 
 ---
-
-*Built with ❤️ for the Islamic education community*
