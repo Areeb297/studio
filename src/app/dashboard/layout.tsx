@@ -93,6 +93,24 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Rahah24Chatbot } from "@/components/rahah24-chatbot";
 import { authService } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
+// ── Company / tenant registry ─────────────────────────────────────────────────
+const COMPANIES = [
+  { id: 'JBA-MAIN', name: 'Jamia Binoria Aalamia', short: 'JBA', type: 'Main Entity',  color: 'bg-blue-600',   dot: 'bg-blue-500' },
+  { id: 'JBA-REST', name: 'Rahah24 Restaurant',    short: 'R',   type: 'Business Unit', color: 'bg-orange-500', dot: 'bg-orange-500' },
+  { id: 'JBA-GYM',  name: 'Gym Time Fitness',      short: 'G',   type: 'Business Unit', color: 'bg-green-600',  dot: 'bg-green-500' },
+  { id: 'JBA-LAWN', name: 'Shadi Lawn Events',      short: 'SL',  type: 'Business Unit', color: 'bg-purple-500', dot: 'bg-purple-500' },
+  { id: 'JBA-ACM',  name: 'Madrasa Academic',       short: 'MA',  type: 'Business Unit', color: 'bg-teal-600',   dot: 'bg-teal-500' },
+];
 
 interface NavItem {
   href: string;
@@ -124,6 +142,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [expandedSections, setExpandedSections] = React.useState<string[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [activeCompany, setActiveCompany] = useState(COMPANIES[0]);
 
   // Fetch current user role on mount
   useEffect(() => {
@@ -533,11 +552,47 @@ export default function DashboardLayout({
             </div>
             <div className="flex items-center gap-2 ml-auto">
               {/* Company Switcher */}
-              <div className="hidden sm:flex items-center gap-1.5 border rounded-md px-3 py-1.5 text-sm cursor-pointer hover:bg-muted/50 transition-colors">
-                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-medium text-sm">Main System Company</span>
-                <ChevronDown className="h-3 w-3 text-muted-foreground" />
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="hidden sm:flex items-center gap-2 border rounded-md px-2.5 py-1.5 text-sm cursor-pointer hover:bg-muted/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                    <div className={`w-5 h-5 rounded flex items-center justify-center text-white text-[9px] font-bold shrink-0 ${activeCompany.color}`}>
+                      {activeCompany.short}
+                    </div>
+                    <span className="font-medium text-sm max-w-[140px] truncate">{activeCompany.name}</span>
+                    <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-64">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal pb-1">
+                    Switch Company / Entity
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {COMPANIES.map(co => (
+                    <DropdownMenuItem
+                      key={co.id}
+                      className="flex items-center gap-2.5 cursor-pointer py-2"
+                      onClick={() => setActiveCompany(co)}
+                    >
+                      <div className={`w-6 h-6 rounded flex items-center justify-center text-white text-[9px] font-bold shrink-0 ${co.color}`}>
+                        {co.short}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{co.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{co.type} · {co.id}</p>
+                      </div>
+                      {activeCompany.id === co.id && (
+                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${co.dot}`} />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/admin/company-settings" className="flex items-center gap-2 text-xs text-primary cursor-pointer py-2">
+                      <Settings className="h-3.5 w-3.5" />Manage Companies
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <ThemeToggle />
               <Button variant="ghost" size="icon" className="rounded-full relative">
                 <Bell className="h-5 w-5" />
