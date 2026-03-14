@@ -1,5 +1,5 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { createHash } from 'crypto'
+// Prototype Auth Service — No Supabase, no real auth
+// Mock admin user for all sessions (SQL Server is the real DB)
 
 export interface LoginCredentials {
   email: string
@@ -26,9 +26,7 @@ export interface AuthResponse {
 }
 
 class AuthService {
-  private supabase = createClientComponentClient()
-
-  // Mock admin user for bypass
+  // Mock admin user — always logged in
   private mockAdminUser: UserProfile = {
     id: 'mock-admin-id',
     employee_code: 'ADMIN001',
@@ -42,287 +40,89 @@ class AuthService {
     permissions: { all: true }
   }
 
-  /**
-   * Authenticate user with email and password
-   */
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // Always return success with mock admin user
-    return {
-      success: true,
-      user: this.mockAdminUser
-    }
+  async login(_credentials: LoginCredentials): Promise<AuthResponse> {
+    return { success: true, user: this.mockAdminUser }
   }
 
-  /**
-   * Sign out current user
-   */
   async logout(): Promise<void> {
-    try {
-      await this.supabase.auth.signOut()
-    } catch (error) {
-      console.error('Logout error:', error)
-    }
+    // No-op for prototype
   }
 
-  /**
-   * Get current authenticated user
-   */
   async getCurrentUser(): Promise<UserProfile | null> {
-    // Always return mock admin user
     return this.mockAdminUser
   }
 
-  /**
-   * Check if user has specific permission
-   */
-  hasPermission(user: UserProfile, permission: string): boolean {
+  hasPermission(user: UserProfile, _permission: string): boolean {
     if (!user || !user.is_active) return false
-    
-    // Admin has all permissions
     if (user.role === 'admin') return true
-    
-    // Check specific permissions
-    return user.permissions?.[permission] === true
+    return user.permissions?.[_permission] === true
   }
 
-  /**
-   * Check if user has access to specific module
-   */
   hasModuleAccess(user: UserProfile, module: string): boolean {
     if (!user || !user.is_active) return false
-
-    // Admin has access to all modules
     if (user.role === 'admin') return true
 
-    // Role-based module access - Updated for all 11 roles
     const roleModuleMap: Record<string, string[]> = {
-      // Inventory & Procurement Users
-      'store_keeper': ['inventory', 'procurement'],
-      'dept_head_kitchen': ['inventory', 'procurement', 'business'],
-      'purchasing_officer': ['inventory', 'procurement'],
-      'approver_l1': ['inventory', 'procurement'],
-      'approver_l2': ['inventory', 'procurement'],
-      'gm': ['inventory', 'procurement'],
-      'finance_officer': ['finance', 'inventory', 'procurement'],
-      'auditor': ['finance', 'inventory', 'procurement'],
-
-      // Other Roles
-      'manager': ['dashboard', 'reports', 'finance', 'procurement', 'hr', 'business', 'facilities', 'academic', 'inventory'],
-      'staff': ['business', 'inventory', 'procurement'],
-
-      // Legacy roles (for backward compatibility)
-      'accountant': ['dashboard', 'finance', 'reports'],
-      'teacher': ['dashboard', 'academic', 'students'],
+      store_keeper: ['inventory', 'procurement'],
+      dept_head_kitchen: ['inventory', 'procurement', 'business'],
+      purchasing_officer: ['inventory', 'procurement'],
+      approver_l1: ['inventory', 'procurement'],
+      approver_l2: ['inventory', 'procurement'],
+      gm: ['inventory', 'procurement'],
+      finance_officer: ['finance', 'inventory', 'procurement'],
+      auditor: ['finance', 'inventory', 'procurement'],
+      manager: ['dashboard', 'reports', 'finance', 'procurement', 'hr', 'business', 'facilities', 'academic', 'inventory'],
+      staff: ['business', 'inventory', 'procurement'],
     }
 
     const allowedModules = roleModuleMap[user.role] || []
     return allowedModules.includes(module)
   }
 
-  /**
-   * Update user password
-   */
-  async updatePassword(newPassword: string): Promise<AuthResponse> {
-    // Mock success
+  async updatePassword(_newPassword: string): Promise<AuthResponse> {
     return { success: true }
   }
 
-  /**
-   * Send password reset email
-   */
-  async resetPassword(email: string): Promise<AuthResponse> {
-    // Mock success
+  async resetPassword(_email: string): Promise<AuthResponse> {
     return { success: true }
   }
 
-  /**
-   * Listen to auth state changes
-   */
   onAuthStateChange(callback: (user: UserProfile | null) => void) {
-    // Immediately trigger callback with mock user
     callback(this.mockAdminUser)
-    
-    return {
-      data: {
-        subscription: {
-          unsubscribe: () => {}
-        }
-      }
-    }
+    return { data: { subscription: { unsubscribe: () => {} } } }
   }
 
-  /**
-   * Get user-friendly error messages
-   */
-  private getErrorMessage(error: string): string {
-    const errorMap: Record<string, string> = {
-      'Invalid login credentials': 'Invalid email or password',
-      'Email not confirmed': 'Please check your email and confirm your account',
-      'User not found': 'No account found with this email address',
-      'Invalid email': 'Please enter a valid email address',
-      'Password should be at least 6 characters': 'Password must be at least 6 characters long',
-      'User already registered': 'An account with this email already exists'
-    }
-
-    return errorMap[error] || error || 'An error occurred'
-  }
-
-  /**
-   * Validate password strength
-   */
   validatePassword(password: string): { isValid: boolean; errors: string[] } {
     const errors: string[] = []
-
-    if (password.length < 12) {
-      errors.push('Password must be at least 12 characters long')
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter')
-    }
-
-    if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter')
-    }
-
-    if (!/[0-9]/.test(password)) {
-      errors.push('Password must contain at least one number')
-    }
-
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      errors.push('Password must contain at least one special character')
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    }
+    if (password.length < 12) errors.push('Password must be at least 12 characters long')
+    if (!/[A-Z]/.test(password)) errors.push('Must contain uppercase')
+    if (!/[a-z]/.test(password)) errors.push('Must contain lowercase')
+    if (!/[0-9]/.test(password)) errors.push('Must contain number')
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) errors.push('Must contain special character')
+    return { isValid: errors.length === 0, errors }
   }
 }
 
-// Export singleton instance
 export const authService = new AuthService()
 
-// Default demo credentials for development
 export const DEFAULT_CREDENTIALS = {
-  admin: {
-    email: 'admin@rahah24.com',
-    password: 'Admin123!@#'
-  },
-  manager: {
-    email: 'manager@rahah24.com',
-    password: 'Manager123!@#'
-  },
-  staff: {
-    email: 'staff@rahah24.com',
-    password: 'Staff123!@#'
-  }
+  admin: { email: 'admin@rahah24.com', password: 'Admin123!@#' },
+  manager: { email: 'manager@rahah24.com', password: 'Manager123!@#' },
+  staff: { email: 'staff@rahah24.com', password: 'Staff123!@#' },
 } as const
 
-// Role permissions configuration - Updated for all 11 roles
 export const ROLE_PERMISSIONS = {
-  // System Administrator
-  admin: {
-    all_modules: true,
-    user_management: true,
-    role_management: true,
-    system_settings: true,
-    financial_reports: true,
-    procurement_approval: true,
-    academic_management: true,
-    inventory_management: true,
-  },
-
-  // Inventory & Procurement Users
-  store_keeper: {
-    inventory: true,
-    stock_management: true,
-    stock_issues: true,
-    stock_adjustments: true,
-    stock_counts: true,
-    procurement_view: true,
-  },
-  dept_head_kitchen: {
-    inventory: true,
-    procurement: true,
-    recipe_costing: true,
-    department_requisitions: true,
-    approval_under_50k: true,
-  },
-  purchasing_officer: {
-    inventory: true,
-    procurement: true,
-    purchase_orders: true,
-    vendor_management: true,
-    grn_management: true,
-    invoice_matching: true,
-  },
-  approver_l1: {
-    inventory_view: true,
-    procurement_view: true,
-    approval_under_50k: true,
-  },
-  approver_l2: {
-    inventory_view: true,
-    procurement_view: true,
-    approval_under_200k: true,
-    budget_tracking: true,
-  },
-  gm: {
-    inventory_view: true,
-    procurement_view: true,
-    approval_unlimited: true,
-    executive_reports: true,
-  },
-  finance_officer: {
-    finance: true,
-    inventory_view: true,
-    procurement_view: true,
-    gl_entries: true,
-    invoice_matching: true,
-    payment_processing: true,
-    financial_reports: true,
-  },
-  auditor: {
-    finance_readonly: true,
-    inventory_readonly: true,
-    procurement_readonly: true,
-    audit_trails: true,
-    compliance_reports: true,
-  },
-
-  // Other Roles
-  manager: {
-    dashboard: true,
-    reports: true,
-    finance: true,
-    procurement: true,
-    hr: true,
-    approval_authority: true,
-    business_operations: true,
-  },
-  staff: {
-    dashboard: true,
-    pos: true,
-    events: true,
-    gym: true,
-    basic_reports: true,
-    inventory_view: true,
-  },
-
-  // Legacy roles (for backward compatibility)
-  accountant: {
-    dashboard: true,
-    finance: true,
-    reports: true,
-    gl_transactions: true,
-    fee_collection: true,
-  },
-  teacher: {
-    dashboard: true,
-    academic: true,
-    students: true,
-    attendance: true,
-    examinations: true,
-  },
+  admin: { all_modules: true, user_management: true, role_management: true, system_settings: true, financial_reports: true, procurement_approval: true, academic_management: true, inventory_management: true },
+  store_keeper: { inventory: true, stock_management: true, stock_issues: true, stock_adjustments: true, stock_counts: true, procurement_view: true },
+  dept_head_kitchen: { inventory: true, procurement: true, recipe_costing: true, department_requisitions: true, approval_under_50k: true },
+  purchasing_officer: { inventory: true, procurement: true, purchase_orders: true, vendor_management: true, grn_management: true, invoice_matching: true },
+  approver_l1: { inventory_view: true, procurement_view: true, approval_under_50k: true },
+  approver_l2: { inventory_view: true, procurement_view: true, approval_under_200k: true, budget_tracking: true },
+  gm: { inventory_view: true, procurement_view: true, approval_unlimited: true, executive_reports: true },
+  finance_officer: { finance: true, inventory_view: true, procurement_view: true, gl_entries: true, invoice_matching: true, payment_processing: true, financial_reports: true },
+  auditor: { finance_readonly: true, inventory_readonly: true, procurement_readonly: true, audit_trails: true, compliance_reports: true },
+  manager: { dashboard: true, reports: true, finance: true, procurement: true, hr: true, approval_authority: true, business_operations: true },
+  staff: { dashboard: true, pos: true, events: true, gym: true, basic_reports: true, inventory_view: true },
+  accountant: { dashboard: true, finance: true, reports: true, gl_transactions: true, fee_collection: true },
+  teacher: { dashboard: true, academic: true, students: true, attendance: true, examinations: true },
 } as const

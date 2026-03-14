@@ -1,33 +1,46 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { 
-  TrendingUp, 
-  Users, 
-  DollarSign, 
-  Building, 
-  ChefHat,
-  GraduationCap,
-  CalendarDays,
-  Heart,
-  ArrowUpRight,
-  ArrowDownRight,
-  Clock,
-  CheckCircle,
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Package,
+  ShoppingCart,
+  PackageCheck,
+  FileText,
+  Users,
+  Building2,
+  TrendingUp,
   AlertCircle,
-  Target,
+  Clock,
   BarChart3,
-  Activity,
-  Zap,
-  UserCheck,
-  Home,
-  Percent,
-  Globe,
-  Workflow
+  Boxes,
+  ClipboardList,
+  Truck,
+  Receipt,
+  CalendarDays,
+  ChevronRight,
+  Banknote,
+  AlertTriangle,
+  CreditCard,
+  Bell,
+  ArrowRight,
+  TrendingDown,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -43,425 +56,573 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  LineChart,
-  Line,
   ComposedChart,
-  ReferenceLine
+  Line,
 } from 'recharts';
+import {
+  executiveKPIs,
+  invoiceStatusBreakdown,
+  supplierPayables,
+  stockMovementByMonth,
+  invoicesByMonth,
+  poStatusBreakdown,
+  grnStatusBreakdown,
+  monthlyProcurementData,
+  departmentActivity,
+  priorityAlerts,
+  kpiSparklines,
+  inventoryCategories,
+  operationalLedger,
+  filterOptions,
+  drillDownData,
+  procurementDrillDown,
+  type ProcurementRecord,
+} from '@/lib/dashboard-mock-data';
 
-export default function ExecutiveDashboard() {
-  // Enhanced chart data for executive dashboard
-  const monthlyRevenueData = [
-    { month: 'Jan', restaurant: 9.5, academic: 6.2, events: 2.8, fitness: 1.8, total: 20.3, target: 22.0 },
-    { month: 'Feb', restaurant: 10.2, academic: 7.1, events: 3.2, fitness: 2.1, total: 22.6, target: 22.5 },
-    { month: 'Mar', restaurant: 11.8, academic: 7.8, events: 3.9, fitness: 2.3, total: 25.8, target: 23.0 },
-    { month: 'Apr', restaurant: 12.1, academic: 8.2, events: 4.1, fitness: 2.4, total: 26.8, target: 23.5 },
-    { month: 'May', restaurant: 13.2, academic: 8.9, events: 4.8, fitness: 2.6, total: 29.5, target: 24.0 },
-    { month: 'Jun', restaurant: 12.6, academic: 9.0, events: 4.5, fitness: 2.4, total: 28.5, target: 24.5 }
-  ];
+const tooltipStyle = {
+  backgroundColor: 'hsl(var(--background))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '8px',
+  fontSize: '12px',
+};
 
-  const businessLineDistribution = [
-    { name: 'Restaurant & Catering', value: 44.2, revenue: 12.6, color: '#14B8A6' },
-    { name: 'Academic Operations', value: 31.6, revenue: 9.0, color: '#3B82F6' },
-    { name: 'Events & Ceremonies', value: 15.8, revenue: 4.5, color: '#8B5CF6' },
-    { name: 'Fitness & Wellness', value: 8.4, revenue: 2.4, color: '#F59E0B' }
-  ];
+const fmt = (n: number) =>
+  n >= 1000000 ? `PKR ${(n / 1000000).toFixed(2)}M`
+  : n >= 1000 ? `PKR ${(n / 1000).toFixed(0)}K`
+  : `PKR ${n.toLocaleString()}`;
 
-  const operationalMetrics = [
-    { metric: 'Student Enrollment', current: 2847, target: 3000, percentage: 95, growth: 12.3 },
-    { metric: 'Property Occupancy', current: 89.4, target: 95, percentage: 94, growth: 4.2 },
-    { metric: 'Staff Efficiency', current: 94.8, target: 96, percentage: 99, growth: 2.1 },
-    { metric: 'Customer Satisfaction', current: 4.7, target: 4.8, percentage: 98, growth: 8.5 },
-    { metric: 'Revenue Target', current: 28.5, target: 30.0, percentage: 95, growth: 15.2 }
-  ];
+// ── Type badge ───────────────────────────────────────────────────────────────
+function TypeBadge({ type }: { type: string }) {
+  const s: Record<string, string> = {
+    GRN: 'bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300',
+    PO: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
+    PR: 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300',
+  };
+  const label: Record<string, string> = { GRN: 'Goods Receipt', PO: 'Purchase Order', PR: 'Purchase Req.' };
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${s[type] ?? 'bg-muted'}`}>{label[type] ?? type}</span>;
+}
 
-  const weeklyTrends = [
-    { week: 'Week 1', revenue: 6.8, expenses: 4.2, profit: 2.6, efficiency: 89 },
-    { week: 'Week 2', revenue: 7.2, expenses: 4.1, profit: 3.1, efficiency: 92 },
-    { week: 'Week 3', revenue: 7.8, expenses: 4.5, profit: 3.3, efficiency: 94 },
-    { week: 'Week 4', revenue: 6.9, expenses: 4.0, profit: 2.9, efficiency: 91 }
-  ];
+function StatusBadge({ status }: { status: string }) {
+  const s: Record<string, string> = {
+    Approved: 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400',
+    Pending: 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400',
+    Closed: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    Paid: 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400',
+    Unpaid: 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400',
+    Partial: 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400',
+  };
+  return <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${s[status] ?? 'bg-muted'}`}>{status}</span>;
+}
 
-  // Enhanced KPI Cards with mini charts
-  const executiveKPIs = [
-    {
-      title: "Total Revenue",
-      value: "₨ 28.5M",
-      change: "+15.2%",
-      period: "vs last month",
-      icon: DollarSign,
-      trend: "up",
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950/20",
-      chartData: monthlyRevenueData.slice(-4).map(d => ({ value: d.total }))
-    },
-    {
-      title: "Active Students",
-      value: "2,847",
-      change: "+127",
-      period: "new enrollments",
-      icon: GraduationCap,
-      trend: "up",
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-950/20",
-      chartData: [{ value: 2720 }, { value: 2765 }, { value: 2810 }, { value: 2847 }]
-    },
-    {
-      title: "Property Occupancy",
-      value: "89.4%",
-      change: "+4.2%",
-      period: "vs last quarter",
-      icon: Home,
-      trend: "up",
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950/20",
-      chartData: [{ value: 85.2 }, { value: 87.1 }, { value: 88.7 }, { value: 89.4 }]
-    },
-    {
-      title: "Overall Efficiency",
-      value: "94.8%",
-      change: "+2.1%",
-      period: "operational score",
-      icon: Target,
-      trend: "up",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50 dark:bg-orange-950/20",
-      chartData: [{ value: 92.7 }, { value: 93.2 }, { value: 93.8 }, { value: 94.8 }]
-    }
-  ];
+// ── Drill-down Modal ─────────────────────────────────────────────────────────
+function DrillDownModal({
+  open, onClose, data
+}: {
+  open: boolean;
+  onClose: () => void;
+  data: typeof drillDownData[keyof typeof drillDownData] | null;
+}) {
+  if (!data) return null;
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{data.title}</DialogTitle>
+        </DialogHeader>
+        <div className="overflow-auto max-h-96">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                {data.columns.map((col, i) => (
+                  <th key={i} className="text-left py-2 px-3 font-medium text-muted-foreground text-xs">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.rows.map((row, i) => (
+                <tr key={i} className="border-b hover:bg-muted/30">
+                  {row.map((cell, j) => (
+                    <td key={j} className="py-2 px-3 text-sm">
+                      {j === row.length - 1 ? <StatusBadge status={cell} /> : cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-  // Business line performance summary
-  const businessLines = [
-    {
-      name: "Restaurant & Catering",
-      revenue: 12567890,
-      growth: 18.5,
-      status: "excellent",
-      icon: ChefHat,
-      metrics: { orders: 1247, satisfaction: "4.7/5", efficiency: "92%" }
-    },
-    {
-      name: "Academic Operations",
-      revenue: 8976543,
-      growth: 12.3,
-      status: "good",
-      icon: GraduationCap,
-      metrics: { students: 2847, attendance: "94.2%", collection: "91%" }
-    },
-    {
-      name: "Events & Ceremonies",
-      revenue: 4534567,
-      growth: 25.7,
-      status: "excellent",
-      icon: CalendarDays,
-      metrics: { events: 89, bookings: "78%", revenue: "₨4.5M" }
-    },
-    {
-      name: "Fitness & Wellness",
-      revenue: 2378123,
-      growth: 8.9,
-      status: "stable",
-      icon: Heart,
-      metrics: { members: 456, utilization: "67%", retention: "89%" }
-    }
-  ];
-
-  // Recent activities across all business lines
-  const recentActivities = [
-    { activity: "Large donation received", amount: "₨ 250,000", source: "Zakat Fund", time: "15 mins ago", type: "finance" },
-    { activity: "New student enrollment", count: "23 students", source: "Hifz Program", time: "1 hour ago", type: "academic" },
-    { activity: "Event booking confirmed", event: "Wedding Reception", source: "Shadi Lawn", time: "2 hours ago", type: "events" },
-    { activity: "Property lease renewed", property: "Shop #5", source: "Commercial", time: "3 hours ago", type: "property" },
-    { activity: "Monthly payroll processed", amount: "₨ 1,847,500", source: "HR Department", time: "5 hours ago", type: "hr" }
-  ];
-
-  // Key alerts and notifications
-  const alerts = [
-    { type: "warning", message: "12 maintenance requests pending", action: "Review Now", priority: "medium" },
-    { type: "success", message: "Monthly revenue target achieved", action: "View Report", priority: "low" },
-    { type: "info", message: "Qurbani registration deadline approaching", action: "Monitor", priority: "medium" },
-    { type: "error", message: "3 lease renewals require immediate attention", action: "Contact Tenants", priority: "high" }
-  ];
+// ── Procurement Story Records Modal ─────────────────────────────────────────
+function ProcurementModal({
+  month, onClose,
+}: {
+  month: string | null;
+  onClose: () => void;
+}) {
+  if (!month) return null;
+  const records: ProcurementRecord[] = procurementDrillDown[month] ?? [];
+  const counts = { GRN: 0, PO: 0, PR: 0 };
+  records.forEach(r => { if (r.type in counts) counts[r.type as keyof typeof counts]++; });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">Executive Dashboard</h1>
-          <p className="text-muted-foreground">Comprehensive overview of all business operations with advanced analytics</p>
+    <Dialog open={!!month} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            Procurement Records — {month} {month === 'Oct' || month === 'Nov' || month === 'Dec' ? '2025' : '2026'}
+            <span className="text-xs font-normal text-muted-foreground flex gap-2">
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded">{counts.PO} POs</span>
+              <span className="px-2 py-0.5 bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300 rounded">{counts.GRN} GRNs</span>
+              <span className="px-2 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded">{counts.PR} PRs</span>
+            </span>
+          </DialogTitle>
+        </DialogHeader>
+        <div className="overflow-auto max-h-[28rem]">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-muted/90 backdrop-blur-sm">
+              <tr>
+                {['Type', 'Doc Number', 'Date', 'Party / Dept', 'Amount', 'Status', 'Approved By', 'Action'].map(h => (
+                  <th key={h} className="text-left py-2 px-3 font-medium text-muted-foreground text-xs whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((row, i) => (
+                <tr key={i} className="border-t hover:bg-muted/20 transition-colors">
+                  <td className="py-2 px-3"><TypeBadge type={row.type} /></td>
+                  <td className="py-2 px-3 text-xs font-mono whitespace-nowrap">{row.ref}</td>
+                  <td className="py-2 px-3 text-xs text-muted-foreground whitespace-nowrap">{row.date}</td>
+                  <td className="py-2 px-3 text-xs whitespace-nowrap">{row.party}</td>
+                  <td className="py-2 px-3 text-xs font-medium tabular-nums whitespace-nowrap">{row.amount}</td>
+                  <td className="py-2 px-3"><StatusBadge status={row.status} /></td>
+                  <td className="py-2 px-3 text-xs text-muted-foreground">{row.approvedBy}</td>
+                  <td className="py-2 px-3">
+                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs text-muted-foreground hover:text-primary">
+                      Print
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Full Report
-          </Button>
-          <Button>
-            <Activity className="h-4 w-4 mr-2" />
-            Live Analytics
-          </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Clickable KPI Card ───────────────────────────────────────────────────────
+function KPICard({
+  title, value, subtitle, icon: Icon, spark, color,
+  alert, href, onDrillDown, index,
+}: {
+  title: string; value: string; subtitle: string;
+  icon: React.ElementType; spark: { value: number }[];
+  color: string; alert?: boolean; href?: string;
+  onDrillDown?: () => void; index: number;
+}) {
+  const content = (
+    <Card className={`cursor-pointer group transition-all hover:shadow-md hover:scale-[1.02] ${alert ? 'border-amber-300 dark:border-amber-700' : 'hover:border-primary/40'}`}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-medium text-muted-foreground leading-tight">{title}</p>
+          <div className="p-1.5 rounded-md transition-colors group-hover:opacity-80" style={{ backgroundColor: `${color}22` }}>
+            <Icon className="h-3.5 w-3.5" style={{ color }} />
+          </div>
+        </div>
+        <p className={`text-2xl font-bold tabular-nums ${alert ? 'text-amber-600 dark:text-amber-400' : ''}`}>{value}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{subtitle}</p>
+        <div className="h-8 mt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={spark}>
+              <defs>
+                <linearGradient id={`sg-${index}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={color} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey="value" stroke={color} strokeWidth={1.5} fill={`url(#sg-${index})`} dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground group-hover:text-primary transition-colors">
+          <span>View details</span>
+          <ArrowRight className="h-3 w-3" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (onDrillDown) {
+    return <div onClick={onDrillDown}>{content}</div>;
+  }
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+  return content;
+}
+
+// ── Status Donut ─────────────────────────────────────────────────────────────
+function StatusDonut({ title, subtitle, data }: { title: string; subtitle: string; data: { name: string; value: number; color: string }[] }) {
+  return (
+    <Card>
+      <CardHeader className="pb-1">
+        <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+        <CardDescription className="text-xs">{subtitle}</CardDescription>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="h-36">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={data} cx="50%" cy="50%" innerRadius={32} outerRadius={55} dataKey="value" startAngle={90} endAngle={450}>
+                {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+              </Pie>
+              <Tooltip formatter={(v: number, n: string) => [v, n]} contentStyle={tooltipStyle} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+          {data.map((d, i) => (
+            <div key={i} className="flex items-center gap-1 text-xs">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
+              <span className="text-muted-foreground">{d.name}</span>
+              <span className="font-semibold">{d.value}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Main Dashboard ───────────────────────────────────────────────────────────
+export default function ExecutiveDashboard() {
+  const [company, setCompany] = useState('All Companies');
+  const [dateRange, setDateRange] = useState('This Month');
+  const [warehouse, setWarehouse] = useState('All Warehouses');
+  const [modalKey, setModalKey] = useState<keyof typeof drillDownData | null>(null);
+  const [procurMonth, setProcurMonth] = useState<string | null>(null);
+
+  const openDrill = (key: keyof typeof drillDownData) => setModalKey(key);
+  const closeDrill = () => setModalKey(null);
+
+  return (
+    <div className="space-y-5">
+
+      {/* ── Header + Filters ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold font-headline">Operations Dashboard</h1>
+          <p className="text-muted-foreground text-xs mt-0.5">{company} · {dateRange} · {warehouse}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Select value={company} onValueChange={setCompany}>
+            <SelectTrigger className="w-44 h-8 text-xs">
+              <Building2 className="h-3 w-3 mr-1 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {filterOptions.companies.map(c => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger className="w-36 h-8 text-xs">
+              <CalendarDays className="h-3 w-3 mr-1 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {filterOptions.dateRanges.map(d => <SelectItem key={d} value={d} className="text-xs">{d}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={warehouse} onValueChange={setWarehouse}>
+            <SelectTrigger className="w-44 h-8 text-xs">
+              <Boxes className="h-3 w-3 mr-1 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {filterOptions.warehouses.map(w => <SelectItem key={w} value={w} className="text-xs">{w}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      {/* Enhanced Executive KPIs with Mini Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {executiveKPIs.map((kpi, index) => (
-          <Card key={index} className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{kpi.title}</p>
-                  <p className="text-2xl font-bold">{kpi.value}</p>
-                  <div className="flex items-center mt-1">
-                    {kpi.trend === 'up' ? (
-                      <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
-                    ) : (
-                      <ArrowDownRight className="h-3 w-3 text-red-600 mr-1" />
-                    )}
-                    <span className={`text-sm ${kpi.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                      {kpi.change}
-                    </span>
-                    <span className="text-xs text-muted-foreground ml-1">{kpi.period}</span>
-                  </div>
-                </div>
-                <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
-                  <kpi.icon className={`h-6 w-6 ${kpi.color}`} />
-                </div>
-              </div>
-              
-              {/* Mini Chart */}
-              <div className="h-12">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={kpi.chartData}>
-                    <defs>
-                      <linearGradient id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={kpi.color.includes('green') ? '#10B981' : kpi.color.includes('blue') ? '#3B82F6' : kpi.color.includes('purple') ? '#8B5CF6' : '#F59E0B'} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={kpi.color.includes('green') ? '#10B981' : kpi.color.includes('blue') ? '#3B82F6' : kpi.color.includes('purple') ? '#8B5CF6' : '#F59E0B'} stopOpacity={0.0}/>
-                      </linearGradient>
-                    </defs>
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke={kpi.color.includes('green') ? '#10B981' : kpi.color.includes('blue') ? '#3B82F6' : kpi.color.includes('purple') ? '#8B5CF6' : '#F59E0B'}
-                      strokeWidth={2}
-                      fill={`url(#gradient-${index})`}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+      {/* ── Priority Alert Ticker ── */}
+      <div className="flex items-center gap-3 rounded-xl border bg-card shadow-sm px-3 py-2.5 overflow-hidden">
+        <div className="shrink-0 flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Alerts</span>
+          <div className="w-px h-4 bg-border shrink-0" />
+        </div>
+        <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          {(() => {
+            const hrefs = [
+              '/dashboard/procurement/invoices',
+              '/dashboard/approvals',
+              '/dashboard/approvals',
+              '/dashboard/procurement/supplier-payments',
+              '/dashboard/procurement/vendors',
+            ];
+            return priorityAlerts.map((a, i) => (
+              <Link
+                key={i}
+                href={hrefs[i] ?? '#'}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0 transition-all hover:opacity-75 hover:scale-[0.98] ${
+                  a.priority === 'high'
+                    ? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300'
+                    : a.priority === 'medium'
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                    : 'bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-300'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                  a.priority === 'high' ? 'bg-red-500 animate-pulse' :
+                  a.priority === 'medium' ? 'bg-amber-500' : 'bg-green-500'
+                }`} />
+                {a.message}
+              </Link>
+            ));
+          })()}
+        </div>
+      </div>
+
+      {/* ── Section 1: Financial Summary Strip ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Invoiced', value: fmt(executiveKPIs.totalInvoiced), sub: `${executiveKPIs.totalInvoices} invoices`, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/20' },
+          { label: 'Paid', value: fmt(executiveKPIs.paidAmount), sub: `${executiveKPIs.paidInvoices} invoices cleared`, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/20' },
+          { label: 'Outstanding Payables', value: fmt(executiveKPIs.outstandingPayables), sub: `${executiveKPIs.unpaidInvoices} unpaid + ${executiveKPIs.partialInvoices} partial`, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/20' },
+          { label: 'Pending Payments', value: fmt(executiveKPIs.pendingPaymentsAmount), sub: `${executiveKPIs.supplierPayments} supplier payments`, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/20' },
+        ].map((item, i) => (
+          <div key={i} className={`rounded-lg p-3 ${item.bg} cursor-pointer hover:opacity-80 transition-opacity`} onClick={() => openDrill('invoices')}>
+            <p className="text-xs text-muted-foreground">{item.label}</p>
+            <p className={`text-lg font-bold tabular-nums ${item.color}`}>{item.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{item.sub}</p>
+          </div>
         ))}
       </div>
 
-      {/* Sophisticated Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Trends Area Chart */}
+      {/* ── Section 2: KPI Cards (6 clickable) ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <KPICard index={0} title="Purchase Invoices" value={`${executiveKPIs.totalInvoices}`}
+          subtitle={`${executiveKPIs.unpaidInvoices} unpaid`} icon={Receipt}
+          spark={kpiSparklines.invoiced} color="#3B82F6" onDrillDown={() => openDrill('invoices')} />
+        <KPICard index={1} title="Outstanding" value={fmt(executiveKPIs.outstandingPayables)}
+          subtitle="Payables due to suppliers" icon={TrendingDown}
+          spark={kpiSparklines.payables} color="#EF4444" alert onDrillDown={() => openDrill('payables')} />
+        <KPICard index={2} title="Purchase Orders" value={`${executiveKPIs.purchaseOrders}`}
+          subtitle={`${executiveKPIs.pendingPOs} pending approval`} icon={ShoppingCart}
+          spark={kpiSparklines.pos} color="#14B8A6" onDrillDown={() => openDrill('purchaseOrders')} />
+        <KPICard index={3} title="Active Suppliers" value={`${executiveKPIs.suppliers}`}
+          subtitle="All approved" icon={Users}
+          spark={kpiSparklines.suppliers} color="#EC4899" onDrillDown={() => openDrill('suppliers')} />
+        <KPICard index={4} title="Catalog Items" value={executiveKPIs.totalItems.toLocaleString()}
+          subtitle={`${executiveKPIs.itemCategories} categories`} icon={Package}
+          spark={kpiSparklines.items} color="#8B5CF6" onDrillDown={() => openDrill('items')} />
+        <KPICard index={5} title="Item Alerts" value={`${executiveKPIs.itemAlerts}`}
+          subtitle="PR/PO notifications" icon={Bell}
+          spark={kpiSparklines.alerts} color="#F97316" alert onDrillDown={() => openDrill('alerts')} />
+      </div>
+
+      {/* ── Section 3: Charts Row ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Procurement Activity */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Revenue Performance & Trends
-            </CardTitle>
-            <CardDescription>
-              Monthly revenue with target comparison and business line breakdown
-            </CardDescription>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />Procurement Activity
+                </CardTitle>
+                <CardDescription className="text-xs">Monthly PO value vs GRNs received · click a month bar to see records</CardDescription>
+              </div>
+              <span className="text-xs text-muted-foreground border rounded px-2 py-0.5 bg-muted/40 flex items-center gap-1">
+                <ArrowRight className="h-3 w-3" />Click month
+              </span>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-64" style={{ cursor: 'pointer' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={monthlyRevenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <ComposedChart
+                  data={monthlyProcurementData}
+                  margin={{ top: 5, right: 25, left: 5, bottom: 5 }}
+                  onClick={(data) => { if (data?.activeLabel) setProcurMonth(data.activeLabel as string); }}
+                >
                   <defs>
-                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.1}/>
+                    <linearGradient id="poBar" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.85} />
+                      <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.2} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="restaurant" stackId="a" fill="#14B8A6" name="Restaurant" />
-                  <Bar dataKey="academic" stackId="a" fill="#3B82F6" name="Academic" />
-                  <Bar dataKey="events" stackId="a" fill="#8B5CF6" name="Events" />
-                  <Bar dataKey="fitness" stackId="a" fill="#F59E0B" name="Fitness" />
-                  <Line 
-                    type="monotone" 
-                    dataKey="target" 
-                    stroke="#EF4444" 
-                    strokeWidth={3}
-                    strokeDasharray="5 5"
-                    name="Target"
-                    dot={{ r: 6 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="total" 
-                    stroke="#059669" 
-                    strokeWidth={3}
-                    name="Total Revenue"
-                    dot={{ r: 6 }}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} fontSize={10} tickFormatter={(v: number) => `${(v/1000).toFixed(0)}K`} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} fontSize={10} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => n === 'PO Amount' ? [`PKR ${v.toLocaleString()}`, n] : [v, n]} />
+                  <Legend iconSize={9} wrapperStyle={{ fontSize: 11 }} />
+                  <Bar yAxisId="left" dataKey="poAmount" fill="url(#poBar)" name="PO Amount" radius={[3, 3, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="grnCount" stroke="#8B5CF6" strokeWidth={2} name="GRNs Received" dot={{ r: 3 }} />
+                  <Line yAxisId="right" type="monotone" dataKey="poCount" stroke="#F59E0B" strokeWidth={1.5} strokeDasharray="4 4" name="POs Issued" dot={{ r: 2 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Business Line Distribution Donut Chart */}
+        {/* Inventory Categories */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Percent className="h-5 w-5 text-primary" />
-              Business Line Distribution
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Package className="h-4 w-4 text-primary" />Inventory by Category
             </CardTitle>
-            <CardDescription>
-              Revenue contribution by business line
-            </CardDescription>
+            <CardDescription className="text-xs">{executiveKPIs.totalItems.toLocaleString()} items · {executiveKPIs.itemCategories} categories</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-80">
+          <CardContent className="pt-0">
+            <div className="space-y-1.5">
+              {inventoryCategories.map((cat, i) => {
+                const total = inventoryCategories.reduce((s, c) => s + c.items, 0);
+                const pct = Math.round((cat.items / total) * 100);
+                return (
+                  <div key={i}>
+                    <div className="flex items-center justify-between text-xs mb-0.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                        <span className="truncate max-w-[130px]">{cat.name}</span>
+                      </div>
+                      <span className="font-semibold text-muted-foreground">{cat.items.toLocaleString()} ({pct}%)</span>
+                    </div>
+                    <div className="h-1 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: cat.color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Section 4: Status Donuts + Invoice Status + Stock Movement ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatusDonut title="PO Status" subtitle={`${executiveKPIs.purchaseOrders} orders`} data={poStatusBreakdown} />
+        <StatusDonut title="GRN Status" subtitle={`${executiveKPIs.grns} GRNs`} data={grnStatusBreakdown} />
+
+        {/* Invoice Status */}
+        <Card>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm font-semibold">Invoice Status</CardTitle>
+            <CardDescription className="text-xs">{executiveKPIs.totalInvoices} invoices total</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-36">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={businessLineDistribution}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    dataKey="value"
-                    startAngle={90}
-                    endAngle={450}
-                  >
-                    {businessLineDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+                  <Pie data={invoiceStatusBreakdown} cx="50%" cy="50%" innerRadius={32} outerRadius={55} dataKey="value" startAngle={90} endAngle={450}>
+                    {invoiceStatusBreakdown.map((d, i) => <Cell key={i} fill={d.color} />)}
                   </Pie>
-                  <Tooltip
-                    formatter={(value, name) => [`${value}%`, name]}
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
+                  <Tooltip formatter={(v: number, n: string) => [v, n]} contentStyle={tooltipStyle} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-4 space-y-2">
-              {businessLineDistribution.map((item, index) => (
-                <div key={index} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-3 h-3 rounded-full" 
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="font-medium">{item.name}</span>
-                  </div>
-                  <span className="font-semibold">₨ {item.revenue}M</span>
+            <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+              {invoiceStatusBreakdown.map((d, i) => (
+                <div key={i} className="flex items-center gap-1 text-xs">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
+                  <span className="text-muted-foreground">{d.name}</span>
+                  <span className="font-semibold">{d.value}</span>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stock Movement */}
+        <Card>
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm font-semibold">Stock Movement</CardTitle>
+            <CardDescription className="text-xs">{executiveKPIs.totalUnitsReceived.toLocaleString()} units in · {executiveKPIs.totalUnitsIssued} out</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="h-36">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stockMovementByMonth.filter(m => m.unitsIn > 0 || m.unitsOut > 0)} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={10} />
+                  <YAxis axisLine={false} tickLine={false} fontSize={9} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Bar dataKey="unitsIn" fill="#10B981" name="Units In" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="unitsOut" fill="#EF4444" name="Units Out" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-4 mt-1">
+              <div className="flex items-center gap-1 text-xs"><span className="w-2 h-2 rounded-full bg-green-500" />In</div>
+              <div className="flex items-center gap-1 text-xs"><span className="w-2 h-2 rounded-full bg-red-500" />Out</div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Operational Metrics Bar+Trend Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Section 5: Supplier Payables Bar + Invoice Monthly ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* Supplier Payables */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              Operational Excellence Metrics
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Banknote className="h-4 w-4 text-primary" />Supplier Payables
             </CardTitle>
-            <CardDescription>
-              Key performance indicators with target achievement
-            </CardDescription>
+            <CardDescription className="text-xs">Paid vs outstanding per supplier (real data)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {operationalMetrics.map((metric, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">{metric.metric}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">{metric.current}{metric.metric.includes('Satisfaction') ? '/5' : metric.metric.includes('%') || metric.metric.includes('Occupancy') || metric.metric.includes('Efficiency') ? '%' : metric.metric.includes('Revenue') ? 'M' : ''}</span>
-                      <Badge variant={metric.percentage >= 95 ? 'default' : metric.percentage >= 90 ? 'secondary' : 'outline'}>
-                        {metric.percentage}%
-                      </Badge>
-                    </div>
-                  </div>
-                  <Progress value={metric.percentage} className="h-2" />
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Target: {metric.target}{metric.metric.includes('Satisfaction') ? '/5' : metric.metric.includes('%') || metric.metric.includes('Occupancy') || metric.metric.includes('Efficiency') ? '%' : metric.metric.includes('Revenue') ? 'M' : ''}</span>
-                    <span className="text-green-600">+{metric.growth}% growth</span>
-                  </div>
-                </div>
-              ))}
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={supplierPayables} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" horizontal={false} />
+                  <XAxis type="number" axisLine={false} tickLine={false} fontSize={10} tickFormatter={(v: number) => `${(v/1000).toFixed(0)}K`} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={120} fontSize={10} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`PKR ${v.toLocaleString()}`]} />
+                  <Legend iconSize={9} wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="paid" fill="#10B981" name="Paid" stackId="a" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="unpaid" fill="#EF4444" name="Unpaid" stackId="a" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="partial" fill="#F59E0B" name="Partial" stackId="a" radius={[0, 3, 3, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Weekly Performance Trends */}
+        {/* Invoice Value by Month */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              Weekly Performance Analysis
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-primary" />Invoice Value by Month
             </CardTitle>
-            <CardDescription>
-              Revenue, expenses, and efficiency trends
-            </CardDescription>
+            <CardDescription className="text-xs">Feb: PKR 1.27M · Mar: PKR 488K (real data)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={weeklyTrends} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <ComposedChart data={invoicesByMonth} margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
                   <defs>
-                    <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                    <linearGradient id="invGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="week" axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="left" axisLine={false} tickLine={false} />
-                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="revenue" fill="#14B8A6" name="Revenue (M)" />
-                  <Bar yAxisId="left" dataKey="expenses" fill="#EF4444" name="Expenses (M)" />
-                  <Area 
-                    yAxisId="left"
-                    type="monotone" 
-                    dataKey="profit" 
-                    stroke="#10B981"
-                    strokeWidth={2}
-                    fill="url(#profitGradient)"
-                    name="Profit (M)"
-                  />
-                  <Line 
-                    yAxisId="right"
-                    type="monotone" 
-                    dataKey="efficiency" 
-                    stroke="#8B5CF6" 
-                    strokeWidth={3}
-                    name="Efficiency %"
-                    dot={{ r: 4 }}
-                  />
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} fontSize={11} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} fontSize={10} tickFormatter={(v: number) => `${(v/1000).toFixed(0)}K`} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} fontSize={10} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number, n: string) => n === 'Invoice Value' ? [`PKR ${v.toLocaleString()}`, n] : [v, n]} />
+                  <Legend iconSize={9} wrapperStyle={{ fontSize: 11 }} />
+                  <Bar yAxisId="left" dataKey="netAmount" fill="url(#invGrad)" name="Invoice Value" radius={[3, 3, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="invoices" stroke="#8B5CF6" strokeWidth={2} name="# Invoices" dot={{ r: 4 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -469,170 +630,115 @@ export default function ExecutiveDashboard() {
         </Card>
       </div>
 
-      {/* Alerts & Notifications */}
+      {/* ── Section 6: Department Activity + Operational Ledger ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-primary" />Department Activity
+            </CardTitle>
+            <CardDescription className="text-xs">Orders and requisitions by department</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={departmentActivity.slice(0, 8)} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" horizontal={false} />
+                  <XAxis type="number" axisLine={false} tickLine={false} fontSize={10} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={112} fontSize={10} />
+                  <Tooltip contentStyle={tooltipStyle} />
+                  <Legend iconSize={9} wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="orders" fill="#14B8A6" name="Orders" radius={[0, 2, 2, 0]} />
+                  <Bar dataKey="requisitions" fill="#8B5CF6" name="Requisitions" radius={[0, 2, 2, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Operational Ledger */}
+        <Card>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />Operational Ledger
+                </CardTitle>
+                <CardDescription className="text-xs">Full audit trail — real transaction data</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" className="text-xs h-7 gap-1" asChild>
+                <Link href="/dashboard/approvals/history">Full Audit <ChevronRight className="h-3 w-3" /></Link>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-auto max-h-64">
+              <table className="w-full">
+                <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm">
+                  <tr>
+                    {['Date', 'Type', 'Reference', 'Details', 'Status'].map(h => (
+                      <th key={h} className="text-left px-3 py-1.5 text-xs font-medium text-muted-foreground">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {operationalLedger.map((row, i) => (
+                    <tr key={i} className="border-t hover:bg-muted/20 transition-colors">
+                      <td className="px-3 py-1.5 text-xs text-muted-foreground whitespace-nowrap">{row.date}</td>
+                      <td className="px-3 py-1.5"><TypeBadge type={row.type} /></td>
+                      <td className="px-3 py-1.5 text-xs font-mono whitespace-nowrap">{row.ref}</td>
+                      <td className="px-3 py-1.5 text-xs text-muted-foreground whitespace-nowrap">{row.details}</td>
+                      <td className="px-3 py-1.5"><StatusBadge status={row.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ── Section 7: Quick Actions ── */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-primary" />
-            Executive Alerts & Priority Actions
-          </CardTitle>
-          <CardDescription>
-            Items requiring immediate executive attention
-          </CardDescription>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+          <CardDescription className="text-xs">Jump to key modules</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {alerts.map((alert, index) => (
-              <div key={index} className={`p-4 rounded-lg border-l-4 ${
-                alert.type === 'error' ? 'border-l-red-500 bg-red-50 dark:bg-red-950/20' :
-                alert.type === 'warning' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20' :
-                alert.type === 'success' ? 'border-l-green-500 bg-green-50 dark:bg-green-950/20' :
-                'border-l-blue-500 bg-blue-50 dark:bg-blue-950/20'
-              }`}>
-                <div className="flex justify-between items-start mb-2">
-                  <p className="font-medium">{alert.message}</p>
-                  <Badge variant={
-                    alert.priority === 'high' ? 'destructive' :
-                    alert.priority === 'medium' ? 'default' : 'secondary'
-                  }>
-                    {alert.priority}
-                  </Badge>
-                </div>
-                <Button variant="ghost" size="sm" className="h-8">
-                  {alert.action}
-                </Button>
-              </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-2">
+            {[
+              { label: 'Inventory', href: '/dashboard/inventory', icon: Boxes },
+              { label: 'Purchase Orders', href: '/dashboard/procurement/purchase-orders', icon: ShoppingCart },
+              { label: 'Requisitions', href: '/dashboard/procurement/requisitions', icon: ClipboardList },
+              { label: 'Goods Receipt', href: '/dashboard/procurement/grn', icon: PackageCheck },
+              { label: 'Invoices', href: '/dashboard/procurement/invoices', icon: Receipt },
+              { label: 'Payments', href: '/dashboard/procurement/supplier-payments', icon: CreditCard },
+              { label: 'Vendors', href: '/dashboard/procurement/vendors', icon: Truck },
+              { label: 'Approvals', href: '/dashboard/approvals', icon: FileText },
+              { label: 'Analytics', href: '/dashboard/procurement/analytics', icon: BarChart3 },
+            ].map((a, i) => (
+              <Button key={i} variant="outline" className="h-14 flex-col gap-1 text-xs" asChild>
+                <Link href={a.href}>
+                  <a.icon className="h-4 w-4" />
+                  <span className="text-center leading-tight">{a.label}</span>
+                </Link>
+              </Button>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Recent Activities */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
-            Recent Activities Across All Operations
-          </CardTitle>
-          <CardDescription>
-            Latest activities from all business lines and departments
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="p-4 border rounded-lg space-y-2">
-                <div className={`p-2 rounded-full w-8 h-8 flex items-center justify-center ${
-                  activity.type === 'finance' ? 'bg-green-100 dark:bg-green-950/20' :
-                  activity.type === 'academic' ? 'bg-blue-100 dark:bg-blue-950/20' :
-                  activity.type === 'events' ? 'bg-purple-100 dark:bg-purple-950/20' :
-                  activity.type === 'property' ? 'bg-orange-100 dark:bg-orange-950/20' :
-                  'bg-gray-100 dark:bg-gray-800'
-                }`}>
-                  {activity.type === 'finance' ? <DollarSign className="h-3 w-3 text-green-600" /> :
-                   activity.type === 'academic' ? <GraduationCap className="h-3 w-3 text-blue-600" /> :
-                   activity.type === 'events' ? <CalendarDays className="h-3 w-3 text-purple-600" /> :
-                   activity.type === 'property' ? <Home className="h-3 w-3 text-orange-600" /> :
-                   <Users className="h-3 w-3 text-gray-600" />}
-                </div>
-                <div>
-                  <p className="font-medium text-sm">{activity.activity}</p>
-                  <p className="text-xs text-muted-foreground">{activity.source}</p>
-                  {activity.amount && (
-                    <p className="text-xs font-medium text-green-600">{activity.amount}</p>
-                  )}
-                  {activity.count && (
-                    <p className="text-xs font-medium text-blue-600">{activity.count}</p>
-                  )}
-                  {activity.event && (
-                    <p className="text-xs font-medium text-purple-600">{activity.event}</p>
-                  )}
-                  {activity.property && (
-                    <p className="text-xs font-medium text-orange-600">{activity.property}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* ── Drill-down Modal (KPI cards) ── */}
+      <DrillDownModal
+        open={modalKey !== null}
+        onClose={closeDrill}
+        data={modalKey ? drillDownData[modalKey] : null}
+      />
 
-      {/* Pending Approvals Alert */}
-      <Card className="border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-950/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserCheck className="h-5 w-5 text-orange-600" />
-            Pending Vendor Approvals
-          </CardTitle>
-          <CardDescription>
-            Vendor applications requiring executive attention
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-orange-600">12 Pending</div>
-              <div className="text-sm text-muted-foreground">5 High Priority • 7 Standard</div>
-              <div className="text-xs text-muted-foreground mt-1">Average wait: 8.3 days</div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button asChild className="bg-orange-600 hover:bg-orange-700">
-                <a href="/dashboard/vendor-approvals">
-                  <UserCheck className="h-4 w-4 mr-2" />
-                  Review Approvals
-                </a>
-              </Button>
-              <Button asChild variant="outline">
-                <a href="/dashboard/vendor-approvals/workflow">
-                  <Workflow className="h-4 w-4 mr-2" />
-                  View Workflow
-                </a>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* ── Procurement Story Records Modal (chart click) ── */}
+      <ProcurementModal month={procurMonth} onClose={() => setProcurMonth(null)} />
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Executive Quick Actions</CardTitle>
-          <CardDescription>
-            Direct access to critical business functions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <BarChart3 className="h-6 w-6" />
-              <span className="text-xs">Full Reports</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <DollarSign className="h-6 w-6" />
-              <span className="text-xs">Finance Overview</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <Users className="h-6 w-6" />
-              <span className="text-xs">Staff Management</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2" asChild>
-              <a href="/dashboard/vendor-approvals">
-                <UserCheck className="h-6 w-6" />
-                <span className="text-xs">Vendor Approvals</span>
-              </a>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <AlertCircle className="h-6 w-6" />
-              <span className="text-xs">Review Alerts</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2">
-              <Zap className="h-6 w-6" />
-              <span className="text-xs">System Health</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -1,83 +1,113 @@
 'use client';
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Heart, 
-  Users, 
-  CalendarDays, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle,
-  DollarSign,
+import {
   Package,
-  Truck,
-  UserPlus,
-  Calendar,
-  BarChart3
+  Plus,
+  Search,
+  BookOpen,
 } from "lucide-react";
 
+const animals = [
+  {
+    id: 'COW-101',
+    name: 'Cow #101',
+    totalShares: 7,
+    bookedShares: 7,
+    price: 350000,
+    status: 'Slaughtered',
+  },
+  {
+    id: 'COW-102',
+    name: 'Cow #102',
+    totalShares: 7,
+    bookedShares: 5,
+    price: 380000,
+    status: 'In Yard',
+  },
+  {
+    id: 'COW-103',
+    name: 'Cow #103',
+    totalShares: 7,
+    bookedShares: 3,
+    price: 320000,
+    status: 'In Yard',
+  },
+  {
+    id: 'COW-104',
+    name: 'Cow #104',
+    totalShares: 7,
+    bookedShares: 7,
+    price: 400000,
+    status: 'Ready for Pickup',
+  },
+  {
+    id: 'COW-105',
+    name: 'Cow #105',
+    totalShares: 7,
+    bookedShares: 0,
+    price: 340000,
+    status: 'In Yard',
+  },
+  {
+    id: 'COW-106',
+    name: 'Cow #106',
+    totalShares: 7,
+    bookedShares: 6,
+    price: 370000,
+    status: 'In Yard',
+  },
+];
+
+const STATUS_TABS = ['All', 'In Yard', 'Slaughtered', 'Ready for Pickup', 'Distributed'];
+
+function getStatusBadgeClass(status: string) {
+  switch (status) {
+    case 'Slaughtered':
+      return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400';
+    case 'In Yard':
+      return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950/40 dark:text-orange-400';
+    case 'Ready for Pickup':
+      return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400';
+    case 'Distributed':
+      return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-950/40 dark:text-green-400';
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-200';
+  }
+}
+
+function ShareBar({ booked, total }: { booked: number; total: number }) {
+  return (
+    <div className="flex gap-1 my-2">
+      {Array.from({ length: total }).map((_, i) => (
+        <div
+          key={i}
+          className={`flex-1 h-3 rounded-sm ${i < booked ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function QurbaniPage() {
-  const qurbaniStats = [
-    {
-      title: "Total Registrations",
-      value: "1,247",
-      change: "+23%",
-      icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-950/20"
-    },
-    {
-      title: "Animals Allocated",
-      value: "312",
-      change: "+18%",
-      icon: Heart,
-      color: "text-green-600",
-      bgColor: "bg-green-50 dark:bg-green-950/20"
-    },
-    {
-      title: "Total Revenue",
-      value: "₨ 2,847,500",
-      change: "+31%",
-      icon: DollarSign,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50 dark:bg-purple-950/20"
-    },
-    {
-      title: "Processing Complete",
-      value: "89%",
-      change: "+12%",
-      icon: CheckCircle,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950/20"
-    }
-  ];
+  const [activeTab, setActiveTab] = useState('All');
+  const [search, setSearch] = useState('');
 
-  const registrationData = [
-    { type: "Goat", count: 687, percentage: 55, color: "bg-blue-500" },
-    { type: "Sheep", count: 423, percentage: 34, color: "bg-green-500" },
-    { type: "Cow (Share)", count: 98, percentage: 8, color: "bg-purple-500" },
-    { type: "Camel (Share)", count: 39, percentage: 3, color: "bg-orange-500" }
-  ];
+  const totalAnimals = animals.length;
+  const totalShares = animals.reduce((s, a) => s + a.totalShares, 0);
+  const bookedShares = animals.reduce((s, a) => s + a.bookedShares, 0);
+  const availableShares = totalShares - bookedShares;
 
-  const processingTimeline = [
-    { stage: "Registration Open", date: "Jun 1 - Jul 15", status: "completed" },
-    { stage: "Animal Procurement", date: "Jul 16 - Aug 20", status: "completed" },
-    { stage: "Processing Day 1", date: "Aug 21", status: "in-progress" },
-    { stage: "Processing Day 2", date: "Aug 22", status: "pending" },
-    { stage: "Distribution", date: "Aug 23 - Aug 25", status: "pending" }
-  ];
-
-  const recentActivities = [
-    { action: "New registration", participant: "Ahmed Hassan", time: "2 minutes ago", type: "registration" },
-    { action: "Payment received", participant: "Fatima Khan", time: "15 minutes ago", type: "payment" },
-    { action: "Animal allocated", participant: "Muhammad Ali", time: "1 hour ago", type: "allocation" },
-    { action: "Processing scheduled", participant: "Batch #23", time: "2 hours ago", type: "processing" }
-  ];
+  const filtered = animals.filter((a) => {
+    const matchesTab = activeTab === 'All' || a.status === activeTab;
+    const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase());
+    return matchesTab && matchesSearch;
+  });
 
   return (
     <div className="space-y-6">
@@ -85,223 +115,132 @@ export default function QurbaniPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold font-headline">Qurbani Management</h1>
-          <p className="text-muted-foreground">Manage registrations, allocations, and processing for Qurbani 2025</p>
+          <p className="text-muted-foreground">Animals &amp; Share Booking</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <UserPlus className="h-4 w-4 mr-2" />
-            New Registration
-          </Button>
-          <Button>
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Generate Report
-          </Button>
-        </div>
+        <Button className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Animal
+        </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {qurbaniStats.map((stat, index) => (
-          <Card key={index} className="relative overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-green-600 flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {stat.change}
-                  </p>
-                </div>
-                <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Animals</p>
+                <p className="text-3xl font-bold mt-1">{totalAnimals}</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Registration Distribution */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary" />
-              Registration Distribution by Animal Type
-            </CardTitle>
-            <CardDescription>
-              Breakdown of Qurbani registrations by animal type
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {registrationData.map((item, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{item.type}</span>
-                    <div className="text-right">
-                      <span className="font-bold">{item.count}</span>
-                      <span className="text-sm text-muted-foreground ml-2">({item.percentage}%)</span>
-                    </div>
-                  </div>
-                  <Progress value={item.percentage} className="h-2" />
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-6 p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span className="font-semibold">Registration Status</span>
+              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20">
+                <Package className="h-6 w-6 text-blue-600" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Registration period closed on July 15th. Total of 1,247 participants registered for Qurbani 2025.
-              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Processing Timeline */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              Processing Timeline
-            </CardTitle>
-            <CardDescription>
-              Qurbani 2025 schedule and progress
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {processingTimeline.map((stage, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className={`p-1 rounded-full mt-1 ${
-                    stage.status === 'completed' ? 'bg-green-100 dark:bg-green-950/20' :
-                    stage.status === 'in-progress' ? 'bg-blue-100 dark:bg-blue-950/20' :
-                    'bg-gray-100 dark:bg-gray-800'
-                  }`}>
-                    {stage.status === 'completed' ? (
-                      <CheckCircle className="h-3 w-3 text-green-600" />
-                    ) : stage.status === 'in-progress' ? (
-                      <Clock className="h-3 w-3 text-blue-600" />
-                    ) : (
-                      <div className="h-3 w-3 rounded-full bg-gray-400" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{stage.stage}</p>
-                    <p className="text-xs text-muted-foreground">{stage.date}</p>
-                  </div>
-                  <Badge variant={
-                    stage.status === 'completed' ? 'default' :
-                    stage.status === 'in-progress' ? 'secondary' :
-                    'outline'
-                  }>
-                    {stage.status.replace('-', ' ')}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium">Current Status</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Processing Day 1 is currently in progress. Expected completion by 6:00 PM.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activities */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-primary" />
-              Recent Activities
-            </CardTitle>
-            <CardDescription>
-              Latest updates and activities in Qurbani management
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
-                  <div className={`p-2 rounded-full ${
-                    activity.type === 'registration' ? 'bg-blue-100 dark:bg-blue-950/20' :
-                    activity.type === 'payment' ? 'bg-green-100 dark:bg-green-950/20' :
-                    activity.type === 'allocation' ? 'bg-purple-100 dark:bg-purple-950/20' :
-                    'bg-orange-100 dark:bg-orange-950/20'
-                  }`}>
-                    {activity.type === 'registration' ? <UserPlus className="h-3 w-3 text-blue-600" /> :
-                     activity.type === 'payment' ? <DollarSign className="h-3 w-3 text-green-600" /> :
-                     activity.type === 'allocation' ? <Package className="h-3 w-3 text-purple-600" /> :
-                     <Truck className="h-3 w-3 text-orange-600" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{activity.action}</p>
-                    <p className="text-sm text-muted-foreground">{activity.participant}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{activity.time}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Distribution Tracking */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5 text-primary" />
-              Distribution Tracking
-            </CardTitle>
-            <CardDescription>
-              Track meat distribution progress and logistics
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg">
-                  <Package className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                  <p className="text-lg font-bold text-green-600">267</p>
-                  <p className="text-xs text-muted-foreground">Packages Ready</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/20 dark:to-sky-950/20 rounded-lg">
-                  <Truck className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                  <p className="text-lg font-bold text-blue-600">45</p>
-                  <p className="text-xs text-muted-foreground">Out for Delivery</p>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Distribution Progress</span>
-                  <span className="text-sm font-medium">72%</span>
-                </div>
-                <Progress value={72} className="h-2" />
-              </div>
-              
-              <div className="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg">
-                <div className="flex items-center gap-2 mb-1">
-                  <CalendarDays className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">Next Distribution</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Tomorrow at 8:00 AM - Estimated 180 packages for delivery
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Shares Booked</p>
+                <p className="text-3xl font-bold mt-1">
+                  {bookedShares} <span className="text-lg font-normal text-muted-foreground">/ {totalShares}</span>
                 </p>
+                <Progress value={(bookedShares / totalShares) * 100} className="h-1.5 mt-2 w-32" />
+              </div>
+              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
+                <BookOpen className="h-6 w-6 text-green-600" />
               </div>
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Available</p>
+                <p className="text-3xl font-bold mt-1">{availableShares}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                <Package className="h-6 w-6 text-orange-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        {/* Status Tabs */}
+        <div className="flex gap-1 flex-wrap">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                activeTab === tab
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        {/* Search */}
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search animals..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {/* Animal Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.map((animal) => {
+          const isFull = animal.bookedShares === animal.totalShares;
+          return (
+            <Card key={animal.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-bold">{animal.name}</CardTitle>
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusBadgeClass(animal.status)}`}
+                  >
+                    {animal.status}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-3">
+                <ShareBar booked={animal.bookedShares} total={animal.totalShares} />
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">{animal.bookedShares}/{animal.totalShares}</span> shares booked
+                  &nbsp;&bull;&nbsp;
+                  <span className="font-semibold text-foreground">Rs. {animal.price.toLocaleString()}</span>
+                </p>
+                {!isFull && (
+                  <Button
+                    size="sm"
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  >
+                    Book Share
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            No animals found matching your filters.
+          </div>
+        )}
       </div>
     </div>
   );
