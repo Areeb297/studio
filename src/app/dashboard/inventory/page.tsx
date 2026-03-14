@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Warehouse, 
-  DollarSign, 
-  Users, 
-  AlertTriangle, 
-  PlusCircle, 
-  Search, 
+import {
+  Warehouse,
+  DollarSign,
+  Users,
+  AlertTriangle,
+  PlusCircle,
+  Search,
   Sparkles,
   Clock,
   ShoppingCart,
@@ -21,7 +21,9 @@ import {
   Package,
   FileText,
   Settings,
-  Download
+  Download,
+  PackageCheck,
+  Building2,
 } from "lucide-react";
 import {
   Dialog,
@@ -37,25 +39,25 @@ import { Label } from '@/components/ui/label';
 import { alertUnusualPurchases, AlertUnusualPurchasesInput, AlertUnusualPurchasesOutput } from '@/ai/flows/alert-unusual-purchases';
 import { Skeleton } from '@/components/ui/skeleton';
 import { InventoryFormsContainer } from '@/components/inventory/InventoryForms';
-import { 
-  ResponsiveContainer, 
-  PieChart, 
-  Pie, 
-  Cell, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   Legend,
   ComposedChart,
   Line,
   Area,
+  AreaChart,
   ReferenceLine
 } from 'recharts';
 
-// Import enhanced data
 import {
   enhancedInventory,
   vendors,
@@ -71,14 +73,25 @@ import {
   type EnhancedInventoryItem
 } from '@/lib/inventory-enhanced-data';
 
-// Custom components for better organization
-const KPICard = ({ 
-  title, 
-  value, 
-  icon: Icon, 
-  trend, 
+import {
+  grnProcessingTrends,
+  departmentRequisitions,
+} from '@/lib/dashboard-mock-data';
+
+const tooltipStyle = {
+  backgroundColor: 'hsl(var(--background))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '8px',
+};
+
+// KPI Card Component
+const KPICard = ({
+  title,
+  value,
+  icon: Icon,
+  trend,
   status = "default",
-  className = "" 
+  className = ""
 }: {
   title: string;
   value: string;
@@ -89,8 +102,8 @@ const KPICard = ({
 }) => {
   const statusClasses = {
     default: "",
-    warning: "bg-amber-50 border-amber-200",
-    critical: "bg-red-50 border-red-200"
+    warning: "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+    critical: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
   };
 
   const iconColors = {
@@ -122,15 +135,11 @@ export default function EnhancedInventoryPage() {
   const [aiAlert, setAiAlert] = useState<AlertUnusualPurchasesOutput | null>(null);
   const [isAlertLoading, setIsAlertLoading] = useState(false);
 
-  // Enhanced calculations
   const summary = calculateInventorySummary();
-  
-  // Filter inventory based on search term
+
   const filteredInventory = useMemo(() => {
-    if (!searchTerm) {
-      return enhancedInventory;
-    }
-    return enhancedInventory.filter(item => 
+    if (!searchTerm) return enhancedInventory;
+    return enhancedInventory.filter(item =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -144,11 +153,11 @@ export default function EnhancedInventoryPage() {
     setAiAlert(null);
     try {
         const mockPurchase: AlertUnusualPurchasesInput = {
-            item: "Double Light Plug",
+            item: "GOAT BAKRA A",
             quantity: 25,
             thresholdMultiplier: 1.8,
-            purchaseRate: 1200, // Higher than usual
-            agreedRate: 950
+            purchaseRate: 1900,
+            agreedRate: 1800
         };
         const result = await alertUnusualPurchases(mockPurchase);
         setAiAlert(result);
@@ -166,7 +175,7 @@ export default function EnhancedInventoryPage() {
         <div>
           <h1 className="text-3xl font-bold font-headline">Inventory Management</h1>
           <p className="text-muted-foreground mt-1">
-            Comprehensive inventory tracking across {enhancedInventory.length} items and {new Set(enhancedInventory.map(i => i.primaryStore)).size} locations
+            {summary.totalItems.toLocaleString()} items across {vendors.length} suppliers and {new Set(enhancedInventory.map(i => i.primaryStore)).size} store locations
           </p>
         </div>
         <div className="flex gap-2">
@@ -184,16 +193,16 @@ export default function EnhancedInventoryPage() {
           </Button>
         </div>
       </div>
-      
-      {/* Enhanced KPI Cards Row */}
+
+      {/* KPI Cards Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <KPICard
-          title="Total Inventory Value"
-          value={`PKR ${summary.totalValue.toLocaleString()}`}
-          icon={DollarSign}
-          trend="↗ +5.2% from last month"
+          title="Total Items"
+          value={summary.totalItems.toLocaleString()}
+          icon={Package}
+          trend="47 categories across 4 types"
         />
-        
+
         <KPICard
           title="Low Stock Items"
           value={summary.lowStockItems.toString()}
@@ -201,40 +210,40 @@ export default function EnhancedInventoryPage() {
           status={summary.lowStockItems > 0 ? "warning" : "default"}
           trend="Items at or below reorder level"
         />
-        
+
         <KPICard
           title="Pending Approvals"
           value={summary.pendingApprovals.toString()}
           icon={Clock}
           status={summary.pendingApprovals > 0 ? "critical" : "default"}
-          trend="Purchase orders awaiting approval"
+          trend="3 PO + 10 GRN + 3 PR pending"
         />
-        
+
         <KPICard
-          title="Active Vendors"
+          title="Active Suppliers"
           value={summary.activeVendors.toString()}
           icon={Users}
-          trend={`${vendors.length} total vendors registered`}
+          trend="All 5 suppliers approved"
         />
-        
+
         <KPICard
-          title="Monthly Purchases"
-          value={`PKR ${summary.monthlyPurchases.toLocaleString()}`}
+          title="Total PO Value"
+          value={`PKR ${(summary.monthlyPurchases / 1000).toFixed(0)}K`}
           icon={ShoppingCart}
-          trend="↗ +12.5% from last month"
+          trend="20 purchase orders total"
         />
       </div>
 
-      {/* Charts Section - Primary Focus on Donut and Bar Charts */}
+      {/* Charts Section - Primary */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Donut Chart - Inventory by Category */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5" />
-              Inventory by Category
+              Items by Type
             </CardTitle>
-            <CardDescription>Distribution of inventory value across categories</CardDescription>
+            <CardDescription>{summary.totalItems.toLocaleString()} total items in catalog</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -253,13 +262,14 @@ export default function EnhancedInventoryPage() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [
-                    `PKR ${value.toLocaleString()}`,
-                    'Value'
+                    value.toLocaleString(),
+                    'Items'
                   ]}
+                  contentStyle={tooltipStyle}
                 />
-                <Legend 
+                <Legend
                   formatter={(value) => (
                     <span className="text-sm">{value}</span>
                   )}
@@ -281,24 +291,24 @@ export default function EnhancedInventoryPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topItemsByValue}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="name" 
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis
+                  dataKey="name"
                   angle={-45}
                   textAnchor="end"
                   height={80}
+                  fontSize={11}
+                />
+                <YAxis
+                  tickFormatter={(value: number) => `${(value/1000).toFixed(0)}K`}
                   fontSize={12}
                 />
-                <YAxis 
-                  tickFormatter={(value: number) => `PKR ${(value/1000).toFixed(0)}K`}
-                  fontSize={12}
-                />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => [
                     `PKR ${value.toLocaleString()}`,
                     'Total Value'
                   ]}
-                  labelStyle={{ color: '#000' }}
+                  contentStyle={tooltipStyle}
                 />
                 <Bar dataKey="value" fill="#14B8A6" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -316,7 +326,7 @@ export default function EnhancedInventoryPage() {
               <AlertTriangle className="w-5 h-5" />
               Stock Status Distribution
             </CardTitle>
-            <CardDescription>Current stock status across all {summary.totalItems} items</CardDescription>
+            <CardDescription>Current stock status across {summary.totalItems.toLocaleString()} items</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={250}>
@@ -335,8 +345,11 @@ export default function EnhancedInventoryPage() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend 
+                <Tooltip
+                  formatter={(value: number) => [value.toLocaleString(), 'Items']}
+                  contentStyle={tooltipStyle}
+                />
+                <Legend
                   formatter={(value, entry) => (
                     <span className="text-sm" style={{ color: entry.color }}>{value}</span>
                   )}
@@ -346,24 +359,24 @@ export default function EnhancedInventoryPage() {
           </CardContent>
         </Card>
 
-        {/* Enhanced Vendor Performance Analytics */}
+        {/* Vendor Performance Analytics */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5" />
-              Vendor Performance Analytics
+              Vendor Performance
             </CardTitle>
-            <CardDescription>Multi-metric performance analysis for procurement optimization</CardDescription>
+            <CardDescription>Rating and on-time delivery for {vendors.length} suppliers</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={vendorPerformance.slice(0, 6)} 
+              <BarChart
+                data={vendorPerformance}
                 margin={{ top: 40, right: 30, left: 20, bottom: 70 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis 
-                  dataKey="name" 
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis
+                  dataKey="name"
                   angle={-45}
                   textAnchor="end"
                   height={60}
@@ -371,18 +384,18 @@ export default function EnhancedInventoryPage() {
                   interval={0}
                 />
                 <YAxis fontSize={10} />
-                <Tooltip 
+                <Tooltip
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-white p-3 shadow-lg rounded-lg border">
+                        <div className="bg-background p-3 shadow-lg rounded-lg border">
                           <p className="font-medium text-sm mb-2">{label}</p>
                           <div className="space-y-1 text-xs">
-                            <p>⭐ Rating: {data.rating}/5</p>
-                            <p>📅 On-Time: {data.onTime}%</p>
-                            <p>💰 Total Value: PKR {data.totalValue.toLocaleString()}</p>
-                            <p>📦 Total Orders: {data.totalOrders}</p>
+                            <p>Rating: {data.rating}/5</p>
+                            <p>On-Time: {data.onTime}%</p>
+                            <p>Total Value: PKR {data.totalValue.toLocaleString()}</p>
+                            <p>Total Orders: {data.totalOrders}</p>
                           </div>
                         </div>
                       );
@@ -390,27 +403,26 @@ export default function EnhancedInventoryPage() {
                     return null;
                   }}
                 />
-                <Legend 
-                  verticalAlign="top" 
+                <Legend
+                  verticalAlign="top"
                   align="right"
                   wrapperStyle={{ paddingBottom: '20px' }}
                 />
-                <Bar 
-                  dataKey="rating" 
-                  fill="#3B82F6" 
+                <Bar
+                  dataKey="rating"
+                  fill="#3B82F6"
                   name="Rating (out of 5)"
-                  radius={[2, 2, 0, 0]} 
+                  radius={[2, 2, 0, 0]}
                 />
-                <Bar 
-                  dataKey="onTimePercentage" 
-                  fill="#10B981" 
+                <Bar
+                  dataKey="onTimePercentage"
+                  fill="#10B981"
                   name="On-Time (%)"
-                  radius={[2, 2, 0, 0]} 
+                  radius={[2, 2, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
-            
-            {/* Additional Vendor Metrics Row */}
+
             <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">{vendors.filter(v => v.status === 'APPROVED').length}</p>
@@ -431,22 +443,98 @@ export default function EnhancedInventoryPage() {
         </Card>
       </div>
 
-      {/* Luxury Procurement Spending Trends Chart */}
+      {/* NEW: GRN Trends + Department Requisitions */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* GRN Processing Trends */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PackageCheck className="w-5 h-5" />
+              Goods Received Trends
+            </CardTitle>
+            <CardDescription>Monthly GRN counts — approved vs pending</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={grnProcessingTrends} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="grnApprovedGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.1} />
+                  </linearGradient>
+                  <linearGradient id="grnPendingGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="approved"
+                  stackId="1"
+                  stroke="#10B981"
+                  fill="url(#grnApprovedGrad)"
+                  name="Approved"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="pending"
+                  stackId="1"
+                  stroke="#F59E0B"
+                  fill="url(#grnPendingGrad)"
+                  name="Pending"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Department Requisitions (horizontal bar) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              Requisitions by Department
+            </CardTitle>
+            <CardDescription>Purchase requisitions across {departmentRequisitions.length} departments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={departmentRequisitions.slice(0, 8)}
+                layout="vertical"
+                margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" horizontal={false} />
+                <XAxis type="number" axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={110} fontSize={10} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="count" fill="#8B5CF6" name="Requisitions" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Procurement Spending Trends Chart */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5" />
-            Procurement Spending Trends & Analytics
+            Procurement Spending Trends
           </CardTitle>
-          <CardDescription>Advanced multi-category spending analysis with budget variance and trend indicators</CardDescription>
+          <CardDescription>Category spending analysis with budget variance (Oct 2025 — Mar 2026)</CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart 
+            <ComposedChart
               data={procurementSpendingTrends}
               margin={{ top: 40, right: 40, left: 20, bottom: 20 }}
             >
-              {/* Gradient Definitions */}
               <defs>
                 <linearGradient id="consumablesGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.8}/>
@@ -461,137 +549,113 @@ export default function EnhancedInventoryPage() {
                   <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="month" 
+
+              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <XAxis
+                dataKey="month"
                 fontSize={12}
-                tick={{ fill: '#64748B' }}
-                axisLine={{ stroke: '#E2E8F0' }}
+                axisLine={false}
+                tickLine={false}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="spending"
                 orientation="left"
                 fontSize={12}
-                tick={{ fill: '#64748B' }}
-                axisLine={{ stroke: '#E2E8F0' }}
+                axisLine={false}
+                tickLine={false}
                 tickFormatter={(value) => `${(value/1000).toFixed(0)}K`}
               />
-              <YAxis 
+              <YAxis
                 yAxisId="time"
                 orientation="right"
                 fontSize={12}
-                tick={{ fill: '#64748B' }}
-                axisLine={{ stroke: '#E2E8F0' }}
+                axisLine={false}
+                tickLine={false}
                 domain={[0, 5]}
                 tickFormatter={(value) => `${value}d`}
               />
-              
-              <Tooltip 
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: '8px',
-                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                }}
+
+              <Tooltip
+                contentStyle={tooltipStyle}
                 formatter={(value: number, name: string, props: any) => {
                   const dataKey = props.dataKey;
-                  if (dataKey === 'approvalTime') {
-                    return [`${value} days`, 'Avg Approval Time'];
-                  }
-                  if (dataKey === 'emergencyOrders') {
-                    return [`${value} orders`, 'Emergency Orders'];
-                  }
-                  if (dataKey === 'budget') {
-                    return [`PKR ${value.toLocaleString()}`, 'Budget'];
-                  }
-                  if (dataKey === 'variance') {
-                    return [`PKR ${Math.abs(value).toLocaleString()} ${value >= 0 ? 'Under' : 'Over'}`, 'Budget Variance'];
-                  }
+                  if (dataKey === 'approvalTime') return [`${value} days`, 'Avg Approval Time'];
+                  if (dataKey === 'budget') return [`PKR ${value.toLocaleString()}`, 'Budget'];
                   return [`PKR ${value.toLocaleString()}`, name];
                 }}
-                labelStyle={{ color: '#1E293B', fontWeight: '600' }}
               />
-              
-              <Legend 
-                verticalAlign="top" 
+
+              <Legend
+                verticalAlign="top"
                 align="right"
                 wrapperStyle={{ paddingBottom: '30px' }}
                 iconType="rect"
               />
-              
-              {/* Budget Reference Line */}
-              <ReferenceLine 
+
+              <ReferenceLine
                 yAxisId="spending"
-                y={725000} 
-                stroke="#64748B" 
+                y={65000}
+                stroke="#94A3B8"
                 strokeDasharray="8 8"
                 strokeWidth={2}
                 label={{ value: "Avg Budget", position: "insideTopRight", fontSize: 11 }}
               />
-              
-              {/* Stacked Bars for Categories */}
-              <Bar 
+
+              <Bar
                 yAxisId="spending"
-                dataKey="consumables" 
+                dataKey="consumables"
                 stackId="spending"
                 fill="url(#consumablesGradient)"
                 name="Consumables"
-                radius={[0, 0, 0, 0]}
               />
-              <Bar 
+              <Bar
                 yAxisId="spending"
-                dataKey="fixedAssets" 
+                dataKey="fixedAssets"
                 stackId="spending"
                 fill="url(#assetsGradient)"
                 name="Fixed Assets"
-                radius={[0, 0, 0, 0]}
               />
-              <Bar 
+              <Bar
                 yAxisId="spending"
-                dataKey="rawMaterials" 
+                dataKey="rawMaterials"
                 stackId="spending"
                 fill="url(#materialsGradient)"
                 name="Raw Materials"
                 radius={[4, 4, 0, 0]}
               />
-              
-              {/* Budget Line */}
-              <Line 
+
+              <Line
                 yAxisId="spending"
-                type="monotone" 
-                dataKey="budget" 
-                stroke="#F59E0B" 
+                type="monotone"
+                dataKey="budget"
+                stroke="#F59E0B"
                 strokeWidth={3}
                 strokeDasharray="5 5"
                 name="Monthly Budget"
                 dot={{ r: 0 }}
                 activeDot={{ r: 6, fill: '#F59E0B' }}
               />
-              
-              {/* Approval Time Trend Line */}
-              <Line 
+
+              <Line
                 yAxisId="time"
-                type="monotone" 
-                dataKey="approvalTime" 
-                stroke="#EF4444" 
+                type="monotone"
+                dataKey="approvalTime"
+                stroke="#EF4444"
                 strokeWidth={2}
                 name="Approval Time (days)"
                 dot={{ r: 4, fill: '#EF4444' }}
                 activeDot={{ r: 6, fill: '#EF4444' }}
               />
-              
             </ComposedChart>
           </ResponsiveContainer>
-          
-          {/* Trend Analysis Summary */}
+
           <div className="grid grid-cols-4 gap-4 mt-6 pt-6 border-t">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">PKR {(procurementSpendingTrends.reduce((sum, item) => sum + item.totalSpending, 0) / 1000000).toFixed(1)}M</p>
+              <p className="text-2xl font-bold text-primary">PKR {(procurementSpendingTrends.reduce((sum, item) => sum + item.totalSpending, 0) / 1000).toFixed(0)}K</p>
               <p className="text-xs text-muted-foreground">Total Spending (6 months)</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{Math.round(procurementSpendingTrends.reduce((sum, item) => sum + (item.variance > 0 ? 1 : 0), 0) / procurementSpendingTrends.length * 100)}%</p>
+              <p className="text-2xl font-bold text-green-600">{Math.round(procurementSpendingTrends.filter(item => item.variance > 0).length / procurementSpendingTrends.length * 100)}%</p>
               <p className="text-xs text-muted-foreground">Months Under Budget</p>
             </div>
             <div className="text-center">
@@ -610,7 +674,7 @@ export default function EnhancedInventoryPage() {
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-4 gap-6">
-        {/* Enhanced Inventory Table */}
+        {/* Inventory Table */}
         <Card className="lg:col-span-3">
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -620,7 +684,7 @@ export default function EnhancedInventoryPage() {
                   Current Stock Levels
                 </CardTitle>
                 <CardDescription>
-                  Complete overview of {filteredInventory.length} items across multiple locations
+                  {filteredInventory.length} items shown — {summary.totalItems.toLocaleString()} total in system
                 </CardDescription>
               </div>
               <div className="flex gap-2">
@@ -641,7 +705,7 @@ export default function EnhancedInventoryPage() {
                     <div className="grid gap-4 py-4">
                       <div className="space-y-2">
                         <Label htmlFor="item-name">Item Name</Label>
-                        <Input id="item-name" placeholder="e.g., Double Light Plug"/>
+                        <Input id="item-name" placeholder="e.g., GOAT BAKRA A"/>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="quantity">Quantity</Label>
@@ -649,7 +713,7 @@ export default function EnhancedInventoryPage() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="total-cost">Total Cost (PKR)</Label>
-                        <Input id="total-cost" type="number" placeholder="e.g., 25000"/>
+                        <Input id="total-cost" type="number" placeholder="e.g., 45000"/>
                       </div>
                     </div>
                     <DialogFooter>
@@ -665,13 +729,12 @@ export default function EnhancedInventoryPage() {
                 </Button>
               </div>
             </div>
-            
-            {/* Enhanced Search */}
+
             <div className="relative mt-4">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search items by name, code, category, or vendor..." 
-                className="pl-8 w-full" 
+              <Input
+                placeholder="Search items by name, code, category, or vendor..."
+                className="pl-8 w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -742,7 +805,7 @@ export default function EnhancedInventoryPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge 
+                        <Badge
                           variant={variant}
                           className={`
                             ${status === 'Low Stock' ? 'bg-amber-100 text-amber-700 border-amber-300' : ''}
@@ -762,9 +825,9 @@ export default function EnhancedInventoryPage() {
           </CardContent>
         </Card>
 
-        {/* Enhanced Side Panel */}
+        {/* Side Panel */}
         <div className="space-y-6">
-          {/* Recent Activity Panel */}
+          {/* Recent Activity */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -776,60 +839,60 @@ export default function EnhancedInventoryPage() {
               <div className="flex items-center gap-3 text-sm">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="font-medium">GRN Processed</p>
-                  <p className="text-muted-foreground text-xs">Double Light Plug - 10 units</p>
+                  <p className="font-medium">GRN Approved</p>
+                  <p className="text-muted-foreground text-xs">GRN-202603-0014 from ALI</p>
                 </div>
                 <div className="text-xs text-muted-foreground">2h ago</div>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="font-medium">Low Stock Alert</p>
-                  <p className="text-muted-foreground text-xs">Liquid Soap MAX - 1 unit left</p>
+                  <p className="font-medium">PO Pending</p>
+                  <p className="text-muted-foreground text-xs">PO-202603-0005 awaiting L2</p>
                 </div>
                 <div className="text-xs text-muted-foreground">4h ago</div>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <div className="flex-1">
-                  <p className="font-medium">PO Approved</p>
-                  <p className="text-muted-foreground text-xs">PO-2025-001 - PKR 45,000</p>
+                  <p className="font-medium">PR Submitted</p>
+                  <p className="text-muted-foreground text-xs">PR-202603-0007 from DESI KITCHEN</p>
                 </div>
                 <div className="text-xs text-muted-foreground">6h ago</div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Pending Approvals Panel */}
+          {/* Pending Approvals */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                 Pending Approvals
               </CardTitle>
-              <CardDescription>Purchase orders awaiting approval</CardDescription>
+              <CardDescription>Documents awaiting approval</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <div>
-                  <p className="font-medium">PO-2025-012</p>
-                  <p className="text-muted-foreground text-xs">Electrical Items - PKR 45,000</p>
+                  <p className="font-medium">Purchase Orders</p>
+                  <p className="text-muted-foreground text-xs">3 POs pending approval</p>
                 </div>
-                <Badge variant="outline" className="text-amber-600 border-amber-300">L2</Badge>
+                <Badge variant="outline" className="text-amber-600 border-amber-300">3</Badge>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <div>
-                  <p className="font-medium">PO-2025-013</p>
-                  <p className="text-muted-foreground text-xs">Hygiene Items - PKR 12,500</p>
+                  <p className="font-medium">Goods Received</p>
+                  <p className="text-muted-foreground text-xs">10 GRNs pending approval</p>
                 </div>
-                <Badge variant="outline" className="text-blue-600 border-blue-300">L1</Badge>
+                <Badge variant="outline" className="text-red-600 border-red-300">10</Badge>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <div>
-                  <p className="font-medium">PO-2025-014</p>
-                  <p className="text-muted-foreground text-xs">Construction - PKR 89,000</p>
+                  <p className="font-medium">Requisitions</p>
+                  <p className="text-muted-foreground text-xs">3 PRs pending review</p>
                 </div>
-                <Badge variant="outline" className="text-red-600 border-red-300">L3</Badge>
+                <Badge variant="outline" className="text-amber-600 border-amber-300">3</Badge>
               </div>
             </CardContent>
           </Card>
@@ -872,22 +935,22 @@ export default function EnhancedInventoryPage() {
             </CardContent>
           </Card>
 
-          {/* Enhanced Vendors Card */}
+          {/* Top Vendors */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                Top Vendors
+                Suppliers
               </CardTitle>
-              <CardDescription>Performance overview of key suppliers</CardDescription>
+              <CardDescription>{vendors.length} active suppliers</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {vendors.slice(0, 4).map(vendor => (
+              {vendors.map(vendor => (
                 <div key={vendor.id} className="flex items-center justify-between text-sm">
                   <div className="flex-1">
                     <p className="font-medium">{vendor.companyName}</p>
                     <p className="text-muted-foreground text-xs">
-                      {vendor.totalOrders} orders • {vendor.onTimeDelivery}% on-time
+                      {vendor.totalOrders} orders | {vendor.onTimeDelivery}% on-time
                     </p>
                   </div>
                   <div className="text-right">
@@ -895,7 +958,7 @@ export default function EnhancedInventoryPage() {
                       {vendor.status}
                     </Badge>
                     <div className="text-xs text-muted-foreground mt-1">
-                      ⭐ {vendor.vendorRating}/5
+                      {vendor.vendorRating}/5
                     </div>
                   </div>
                 </div>
@@ -907,7 +970,7 @@ export default function EnhancedInventoryPage() {
 
       <Separator className="my-8" />
 
-      {/* Comprehensive Forms Section */}
+      {/* Forms Section */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -917,7 +980,7 @@ export default function EnhancedInventoryPage() {
             </p>
           </div>
         </div>
-        
+
         <InventoryFormsContainer />
       </div>
     </div>
