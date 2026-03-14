@@ -437,6 +437,6 @@ All financial values are displayed in **PKR (Pakistani Rupees)**. Format: `Rs. 1
 ## License
 
 Proprietary software developed for Jamia Binoria Aalamia. All rights reserved.
-© 2026 Rahah24 ERP Systems.
+© 2026 Rahah24 Business Systems.
 
 ---
