@@ -440,5 +440,3 @@ Proprietary software developed for Jamia Binoria Aalamia. All rights reserved.
 © 2026 Rahah24 ERP Systems.
 
 ---
-
-*Built for Jamia Binoria Aalamia — SITE, Karachi, Pakistan*
