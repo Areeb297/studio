@@ -427,11 +427,11 @@ export default function RoleMasterPage() {
                           {!hasAccess ? (
                             <span className="text-muted-foreground/30">—</span>
                           ) : isApprove ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-purple-500 mx-auto" title="Approve" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-purple-500 mx-auto" aria-label="Approve" />
                           ) : isWrite ? (
-                            <Edit2 className="h-3 w-3 text-blue-500 mx-auto" title="Write" />
+                            <Edit2 className="h-3 w-3 text-blue-500 mx-auto" aria-label="Write" />
                           ) : (
-                            <Eye className="h-3 w-3 text-muted-foreground mx-auto" title="View" />
+                            <Eye className="h-3 w-3 text-muted-foreground mx-auto" aria-label="View" />
                           )}
                         </td>
                       );
