@@ -17,7 +17,7 @@ const requisitions = [
 
 export default function DepartmentRequisitionsPage() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Department Requisitions</h1>
         <p className="text-muted-foreground">Manage department stock requests and issue slips</p>

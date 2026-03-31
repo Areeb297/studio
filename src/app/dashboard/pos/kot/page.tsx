@@ -1,72 +1,127 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useMemo } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Flame, Printer, Search, Filter, Eye } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Flame, Printer, Filter, X, CheckSquare, Square } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+// ─── Mock KOT Data (matching RPOS format) ────────────────────────────────────
 
 const mockKOTs = [
-  { id: 1, kotNo: "KOT-0381", orderNo: "#381", time: "2026-03-14 13:45", type: "Dine-in", table: "12", items: ["Chicken Karahi ×1", "Mutton Karahi ×1", "Naan ×4", "Lassi ×2"], cashier: "admin", status: "Served" },
-  { id: 2, kotNo: "KOT-0380", orderNo: "#380", time: "2026-03-14 13:32", type: "Takeaway", table: "—", items: ["Chicken Biryani ×2", "Raita ×2", "Water Bottle ×2"], cashier: "admin", status: "Ready" },
-  { id: 3, kotNo: "KOT-0379", orderNo: "#379", time: "2026-03-14 13:18", type: "Dine-in", table: "7", items: ["Mutton Biryani ×1", "Naan ×2", "Chai ×2"], cashier: "developer", status: "Served" },
-  { id: 4, kotNo: "KOT-0378", orderNo: "#378", time: "2026-03-14 13:05", type: "Delivery", table: "—", items: ["Daal Makhani ×2", "Tandoori Roti ×4", "Lassi ×2", "Gulab Jamun ×2"], cashier: "developer", status: "Delivered" },
-  { id: 5, kotNo: "KOT-0377", orderNo: "#377", time: "2026-03-14 12:50", type: "Dine-in", table: "3", items: ["Nihari ×2", "Naan ×4", "Chai ×2"], cashier: "admin", status: "Served" },
-  { id: 6, kotNo: "KOT-0376", orderNo: "#376", time: "2026-03-14 12:38", type: "Mess", table: "—", items: ["Daal Chawal ×10", "Water Bottle ×10"], cashier: "PRUSER", status: "Served" },
-  { id: 7, kotNo: "KOT-0375", orderNo: "#375", time: "2026-03-14 12:22", type: "Takeaway", table: "—", items: ["Pulao ×3", "Chicken Haleem ×2", "Roghni Naan ×3"], cashier: "admin", status: "Cancelled" },
-  { id: 8, kotNo: "KOT-0374", orderNo: "#374", time: "2026-03-14 12:10", type: "Dine-in", table: "5", items: ["Aloo Gosht ×2", "Paratha ×4", "Fresh Juice ×2"], cashier: "developer", status: "Served" },
+  // Order 20260328-126 — T-1
+  { id: 1,  date: "28/03/2026", table: "T-1",  category: "Fast Food (Burger & Sandwich)", orderNo: "20260328-126", kotNo: 1, item: "CHICKEN SANDWICH",         qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "verify" },
+  { id: 2,  date: "28/03/2026", table: "T-1",  category: "Pizza",                          orderNo: "20260328-126", kotNo: 2, item: "FAJITA PIZZA 12\"",          qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "verify" },
+  { id: 3,  date: "28/03/2026", table: "T-1",  category: "Biryani & Handi",                orderNo: "20260328-126", kotNo: 3, item: "CHICKEN BIRYANI (1 PC)",     qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-2", verifyStatus: "verify" },
+  // Order 20260328-128 — T-28
+  { id: 4,  date: "28/03/2026", table: "T-28", category: "Salad/Raita",                    orderNo: "20260328-128", kotNo: 3, item: "RAITA",                     qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "verify" },
+  { id: 5,  date: "28/03/2026", table: "T-28", category: "Salad/Raita",                    orderNo: "20260328-128", kotNo: 4, item: "GREEN SALAD",                qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "verify" },
+  { id: 6,  date: "28/03/2026", table: "T-28", category: "Beverages",                      orderNo: "20260328-128", kotNo: 6, item: "PAKOLA M. WATER (L)",        qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "KOT-2 Beverage",   kitchen: "KOT-2 Beverage", verifyStatus: "verify" },
+  { id: 7,  date: "28/03/2026", table: "T-28", category: "Pakistani Cuisine",               orderNo: "20260328-128", kotNo: 1, item: "PALAK PANEER",               qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-2", verifyStatus: "verify" },
+  { id: 8,  date: "28/03/2026", table: "T-28", category: "Bar B Que",                       orderNo: "20260328-128", kotNo: 2, item: "MALAI BOTI",                 qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-2", verifyStatus: "verify" },
+  { id: 9,  date: "28/03/2026", table: "T-28", category: "Nan",                             orderNo: "20260328-128", kotNo: 5, item: "CHAPATI",                    qty: 5, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "verify" },
+  // Order 20260328-129 — T-21
+  { id: 10, date: "28/03/2026", table: "T-21", category: "Fast Food (Burger & Sandwich)",   orderNo: "20260328-129", kotNo: 1, item: "FRENCH FRIES",               qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "verify" },
+  // Order 20260328-130 — T-4
+  { id: 11, date: "28/03/2026", table: "T-4",  category: "Biryani & Handi",                orderNo: "20260328-130", kotNo: 1, item: "B.B.Q MATKA BIRYANI",        qty: 3, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-2", verifyStatus: "unverify" },
+  { id: 12, date: "28/03/2026", table: "T-4",  category: "Salad/Raita",                    orderNo: "20260328-130", kotNo: 2, item: "RAITA",                     qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "unverify" },
+  { id: 13, date: "28/03/2026", table: "T-4",  category: "Salad/Raita",                    orderNo: "20260328-130", kotNo: 3, item: "GREEN SALAD",                qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-1", verifyStatus: "unverify" },
+  { id: 14, date: "28/03/2026", table: "T-4",  category: "Beverages",                      orderNo: "20260328-130", kotNo: 4, item: "PAKOLA M. WATER (L)",        qty: 1, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "KOT-2 Beverage",   kitchen: "KOT-2 Beverage", verifyStatus: "unverify" },
+  { id: 15, date: "28/03/2026", table: "T-4",  category: "Biryani & Handi",                orderNo: "20260328-130", kotNo: 5, item: "B.B.Q MATKA BIRYANI",        qty: 2, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant", kitchen: "Kitchen-2", verifyStatus: "unverify" },
+  // Void example
+  { id: 16, date: "28/03/2026", table: "T-9",  category: "Pakistani Cuisine",              orderNo: "20260328-131", kotNo: 1, item: "MUTTON KARAHI",              qty: 1, kotStatus: "Void",                        void: "YES", costCentre: "Binoria Restaurant", kitchen: "Kitchen-2", verifyStatus: "verify" },
+  // Takeaway
+  { id: 17, date: "28/03/2026", table: "TA",   category: "Biryani & Handi",               orderNo: "20260328-132", kotNo: 1, item: "CHICKEN BIRYANI (1 PC)",     qty: 2, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant (Take Away)", kitchen: "Kitchen-2", verifyStatus: "verify" },
+  { id: 18, date: "28/03/2026", table: "TA",   category: "Nan",                           orderNo: "20260328-132", kotNo: 2, item: "NAAN",                       qty: 4, kotStatus: "KOT order placed to Kitchen", void: "NO", costCentre: "Binoria Restaurant (Take Away)", kitchen: "Kitchen-1", verifyStatus: "verify" },
 ];
 
-const statusColors: Record<string, string> = {
-  Served:    "bg-green-500/15 text-green-700 border-green-200",
-  Ready:     "bg-blue-500/15 text-blue-700 border-blue-200",
-  Delivered: "bg-teal-500/15 text-teal-700 border-teal-200",
-  Cancelled: "bg-red-500/15 text-red-700 border-red-200",
+const KITCHENS       = ['ALL', 'Kitchen-1', 'Kitchen-2', 'KOT-2 Beverage'];
+const COST_CENTRES   = ['ALL', 'Binoria Restaurant', 'Binoria Restaurant (Take Away)', 'KOT-2 Beverage', 'Counter C'];
+const CATEGORIES     = ['ALL', 'Fast Food (Burger & Sandwich)', 'Pizza', 'Biryani & Handi', 'Pakistani Cuisine', 'Bar B Que', 'Nan', 'Salad/Raita', 'Beverages'];
+const KOT_STATUSES   = ['ALL', 'KOT order placed to Kitchen', 'Void'];
+const ITEMS_LIST     = ['ALL', 'CHICKEN BIRYANI (1 PC)', 'B.B.Q MATKA BIRYANI', 'MALAI BOTI', 'RAITA', 'GREEN SALAD', 'CHAPATI', 'NAAN', 'MUTTON KARAHI', 'FRENCH FRIES', 'PALAK PANEER'];
+
+type KotStatus    = 'all' | 'void' | 'unvoid';
+type VerifyStatus = 'all' | 'verify' | 'unverify';
+type ReportType   = 'detail' | 'item-wise';
+
+const kotStatusBg: Record<string, string> = {
+  "KOT order placed to Kitchen": "bg-green-500/15 text-green-700 dark:text-green-400",
+  "Void": "bg-red-500/15 text-red-700 dark:text-red-400",
 };
 
-const typeColors: Record<string, string> = {
-  "Dine-in":  "bg-purple-500/15 text-purple-700",
-  "Takeaway": "bg-orange-500/15 text-orange-700",
-  "Delivery": "bg-blue-500/15 text-blue-700",
-  "Mess":     "bg-gray-500/15 text-gray-700",
-};
+export default function KOTReportPage() {
+  // ── Filter state ─────────────────────────────────────────────────────────
+  const [fromDate,       setFromDate]       = useState('28/03/2026');
+  const [tillDate,       setTillDate]       = useState('28/03/2026');
+  const [kitchen,        setKitchen]        = useState('ALL');
+  const [costCentre,     setCostCentre]     = useState('Binoria Restaurant');
+  const [category,       setCategory]       = useState('ALL');
+  const [item,           setItem]           = useState('ALL');
+  const [kotStatusDd,    setKotStatusDd]    = useState('ALL');
+  const [pendingInvoice, setPendingInvoice] = useState(true);
+  const [reportType,     setReportType]     = useState<ReportType>('detail');
+  const [statusFilter,   setStatusFilter]   = useState<KotStatus>('unvoid');
+  const [verifyStatus,   setVerifyStatus]   = useState<VerifyStatus>('all');
+  const [generated,      setGenerated]      = useState(false);
 
-export default function KOTHistoryPage() {
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
+  // ── Filtered list ─────────────────────────────────────────────────────────
+  const filtered = useMemo(() => {
+    if (!generated) return [];
+    return mockKOTs.filter(k => {
+      const matchKitchen   = kitchen === 'ALL'    || k.kitchen === kitchen;
+      const matchCentre    = costCentre === 'ALL' || k.costCentre === costCentre;
+      const matchCat       = category === 'ALL'   || k.category === category;
+      const matchItem      = item === 'ALL'        || k.item === item;
+      const matchKotStatus = kotStatusDd === 'ALL' || k.kotStatus === kotStatusDd;
+      const matchStatus    = statusFilter === 'all' ? true : statusFilter === 'void' ? k.void === 'YES' : k.void === 'NO';
+      const matchVerify    = verifyStatus === 'all' ? true : verifyStatus === 'verify' ? k.verifyStatus === 'verify' : k.verifyStatus === 'unverify';
+      return matchKitchen && matchCentre && matchCat && matchItem && matchKotStatus && matchStatus && matchVerify;
+    });
+  }, [generated, kitchen, costCentre, category, item, kotStatusDd, statusFilter, verifyStatus]);
 
-  const filtered = mockKOTs.filter(k => {
-    const matchSearch = k.kotNo.toLowerCase().includes(search.toLowerCase()) ||
-      k.orderNo.toLowerCase().includes(search.toLowerCase()) ||
-      k.items.some(i => i.toLowerCase().includes(search.toLowerCase()));
-    const matchType = typeFilter === 'all' || k.type === typeFilter;
-    const matchStatus = statusFilter === 'all' || k.status === statusFilter;
-    return matchSearch && matchType && matchStatus;
-  });
+  const totalQty = filtered.reduce((s, k) => s + k.qty, 0);
+
+  // ── Stats (unfiltered) ────────────────────────────────────────────────────
+  const totalKOTs    = mockKOTs.length;
+  const voidCount    = mockKOTs.filter(k => k.void === 'YES').length;
+  const verifyCount  = mockKOTs.filter(k => k.verifyStatus === 'verify').length;
+  const unverifyCount= mockKOTs.filter(k => k.verifyStatus === 'unverify').length;
+
+  // Item-wise summary (for item-wise report type)
+  const itemWise = useMemo(() => {
+    const map: Record<string, { item: string; category: string; qty: number }> = {};
+    filtered.forEach(k => {
+      if (!map[k.item]) map[k.item] = { item: k.item, category: k.category, qty: 0 };
+      map[k.item].qty += k.qty;
+    });
+    return Object.values(map).sort((a, b) => b.qty - a.qty);
+  }, [filtered]);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Flame className="h-6 w-6 text-orange-500" /> KOT History
+            <Flame className="h-6 w-6 text-orange-500" /> KOT List Report
           </h1>
-          <p className="text-muted-foreground text-sm">Kitchen Order Ticket history and reprint</p>
+          <p className="text-muted-foreground text-sm">Kitchen Order Ticket report with verify and void tracking</p>
         </div>
-        <Badge variant="secondary" className="text-sm">{filtered.length} KOTs today</Badge>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total KOTs", value: mockKOTs.length, color: "text-foreground" },
-          { label: "Served", value: mockKOTs.filter(k => k.status === 'Served').length, color: "text-green-600" },
-          { label: "Ready/Delivered", value: mockKOTs.filter(k => ['Ready','Delivered'].includes(k.status)).length, color: "text-blue-600" },
-          { label: "Cancelled", value: mockKOTs.filter(k => k.status === 'Cancelled').length, color: "text-red-600" },
+          { label: "Total KOT Lines", value: totalKOTs,    color: "text-foreground"   },
+          { label: "Void Lines",       value: voidCount,    color: "text-red-600"      },
+          { label: "Verified",         value: verifyCount,  color: "text-green-600"    },
+          { label: "Unverified",       value: unverifyCount,color: "text-amber-600"    },
         ].map(s => (
           <Card key={s.label}>
             <CardContent className="pt-4">
@@ -77,88 +132,254 @@ export default function KOTHistoryPage() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search KOT #, order #, items..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Order Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Dine-in">Dine-in</SelectItem>
-            <SelectItem value="Takeaway">Takeaway</SelectItem>
-            <SelectItem value="Delivery">Delivery</SelectItem>
-            <SelectItem value="Mess">Mess</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="Served">Served</SelectItem>
-            <SelectItem value="Ready">Ready</SelectItem>
-            <SelectItem value="Delivered">Delivered</SelectItem>
-            <SelectItem value="Cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Table */}
+      {/* ── Filter Panel ─────────────────────────────────────────────────── */}
       <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>KOT #</TableHead>
-                <TableHead>Order</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Table</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead>Cashier</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map(kot => (
-                <TableRow key={kot.id} className="hover:bg-muted/50">
-                  <TableCell className="font-mono text-xs font-semibold text-primary">{kot.kotNo}</TableCell>
-                  <TableCell className="font-semibold">{kot.orderNo}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{kot.time}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${typeColors[kot.type] ?? ''}`}>{kot.type}</Badge>
-                  </TableCell>
-                  <TableCell className="text-sm">{kot.table}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">
-                    {kot.items.join(', ')}
-                  </TableCell>
-                  <TableCell className="text-sm">{kot.cashier}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${statusColors[kot.status] ?? ''}`}>{kot.status}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" title="View">
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" title="Reprint KOT">
-                        <Printer className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent className="pt-4 space-y-4">
+          {/* Generate / Print */}
+          <div className="flex items-center gap-2">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5" onClick={() => setGenerated(true)}>
+              <Filter className="h-3.5 w-3.5" /> Generate
+            </Button>
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Printer className="h-3.5 w-3.5" /> Print
+            </Button>
+            {generated && (
+              <Button size="sm" variant="ghost" className="gap-1.5 text-muted-foreground" onClick={() => setGenerated(false)}>
+                <X className="h-3.5 w-3.5" /> Clear
+              </Button>
+            )}
+            {generated && <Badge variant="secondary" className="ml-auto">{filtered.length} KOT lines · {totalQty} qty</Badge>}
+          </div>
+
+          {/* Row 1: Dates + Kitchen */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">From Date</Label>
+              <Input value={fromDate} onChange={e => setFromDate(e.target.value)} placeholder="DD/MM/YYYY" className="h-8 text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">Till Date</Label>
+              <Input value={tillDate} onChange={e => setTillDate(e.target.value)} placeholder="DD/MM/YYYY" className="h-8 text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">Kitchen</Label>
+              <Select value={kitchen} onValueChange={setKitchen}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {KITCHENS.map(k => <SelectItem key={k} value={k} className="text-sm">{k}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Row 2: Cost Centre + Category + Items + KOT Status */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">Cost Centre</Label>
+              <Select value={costCentre} onValueChange={setCostCentre}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {COST_CENTRES.map(c => <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">Items Category</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map(c => <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">Items</Label>
+              <Select value={item} onValueChange={setItem}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ITEMS_LIST.map(i => <SelectItem key={i} value={i} className="text-sm">{i}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-1 block">KOT Status</Label>
+              <Select value={kotStatusDd} onValueChange={setKotStatusDd}>
+                <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {KOT_STATUSES.map(s => <SelectItem key={s} value={s} className="text-sm">{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Row 3: Pending Invoice + Report Type + Status + Verify Status */}
+          <div className="flex flex-wrap gap-x-6 gap-y-3 items-start">
+            {/* Pending Invoice checkbox */}
+            <div className="flex items-center pt-0.5">
+              <button onClick={() => setPendingInvoice(p => !p)} className="flex items-center gap-2 text-sm font-medium">
+                {pendingInvoice
+                  ? <CheckSquare className="h-4 w-4 text-primary" />
+                  : <Square className="h-4 w-4 text-muted-foreground" />}
+                Pending Invoice
+              </button>
+            </div>
+
+            <Separator orientation="vertical" className="h-10 hidden md:block" />
+
+            {/* Report Type */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Report Type</p>
+              <div className="flex gap-4">
+                {([{ id: 'detail', label: 'Detail' }, { id: 'item-wise', label: 'Item Wise Summary' }] as { id: ReportType; label: string }[]).map(rt => (
+                  <label key={rt.id} className="flex items-center gap-1.5 text-sm cursor-pointer" onClick={() => setReportType(rt.id)}>
+                    <span className={cn('flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors', reportType === rt.id ? 'border-primary' : 'border-muted-foreground/40')}>
+                      {reportType === rt.id && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    </span>
+                    {rt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Separator orientation="vertical" className="h-10 hidden md:block" />
+
+            {/* Status */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Status</p>
+              <div className="flex gap-4">
+                {(['all', 'void', 'unvoid'] as KotStatus[]).map(s => (
+                  <label key={s} className="flex items-center gap-1.5 text-sm cursor-pointer" onClick={() => setStatusFilter(s)}>
+                    <span className={cn('flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors', statusFilter === s ? 'border-primary' : 'border-muted-foreground/40')}>
+                      {statusFilter === s && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    </span>
+                    <span className="capitalize">{s}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Separator orientation="vertical" className="h-10 hidden md:block" />
+
+            {/* Verify Status */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Verify Status</p>
+              <div className="flex gap-4">
+                {([{ id: 'all', label: 'All' }, { id: 'verify', label: 'Verify' }, { id: 'unverify', label: 'Un Verify' }] as { id: VerifyStatus; label: string }[]).map(vs => (
+                  <label key={vs.id} className="flex items-center gap-1.5 text-sm cursor-pointer" onClick={() => setVerifyStatus(vs.id)}>
+                    <span className={cn('flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors', verifyStatus === vs.id ? 'border-primary' : 'border-muted-foreground/40')}>
+                      {verifyStatus === vs.id && <span className="h-2 w-2 rounded-full bg-primary" />}
+                    </span>
+                    {vs.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
+      {/* ── Results ───────────────────────────────────────────────────────── */}
+      {generated && (
+        <Card>
+          <CardContent className="pt-0 p-0">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Flame className="mb-3 h-10 w-10 text-muted-foreground/20" />
+                <p className="text-sm font-medium text-muted-foreground">No KOT records match your filters</p>
+              </div>
+            ) : reportType === 'item-wise' ? (
+              /* ── Item Wise Summary ── */
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">S#</th>
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">Item Name</th>
+                      <th className="px-3 py-2.5 text-left text-xs font-semibold text-muted-foreground">Category</th>
+                      <th className="px-3 py-2.5 text-right text-xs font-semibold text-muted-foreground">Total Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {itemWise.map((row, idx) => (
+                      <tr key={idx} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="px-3 py-2 text-muted-foreground text-xs">{idx + 1}</td>
+                        <td className="px-3 py-2 font-medium">{row.item}</td>
+                        <td className="px-3 py-2 text-muted-foreground text-xs">{row.category}</td>
+                        <td className="px-3 py-2 text-right font-bold text-primary">{row.qty}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 bg-muted/40 font-bold">
+                      <td colSpan={3} className="px-3 py-2 text-right text-xs text-muted-foreground">Total ({itemWise.length} items):</td>
+                      <td className="px-3 py-2 text-right text-primary">{itemWise.reduce((s, r) => s + r.qty, 0)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            ) : (
+              /* ── Detail ── */
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted-foreground">SNo</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted-foreground">Date</th>
+                      <th className="px-2 py-2.5 text-center font-semibold text-muted-foreground">Table #/TA</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted-foreground">Category</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted-foreground">Order #</th>
+                      <th className="px-2 py-2.5 text-center font-semibold text-muted-foreground">KOT #</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted-foreground">KOT</th>
+                      <th className="px-2 py-2.5 text-center font-semibold text-muted-foreground">Qty</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-muted-foreground">KOT Status</th>
+                      <th className="px-2 py-2.5 text-center font-semibold text-muted-foreground">Verify</th>
+                      <th className="px-2 py-2.5 text-center font-semibold text-muted-foreground">Void</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((k, idx) => (
+                      <tr key={k.id} className="border-b hover:bg-muted/30 transition-colors">
+                        <td className="px-3 py-2 text-muted-foreground">{idx + 1}</td>
+                        <td className="px-3 py-2 whitespace-nowrap">{k.date}</td>
+                        <td className="px-2 py-2 text-center">
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{k.table}</Badge>
+                        </td>
+                        <td className="px-3 py-2 max-w-[120px] truncate text-muted-foreground">{k.category}</td>
+                        <td className="px-3 py-2 font-mono text-[11px] text-primary whitespace-nowrap">{k.orderNo}</td>
+                        <td className="px-2 py-2 text-center font-bold">{k.kotNo}</td>
+                        <td className="px-3 py-2 font-medium">{k.item}</td>
+                        <td className="px-2 py-2 text-center font-bold text-primary">{k.qty}</td>
+                        <td className="px-3 py-2">
+                          <span className={cn("text-[10px] font-medium rounded px-1.5 py-0.5", kotStatusBg[k.kotStatus] ?? "text-muted-foreground")}>
+                            {k.kotStatus === 'KOT order placed to Kitchen' ? 'Kitchen' : k.kotStatus}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <span className={cn("text-[10px] font-medium", k.verifyStatus === 'verify' ? 'text-green-600' : 'text-amber-600')}>
+                            {k.verifyStatus === 'verify' ? 'Verified' : 'Unverified'}
+                          </span>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <span className={cn("text-[10px] font-bold", k.void === 'YES' ? 'text-red-600' : 'text-muted-foreground')}>
+                            {k.void}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 bg-muted/40 font-bold">
+                      <td colSpan={7} className="px-3 py-2 text-right text-xs text-muted-foreground">Total ({filtered.length} lines):</td>
+                      <td className="px-2 py-2 text-center text-primary">{totalQty}</td>
+                      <td colSpan={3} />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

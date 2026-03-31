@@ -93,7 +93,7 @@ export default function TrialBalancePage() {
   const totalExpenseDebits = expenses.reduce((sum, item) => sum + item.debit, 0);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Trial Balance</h1>

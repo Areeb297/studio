@@ -135,7 +135,7 @@ export default function ChartOfAccountsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Chart of Accounts</h1>

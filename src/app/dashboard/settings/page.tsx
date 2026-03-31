@@ -21,7 +21,7 @@ export default function SettingsPage() {
   const [autoBackup, setAutoBackup] = useState(true);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">System Settings</h1>
         <p className="text-muted-foreground">Configure system-wide preferences and options</p>

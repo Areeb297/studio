@@ -133,7 +133,7 @@ export default function MaintenancePage() {
   });
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Maintenance Management</h1>
         <p className="text-muted-foreground">Track and manage facility maintenance work orders</p>

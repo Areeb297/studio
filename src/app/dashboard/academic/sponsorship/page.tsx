@@ -117,7 +117,7 @@ export default function SponsorshipPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Student Sponsorship</h1>
         <p className="text-muted-foreground">Match donors with students and manage sponsorship commitments</p>

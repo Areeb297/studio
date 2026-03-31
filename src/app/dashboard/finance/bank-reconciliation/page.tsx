@@ -46,7 +46,7 @@ export default function BankReconciliationPage() {
   const difference = bankBalance - glBalance;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Bank Reconciliation</h1>
         <p className="text-muted-foreground">Reconcile bank statements with general ledger entries</p>

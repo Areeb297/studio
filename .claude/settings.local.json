@@ -29,7 +29,12 @@
       "mcp__sqlserver__list_databases",
       "mcp__sqlserver__describe_table",
       "Bash(ls -lh src/lib/*.ts)",
-      "Bash(tail -5 \"C:\\\\Users\\\\areeb\\\\.claude\\\\projects\\\\C--Users-areeb-OneDrive-Documents-Rahah-24-Project-Rahah24-App-studio\\\\419f6adb-007c-41ba-8518-26e0897f3cdf\\\\tool-results\\\\b6wz1un2d.txt\" 2>/dev/null | python3 -c \"import sys,json; data=[json.loads\\(l\\) for l in sys.stdin if l.strip\\(\\)]; last=[d for d in data if d.get\\('type'\\)=='assistant']; print\\(last[-1]['message']['stop_reason'] if last else 'still running'\\)\" 2>/dev/null || echo \"still running\")"
+      "Bash(tail -5 \"C:\\\\Users\\\\areeb\\\\.claude\\\\projects\\\\C--Users-areeb-OneDrive-Documents-Rahah-24-Project-Rahah24-App-studio\\\\419f6adb-007c-41ba-8518-26e0897f3cdf\\\\tool-results\\\\b6wz1un2d.txt\" 2>/dev/null | python3 -c \"import sys,json; data=[json.loads\\(l\\) for l in sys.stdin if l.strip\\(\\)]; last=[d for d in data if d.get\\('type'\\)=='assistant']; print\\(last[-1]['message']['stop_reason'] if last else 'still running'\\)\" 2>/dev/null || echo \"still running\")",
+      "Bash(xargs grep:*)",
+      "Bash(xargs wc:*)",
+      "Bash(while read:*)",
+      "Bash(do sed:*)",
+      "Bash(done)"
     ],
     "deny": []
   }

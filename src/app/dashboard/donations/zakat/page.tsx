@@ -115,7 +115,7 @@ export default function ZakatPage() {
   const zakatAmount = isZakatDue ? totalWealth * 0.025 : 0;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Zakat Management</h1>
         <p className="text-muted-foreground">Calculate, collect, and distribute Zakat funds</p>

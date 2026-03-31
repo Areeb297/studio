@@ -30,7 +30,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <h1 className="text-3xl font-bold">Point of Sale (POS)</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -69,7 +69,7 @@ export default function FinancialReportsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Financial Reports</h1>
         <p className="text-muted-foreground">Comprehensive financial statements and AI-powered insights</p>

@@ -69,6 +69,7 @@ import {
   TableProperties,
   XCircle,
   UserCog,
+  ArrowRightLeft,
 } from "lucide-react";
 
 import {
@@ -216,6 +217,8 @@ export default function DashboardLayout({
         { href: "/dashboard/pos/tables", icon: TableProperties, label: "Table Management" },
         { href: "/dashboard/pos/orders", icon: ListOrdered, label: "Order History" },
         { href: "/dashboard/pos/kot", icon: Flame, label: "KOT History" },
+        { href: "/dashboard/pos/provisional", icon: Receipt, label: "Provisional Invoice" },
+        { href: "/dashboard/pos/table-shift", icon: ArrowRightLeft, label: "Table Shifting" },
         { href: "/dashboard/pos/menu", icon: BookMarked, label: "Menu Management" },
         { href: "/dashboard/pos/combos", icon: Coffee, label: "Combo Deals" },
         { href: "/dashboard/pos/loyalty", icon: Star, label: "Loyalty Program" },

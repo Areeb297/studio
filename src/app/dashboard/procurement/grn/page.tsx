@@ -18,7 +18,7 @@ const formatPKR = (amount: number) => new Intl.NumberFormat('en-PK', { style: 'c
 
 export default function GRNPage() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Goods Receipt Notes (GRN)</h1>
         <p className="text-muted-foreground">Process incoming goods and match with purchase orders</p>

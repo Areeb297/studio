@@ -28,7 +28,7 @@ export default function ExpiryWarrantyPage() {
   const warrantyExpiring = warrantyItems.filter(w => differenceInDays(w.warranty, new Date()) <= 30 && differenceInDays(w.warranty, new Date()) > 0).length;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Expiry & Warranty Tracking</h1>
         <p className="text-muted-foreground">Track batch expiry dates and equipment warranties</p>
