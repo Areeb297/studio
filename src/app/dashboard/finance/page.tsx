@@ -1,636 +1,351 @@
-
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip, ReferenceLine, Cell } from "recharts";
-import { 
-  Banknote, 
-  ArrowDownRight, 
-  ArrowUpRight, 
-  TrendingUp, 
-  DollarSign, 
-  Scale, 
-  Activity,
-  PlusCircle,
-  FileText,
-  CreditCard,
-  Building2,
-  Users,
-  AlertCircle,
-  CheckCircle,
-  Eye
-} from "lucide-react";
+import Link from 'next/link';
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import { HRKPICard } from "@/components/hr/hr-kpi-card";
-import { 
-  accountingMetrics, 
-  chartOfAccounts, 
-  trialBalance,
-  journalEntries,
-  transactions,
-  customers,
-  vendors,
-  bankAccounts
-} from "@/lib/accounting-data";
-import { formatPKR, getAccountTypeColor } from "@/utils/accounting";
-import Link from "next/link";
-import { format } from "date-fns";
+  Wallet, ArrowUpRight, ArrowDownRight, TrendingUp, FileText,
+  ClipboardList, HandCoins, Banknote, ArrowRight, Bell, Sparkles, Lock,
+  ChevronRight, Plus, BookOpen, Building2, Heart, Scale,
+} from 'lucide-react';
+import {
+  Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer,
+  Tooltip, XAxis, YAxis,
+} from 'recharts';
+import { PageShell } from '@/components/finance/page-shell';
+import { KpiCard } from '@/components/finance/kpi-card';
+import { SectionHeader } from '@/components/finance/section-header';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { formatPKR } from '@/utils/accounting';
+import { dashSnapshot, arTopCustomers, apTopSuppliers, bankTiles, alerts } from '@/lib/finance/dashboard-data';
+import { monthlyPnl, monthlyCashflow } from '@/lib/finance/statements-data';
 
-const pnlData = [
-  { name: 'Jan', revenue: 4000, expenses: 2400 },
-  { name: 'Feb', revenue: 3000, expenses: 1398 },
-  { name: 'Mar', revenue: 2000, expenses: 9800 },
-  { name: 'Apr', revenue: 2780, expenses: 3908 },
-  { name: 'May', revenue: 1890, expenses: 4800 },
-  { name: 'Jun', revenue: 2390, expenses: 3800 },
-];
+const ageingChipColor = (b: string) =>
+  b === '0-30'  ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' :
+  b === '31-60' ? 'bg-amber-50 text-amber-700 ring-amber-200' :
+  b === '61-90' ? 'bg-orange-50 text-orange-700 ring-orange-200' :
+                  'bg-rose-50 text-rose-700 ring-rose-200';
 
-const balanceSheetData = {
-  assets: {
-    current: [
-      { item: 'Cash and Bank', amount: 150000 },
-      { item: 'Accounts Receivable', amount: 75000 },
-      { item: 'Inventory', amount: 120000 },
-    ],
-    nonCurrent: [
-      { item: 'Property & Equipment', amount: 500000 },
-    ]
-  },
-  liabilities: {
-    current: [
-      { item: 'Accounts Payable', amount: 45000 },
-      { item: 'Short-term Loans', amount: 100000 },
-    ],
-    nonCurrent: [
-       { item: 'Long-term Debt', amount: 200000 },
-    ]
-  },
-  equity: [
-    { item: "Owner's Capital", amount: 500000 },
-  ]
-};
+const alertColor = (l: 'warn' | 'danger' | 'info') =>
+  l === 'danger' ? 'bg-rose-50 text-rose-900 border-rose-200 dark:bg-rose-950/30 dark:text-rose-200 dark:border-rose-900'
+  : l === 'warn' ? 'bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-900'
+  :                'bg-blue-50 text-blue-900 border-blue-200 dark:bg-blue-950/30 dark:text-blue-200 dark:border-blue-900';
 
-const calculateTotal = (items: {item: string, amount: number}[]) => items.reduce((acc, item) => acc + item.amount, 0);
-
-const totalAssets = calculateTotal(balanceSheetData.assets.current) + calculateTotal(balanceSheetData.assets.nonCurrent);
-const totalLiabilities = calculateTotal(balanceSheetData.liabilities.current) + calculateTotal(balanceSheetData.liabilities.nonCurrent);
-const totalEquity = calculateTotal(balanceSheetData.equity);
-const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
-
-
-const trialBalanceData = [
-    { account: 'Cash', debit: 150000, credit: 0 },
-    { account: 'Accounts Receivable', debit: 75000, credit: 0 },
-    { account: 'Inventory', debit: 120000, credit: 0 },
-    { account: 'Equipment', debit: 500000, credit: 0 },
-    { account: 'Accounts Payable', debit: 0, credit: 45000 },
-    { account: 'Loans Payable', debit: 0, credit: 300000 },
-    { account: "Owner's Capital", debit: 0, credit: 500000 },
-];
-
-const totalDebits = trialBalanceData.reduce((acc, item) => acc + item.debit, 0);
-const totalCredits = trialBalanceData.reduce((acc, item) => acc + item.credit, 0);
-
-// Cashflow data - positive values for inflows, negative for outflows
-const cashflowData = [
-  { month: 'Jan', cashflow: 125000, type: 'inflow' },
-  { month: 'Feb', cashflow: 95000, type: 'inflow' },
-  { month: 'Mar', cashflow: -45000, type: 'outflow' },
-  { month: 'Apr', cashflow: 167000, type: 'inflow' },
-  { month: 'May', cashflow: 85000, type: 'inflow' },
-  { month: 'Jun', cashflow: -78000, type: 'outflow' },
-  { month: 'Jul', cashflow: 145000, type: 'inflow' },
-  { month: 'Aug', cashflow: 112000, type: 'inflow' },
-  { month: 'Sep', cashflow: -23000, type: 'outflow' },
-  { month: 'Oct', cashflow: 189000, type: 'inflow' },
-  { month: 'Nov', cashflow: -67000, type: 'outflow' },
-  { month: 'Dec', cashflow: 203000, type: 'inflow' },
-];
-
-const chartConfig = {
-  cashflow: {
-    label: "Cash Flow",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig;
-
-// Calculate cashflow metrics
-const totalInflows = cashflowData.filter(d => d.cashflow > 0).reduce((sum, d) => sum + d.cashflow, 0);
-const totalOutflows = Math.abs(cashflowData.filter(d => d.cashflow < 0).reduce((sum, d) => sum + d.cashflow, 0));
-const netCashflow = totalInflows - totalOutflows;
-
-export default function FinancePage() {
-  const [selectedPeriod, setSelectedPeriod] = useState<string>("current-month");
-  
-  // Account Balance Summary by Type
-  const accountTypeSummary = [
-    {
-      type: 'ASSET',
-      name: 'Total Assets',
-      amount: accountingMetrics.totalAssets,
-      color: '#10b981',
-      accounts: chartOfAccounts.filter(acc => acc.type === 'ASSET').length
-    },
-    {
-      type: 'LIABILITY',
-      name: 'Total Liabilities',
-      amount: accountingMetrics.totalLiabilities,
-      color: '#ef4444',
-      accounts: chartOfAccounts.filter(acc => acc.type === 'LIABILITY').length
-    },
-    {
-      type: 'EQUITY',
-      name: 'Total Equity',
-      amount: accountingMetrics.totalEquity,
-      color: '#3b82f6',
-      accounts: chartOfAccounts.filter(acc => acc.type === 'EQUITY').length
-    },
-    {
-      type: 'REVENUE',
-      name: 'Total Revenue',
-      amount: accountingMetrics.totalRevenue,
-      color: '#8b5cf6',
-      accounts: chartOfAccounts.filter(acc => acc.type === 'REVENUE').length
-    },
-    {
-      type: 'EXPENSE',
-      name: 'Total Expenses',
-      amount: accountingMetrics.totalExpenses,
-      color: '#f59e0b',
-      accounts: chartOfAccounts.filter(acc => acc.type === 'EXPENSE').length
-    }
-  ];
-
-  const recentJournalEntries = journalEntries.slice(0, 5);
-  const recentTransactions = transactions.slice(0, 5);
-
-  // Financial Health Indicators
-  const workingCapital = accountingMetrics.totalAssets - accountingMetrics.totalLiabilities;
-  const debtToEquityRatio = accountingMetrics.totalEquity > 0 
-    ? (accountingMetrics.totalLiabilities / accountingMetrics.totalEquity) 
-    : 0;
-
+export default function FinanceDashboardPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold font-headline">General Ledger</h1>
-          <p className="text-muted-foreground">
-            Comprehensive financial overview and account management
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Select Period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="current-month">Current Month</SelectItem>
-              <SelectItem value="last-month">Last Month</SelectItem>
-              <SelectItem value="current-quarter">Current Quarter</SelectItem>
-              <SelectItem value="current-year">Current Year</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button asChild>
-            <Link href="/dashboard/finance/journal-entries">
-              <PlusCircle className="w-4 h-4 mr-2" />
-              New Entry
+    <PageShell
+      eyebrow="Finance · BINORIA WELFARE TRUST"
+      title="Finance & Accounting"
+      description="Live snapshot across the Ledger, AR, AP, Cash, and Donations. All numbers are mock — for prototype demo."
+      breadcrumb={[{ label: 'Dashboard' }]}
+      actions={
+        <>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/finance/period-close">
+              <Lock className="mr-1.5 h-3.5 w-3.5" /> Period close
             </Link>
           </Button>
-        </div>
-      </div>
-
-      {/* Key Financial KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <HRKPICard
-          title="Net Income"
-          value={formatPKR(accountingMetrics.netIncome)}
-          subtitle="This period"
-          icon={TrendingUp}
-          trend={{
-            value: 12.5,
-            isPositive: true,
-            label: "vs last month"
-          }}
-          iconColor="text-green-600"
-          className="bg-gradient-to-br from-green-50 to-green-100 border-green-200"
-        />
-        <HRKPICard
-          title="Total Assets"
-          value={formatPKR(accountingMetrics.totalAssets)}
-          subtitle="Current book value"
-          icon={Building2}
-          trend={{
-            value: 5.8,
-            isPositive: true,
-            label: "vs last month"
-          }}
-          iconColor="text-blue-600"
-          className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200"
-        />
-        <HRKPICard
-          title="Cash Flow"
-          value={formatPKR(accountingMetrics.cashOnHand)}
-          subtitle="Available cash"
-          icon={DollarSign}
-          trend={{
-            value: 3.2,
-            isPositive: false,
-            label: "vs last month"
-          }}
-          iconColor="text-purple-600"
-          className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200"
-        />
-        <HRKPICard
-          title="Working Capital"
-          value={formatPKR(workingCapital)}
-          subtitle="Current assets - liabilities"
-          icon={Banknote}
-          iconColor="text-orange-600"
-          className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200"
-        />
-      </div>
-
-      {/* Outstanding Items */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <HRKPICard
-          title="Accounts Receivable"
-          value={formatPKR(accountingMetrics.accountsReceivable)}
-          subtitle={`${accountingMetrics.outstandingInvoices} outstanding invoices`}
-          icon={TrendingUp}
-          trend={{
-            value: 8.5,
-            isPositive: false,
-            label: "collection period"
-          }}
-          iconColor="text-green-600"
-        />
-        <HRKPICard
-          title="Accounts Payable"
-          value={formatPKR(accountingMetrics.accountsPayable)}
-          subtitle={`${accountingMetrics.unpaidBills} unpaid bills`}
-          icon={TrendingUp}
-          trend={{
-            value: 15.2,
-            isPositive: true,
-            label: "payment period"
-          }}
-          iconColor="text-red-600"
-        />
-        <HRKPICard
-          title="Overdue Invoices"
-          value={accountingMetrics.overdueInvoices}
-          subtitle="Require follow-up"
-          icon={AlertCircle}
-          iconColor="text-orange-600"
-        />
-        <HRKPICard
-          title="Bank Accounts"
-          value={bankAccounts.length}
-          subtitle="Active accounts"
-          icon={CreditCard}
-          iconColor="text-blue-600"
-        />
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Account Type Breakdown */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg">Account Balances by Type</CardTitle>
-            <CardDescription>Overview of account categories and balances</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={accountTypeSummary} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={11}
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis 
-                  tickFormatter={(value) => formatPKR(value)}
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  width={80}
-                />
-                <Tooltip 
-                  formatter={(value: number) => [formatPKR(value), "Balance"]}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
-                  }}
-                />
-                <Bar 
-                  dataKey="amount" 
-                  radius={[4, 4, 0, 0]}
-                  fill="hsl(var(--primary))"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Financial Health Metrics */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Financial Health</CardTitle>
-            <CardDescription>Key financial ratios and indicators</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Debt-to-Equity Ratio</span>
-                  <span className="text-sm font-bold">
-                    {debtToEquityRatio.toFixed(2)}
-                  </span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all ${
-                      debtToEquityRatio < 0.5 ? 'bg-green-500' : 
-                      debtToEquityRatio < 1 ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
-                    style={{ width: `${Math.min(debtToEquityRatio * 50, 100)}%` }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {debtToEquityRatio < 0.5 ? 'Excellent' : 
-                   debtToEquityRatio < 1 ? 'Good' : 'Needs attention'}
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Profit Margin</span>
-                  <span className="text-sm font-bold">
-                    {((accountingMetrics.netIncome / accountingMetrics.totalRevenue) * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div 
-                    className="h-2 rounded-full bg-blue-500 transition-all"
-                    style={{ 
-                      width: `${Math.min((accountingMetrics.netIncome / accountingMetrics.totalRevenue) * 100, 100)}%` 
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="text-center p-3 rounded-lg bg-green-50 border border-green-200">
-                  <div className="text-lg font-bold text-green-600">{customers.length}</div>
-                  <div className="text-xs text-green-600">Active Customers</div>
-                </div>
-                <div className="text-center p-3 rounded-lg bg-blue-50 border border-blue-200">
-                  <div className="text-lg font-bold text-blue-600">{vendors.length}</div>
-                  <div className="text-xs text-blue-600">Active Vendors</div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full" size="sm" asChild>
-                  <Link href="/dashboard/finance/trial-balance">
-                    <FileText className="w-4 h-4 mr-2" />
-                    View Trial Balance
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full" size="sm" asChild>
-                  <Link href="/dashboard/finance/reports">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Financial Reports
-                  </Link>
-                </Button>
-              </div>
+          <Button size="sm" asChild>
+            <Link href="/dashboard/finance/vouchers">
+              <Plus className="mr-1.5 h-3.5 w-3.5" /> New voucher
+            </Link>
+          </Button>
+        </>
+      }
+      kpis={
+        <>
+          <KpiCard
+            label="Cash position"
+            value={formatPKR(dashSnapshot.cashPosition)}
+            tone="success"
+            icon={Wallet}
+            delta={{ value: dashSnapshot.cashPositionDelta, direction: 'up', label: 'vs last month' }}
+          />
+          <KpiCard
+            label="Receivables"
+            value={formatPKR(dashSnapshot.receivables)}
+            tone="info"
+            icon={ArrowDownRight}
+            hint={`${formatPKR(dashSnapshot.receivablesOverdue)} overdue`}
+          />
+          <KpiCard
+            label="Payables"
+            value={formatPKR(dashSnapshot.payables)}
+            tone="warning"
+            icon={ArrowUpRight}
+            hint={`${formatPKR(dashSnapshot.payablesDueSoon)} due in 7d`}
+          />
+          <KpiCard
+            label="This month P&L"
+            value={formatPKR(dashSnapshot.mtdNetProfit)}
+            tone="accent"
+            icon={TrendingUp}
+            delta={{ value: dashSnapshot.mtdNetProfitDelta, direction: 'up' }}
+          />
+        </>
+      }
+    >
+      {/* Today’s movement strip */}
+      <section className="mb-6">
+        <SectionHeader eyebrow="Today" title="Live movement" description="Auto-refreshed throughout the day." />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Card className="p-4 flex items-center gap-4">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+              <FileText className="h-5 w-5" />
+            </span>
+            <div className="flex-1">
+              <div className="text-xs text-muted-foreground font-medium">Posted vouchers</div>
+              <div className="text-xl font-bold tabular-nums">{dashSnapshot.postedVouchersToday}</div>
             </div>
-          </CardContent>
+            <Link href="/dashboard/finance/vouchers/list" className="text-muted-foreground hover:text-foreground">
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Card>
+
+          <Card className="p-4 flex items-center gap-4">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
+              <ClipboardList className="h-5 w-5" />
+            </span>
+            <div className="flex-1">
+              <div className="text-xs text-muted-foreground font-medium">Pending approvals</div>
+              <div className="text-xl font-bold tabular-nums">{dashSnapshot.pendingApprovals}</div>
+            </div>
+            <Link href="/dashboard/finance/approvals/journals" className="text-muted-foreground hover:text-foreground">
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Card>
+
+          <Card className="p-4 flex items-center gap-4">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+              <HandCoins className="h-5 w-5" />
+            </span>
+            <div className="flex-1">
+              <div className="text-xs text-muted-foreground font-medium">Donations collected</div>
+              <div className="text-xl font-bold tabular-nums">{formatPKR(dashSnapshot.donationsToday)}</div>
+            </div>
+            <Link href="/dashboard/finance/donations/collect" className="text-muted-foreground hover:text-foreground">
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Card>
+        </div>
+      </section>
+
+      {/* AR / AP / Bank — 12-col layout */}
+      <section className="mb-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* AR */}
+        <Card className="lg:col-span-4 p-5">
+          <SectionHeader
+            eyebrow="Receivables"
+            title="AR snapshot"
+            actions={
+              <Link href="/dashboard/finance/ar" className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1">
+                Go to AR <ArrowRight className="h-3 w-3" />
+              </Link>
+            }
+          />
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-muted-foreground">Total open</span>
+              <span className="text-xl font-bold tabular-nums">{formatPKR(dashSnapshot.receivables)}</span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-muted-foreground">Overdue</span>
+              <span className="text-sm font-semibold text-rose-600 tabular-nums">
+                {formatPKR(dashSnapshot.receivablesOverdue)} <span className="text-xs text-muted-foreground">· 32%</span>
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-2">Top 5 customers</div>
+            <ul className="space-y-2">
+              {arTopCustomers.map(c => (
+                <li key={c.name} className="flex items-center justify-between text-sm">
+                  <span className="truncate font-medium">{c.name}</span>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <span className={`text-[10px] font-semibold ring-1 ring-inset px-1.5 py-0.5 rounded ${ageingChipColor(c.bucket)}`}>{c.bucket}d</span>
+                    <span className="tabular-nums font-semibold">{formatPKR(c.amount)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Cash Flow Analysis
-            </CardTitle>
-            <CardDescription>Monthly cash inflows and outflows</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="w-full h-[300px]">
-              <BarChart data={cashflowData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="month" 
-                  tickLine={false}
-                  axisLine={false}
-                  className="text-xs"
-                />
-                <YAxis 
-                  tickFormatter={(value) => `${value >= 0 ? '' : '-'}PKR ${Math.abs(value/1000)}k`}
-                  axisLine={false}
-                  tickLine={false}
-                  className="text-xs"
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="2 2" />
-                <Bar dataKey="cashflow" radius={[2, 2, 0, 0]}>
-                  {cashflowData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.cashflow >= 0 ? "hsl(180 98% 31%)" : "hsl(160 84% 39%)"} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
+        {/* AP */}
+        <Card className="lg:col-span-4 p-5">
+          <SectionHeader
+            eyebrow="Payables"
+            title="AP snapshot"
+            actions={
+              <Link href="/dashboard/finance/ap" className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1">
+                Go to AP <ArrowRight className="h-3 w-3" />
+              </Link>
+            }
+          />
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-muted-foreground">Total open</span>
+              <span className="text-xl font-bold tabular-nums">{formatPKR(dashSnapshot.payables)}</span>
+            </div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-muted-foreground">Due in 7 days</span>
+              <span className="text-sm font-semibold text-amber-600 tabular-nums">{formatPKR(dashSnapshot.payablesDueSoon)}</span>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-border">
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-2">Top 5 suppliers</div>
+            <ul className="space-y-2">
+              {apTopSuppliers.map(s => (
+                <li key={s.name} className="flex items-center justify-between text-sm">
+                  <span className="truncate font-medium">{s.name}</span>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <span className={`text-[10px] font-semibold ring-1 ring-inset px-1.5 py-0.5 rounded ${s.due === 'Overdue' ? 'bg-rose-50 text-rose-700 ring-rose-200' : 'bg-slate-50 text-slate-700 ring-slate-200'}`}>{s.due}</span>
+                    <span className="tabular-nums font-semibold">{formatPKR(s.amount)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Card>
-      </div>
-      
-      <Tabs defaultValue="journal-entries" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="journal-entries">Recent Journal Entries</TabsTrigger>
-          <TabsTrigger value="transactions">Recent Transactions</TabsTrigger>
-          <TabsTrigger value="trial-balance">Trial Balance</TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="journal-entries">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg">Recent Journal Entries</CardTitle>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/dashboard/finance/journal-entries">
-                    View All Entries
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentJournalEntries.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">{entry.entryNumber}</span>
-                        <Badge 
-                          variant={entry.status === 'COMPLETED' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {entry.status}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{entry.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(entry.date, 'MMM dd, yyyy')} • {entry.lineItems.length} line items
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold">
-                        {formatPKR(entry.totalDebit)}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Dr/Cr Balance
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {/* Alerts */}
+        <Card className="lg:col-span-4 p-5">
+          <SectionHeader
+            eyebrow="Attention"
+            title={`Alerts (${alerts.length})`}
+            actions={<Bell className="h-4 w-4 text-muted-foreground" />}
+          />
+          <ul className="space-y-2">
+            {alerts.map((a, i) => (
+              <li key={i}>
+                <Link
+                  href={a.href}
+                  className={`block rounded-lg border px-3 py-2.5 text-sm font-medium hover:translate-x-0.5 transition-transform ${alertColor(a.level)}`}
+                >
+                  {a.text}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </section>
 
-        <TabsContent value="transactions">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-lg">Recent Transactions</CardTitle>
-                <Button variant="outline" size="sm">
-                  View All Transactions
-                </Button>
+      {/* Bank tiles */}
+      <section className="mb-6">
+        <SectionHeader
+          eyebrow="Cash & Bank"
+          title="Account positions"
+          actions={
+            <Link href="/dashboard/finance/bank-reconciliation" className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1">
+              Bank reconciliation <ArrowRight className="h-3 w-3" />
+            </Link>
+          }
+        />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {bankTiles.map(t => (
+            <Card key={t.code} className="p-4 flex flex-col gap-3 relative overflow-hidden">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-[11px] font-mono text-muted-foreground">{t.code}</div>
+                  <div className="text-sm font-semibold mt-0.5">{t.name}</div>
+                </div>
+                <Banknote className="h-4 w-4 text-muted-foreground" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-primary/10">
-                        {transaction.paymentMethod === 'CASH' ? (
-                          <DollarSign className="w-4 h-4 text-primary" />
-                        ) : transaction.paymentMethod === 'BANK_TRANSFER' ? (
-                          <CreditCard className="w-4 h-4 text-primary" />
-                        ) : (
-                          <Banknote className="w-4 h-4 text-primary" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{transaction.description}</p>
-                        <div className="flex items-center gap-2">
-                          <p className="text-xs text-muted-foreground">
-                            {format(transaction.date, 'MMM dd, yyyy')}
-                          </p>
-                          <Badge variant="outline" className="text-xs">
-                            {transaction.paymentMethod.replace('_', ' ')}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-sm">
-                        {formatPKR(transaction.amount)}
-                      </div>
-                      <Badge 
-                        variant={transaction.status === 'COMPLETED' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {transaction.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-xl font-bold tabular-nums">
+                {t.currency === 'USD'
+                  ? `$ ${t.balance.toLocaleString()}`
+                  : formatPKR(t.balance)}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="trial-balance">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Trial Balance</CardTitle>
-              <CardDescription>Verification that total debits equal total credits</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Account Code</TableHead>
-                    <TableHead>Account Name</TableHead>
-                    <TableHead className="text-right">Debit Balance</TableHead>
-                    <TableHead className="text-right">Credit Balance</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {trialBalance.map(item => (
-                    <TableRow key={item.accountId}>
-                      <TableCell className="font-mono text-xs">{item.accountCode}</TableCell>
-                      <TableCell>{item.accountName}</TableCell>
-                      <TableCell className="text-right">
-                        {item.debitBalance > 0 ? formatPKR(item.debitBalance) : '-'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {item.creditBalance > 0 ? formatPKR(item.creditBalance) : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TableRow className="font-bold text-base">
-                    <TableCell colSpan={2}>Totals</TableCell>
-                    <TableCell className="text-right">
-                      {formatPKR(trialBalance.reduce((sum, item) => sum + item.debitBalance, 0))}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatPKR(trialBalance.reduce((sum, item) => sum + item.creditBalance, 0))}
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-              <div className="mt-4 text-center">
-                {trialBalance.reduce((sum, item) => sum + item.debitBalance, 0) === 
-                 trialBalance.reduce((sum, item) => sum + item.creditBalance, 0) ? (
-                  <Badge className="bg-green-500/20 text-green-700 hover:bg-green-500/30">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Trial Balance is Balanced
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive">
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Trial Balance is Unbalanced
-                  </Badge>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                <span>Reconciled {t.lastRecon}</span>
+                {t.status === 'stale' && (
+                  <span className="inline-flex items-center gap-1 font-semibold text-amber-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    Stale
+                  </span>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-    </div>
+      {/* Charts */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <Card className="p-5">
+          <SectionHeader eyebrow="Trend · 6 months" title="Income vs Expense" description="Stacked monthly, PKR" />
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={monthlyPnl} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} className="text-xs" />
+              <YAxis
+                tickFormatter={v => `${(v / 1e6).toFixed(1)}M`}
+                tickLine={false} axisLine={false} className="text-xs"
+              />
+              <Tooltip
+                contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--popover))' }}
+                formatter={(v: number) => formatPKR(v)}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="income"  name="Income"  fill="hsl(var(--chart-1))" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="expense" name="Expense" fill="hsl(var(--chart-5))" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-5">
+          <SectionHeader eyebrow="Trend · 6 months" title="Cash flow" description="Operating + Investing + Financing" />
+          <ResponsiveContainer width="100%" height={260}>
+            <AreaChart data={monthlyCashflow} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="opGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%"   stopColor="hsl(var(--chart-1))" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="finGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%"   stopColor="hsl(var(--chart-3))" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="hsl(var(--chart-3))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="month" tickLine={false} axisLine={false} className="text-xs" />
+              <YAxis tickFormatter={v => `${(v / 1e6).toFixed(1)}M`} tickLine={false} axisLine={false} className="text-xs" />
+              <Tooltip
+                contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--popover))' }}
+                formatter={(v: number) => formatPKR(v)}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Area type="monotone" dataKey="operating" name="Operating" stroke="hsl(var(--chart-1))" fill="url(#opGrad)" strokeWidth={2} />
+              <Area type="monotone" dataKey="financing" name="Financing" stroke="hsl(var(--chart-3))" fill="url(#finGrad)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+      </section>
+
+      {/* Quick links */}
+      <section>
+        <SectionHeader eyebrow="Quick access" title="Statements & masters" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { href: '/dashboard/finance/reports/trial-balance', label: 'Trial Balance',   icon: Scale,        tone: 'bg-teal-50 text-teal-700' },
+            { href: '/dashboard/finance/reports/pnl',           label: 'Profit & Loss',   icon: TrendingUp,   tone: 'bg-emerald-50 text-emerald-700' },
+            { href: '/dashboard/finance/reports/balance-sheet', label: 'Balance Sheet',   icon: Scale,        tone: 'bg-blue-50 text-blue-700' },
+            { href: '/dashboard/finance/reports/cash-flow',     label: 'Cash Flow',       icon: Banknote,     tone: 'bg-violet-50 text-violet-700' },
+            { href: '/dashboard/finance/accounts',              label: 'Chart of Accounts', icon: BookOpen,   tone: 'bg-amber-50 text-amber-700' },
+            { href: '/dashboard/finance/donations/collect',     label: 'Donations',       icon: Heart,        tone: 'bg-rose-50 text-rose-700' },
+          ].map(q => (
+            <Link key={q.href} href={q.href}>
+              <Card className="p-4 flex items-center gap-3 hover:border-primary/40 transition-colors cursor-pointer group">
+                <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${q.tone} dark:bg-opacity-20`}>
+                  <q.icon className="h-4 w-4" />
+                </span>
+                <span className="text-sm font-semibold">{q.label}</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto group-hover:translate-x-0.5 transition-transform" />
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </PageShell>
   );
 }

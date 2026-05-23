@@ -70,6 +70,15 @@ import {
   XCircle,
   UserCog,
   ArrowRightLeft,
+  Activity,
+  Plus,
+  Upload,
+  Target,
+  Lock,
+  Search,
+  TrendingDown,
+  ArrowDownRight,
+  ArrowUpRight,
 } from "lucide-react";
 
 import {
@@ -93,6 +102,7 @@ import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Rahah24Chatbot } from "@/components/rahah24-chatbot";
+import { GlobalSearchTrigger } from "@/components/finance/global-search-trigger";
 import { authService } from "@/lib/auth";
 import {
   DropdownMenu,
@@ -117,6 +127,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  group?: string;   // optional sub-section header inside a section
 }
 
 interface NavSection {
@@ -157,7 +168,7 @@ export default function DashboardLayout({
       } else if (['store_keeper', 'purchasing_officer', 'approver_l1', 'approver_l2', 'gm'].includes(role || '')) {
         setExpandedSections(['procurement', 'approvals', 'inventory']);
       } else if (['finance_officer', 'auditor'].includes(role || '')) {
-        setExpandedSections(['finance', 'finance_donations', 'procurement']);
+        setExpandedSections(['finance', 'finance_donations']);
       } else if (role === 'dept_head_kitchen') {
         setExpandedSections(['pos', 'procurement', 'inventory', 'production']);
       } else if (role === 'manager') {
@@ -203,6 +214,9 @@ export default function DashboardLayout({
   };
 
   const navItems: NavItemType[] = [
+    // ERP Portal — workspace chooser (Odoo-style hub)
+    { href: "/portal", icon: LayoutGrid, label: "ERP Portal" },
+
     // Dashboard
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
 
@@ -314,17 +328,107 @@ export default function DashboardLayout({
       ]
     },
 
-    // Finance
+    // Finance — single folder with grouped sub-items
     {
       type: 'section',
       label: 'finance',
-      icon: DollarSign,
+      icon: Wallet,
       items: [
-        { href: "/dashboard/finance/accounts", icon: FileText, label: "Chart of Accounts" },
-        { href: "/dashboard/finance/cost-centers", icon: Building2, label: "Cost Centers" },
-        { href: "/dashboard/finance/accounts-payable", icon: Banknote, label: "Accounts Payable" },
-        { href: "/dashboard/finance/bank-reconciliation", icon: Shield, label: "Bank Reconciliation" },
-        { href: "/dashboard/finance/reports", icon: BarChart2, label: "Financial Reports" },
+        // Overview
+        { group: 'Overview',          href: "/dashboard/finance",                                  icon: LayoutDashboard, label: "Finance Dashboard" },
+        { group: 'Overview',          href: "/dashboard/finance/period-close",                     icon: KeyRound,        label: "Period Close" },
+        { group: 'Overview',          href: "/dashboard/finance/approvals/journals",               icon: CheckSquare,     label: "Approvals" },
+
+        // Setup
+        { group: 'Setup',             href: "/dashboard/finance/accounts",                         icon: BookOpen,        label: "Chart of Accounts" },
+        { group: 'Setup',             href: "/dashboard/finance/accounts/tree",                    icon: Layers,          label: "Account Tree" },
+        { group: 'Setup',             href: "/dashboard/finance/cost-centers",                     icon: Building2,       label: "Cost Centers" },
+        { group: 'Setup',             href: "/dashboard/finance/fiscal-periods",                   icon: CalendarDays,    label: "Fiscal Periods" },
+        { group: 'Setup',             href: "/dashboard/finance/bank-accounts",                    icon: PiggyBank,       label: "Bank Accounts" },
+        { group: 'Setup',             href: "/dashboard/finance/tax-codes",                        icon: Receipt,         label: "Tax Codes" },
+        { group: 'Setup',             href: "/dashboard/finance/fx-rates",                         icon: ArrowLeftRight,  label: "FX Rates" },
+        { group: 'Setup',             href: "/dashboard/finance/payment-terms",                    icon: Clock,           label: "Payment Terms" },
+
+        // General Ledger
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers",                         icon: FileText,        label: "Unified Voucher" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/list",                    icon: ListOrdered,     label: "Voucher List" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/memories",                icon: Star,            label: "Voucher Memories" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/recurring",               icon: RefreshCcw,      label: "Recurring Journals" },
+        { group: 'General Ledger',    href: "/dashboard/finance/gl-transactions",                  icon: BookMarked,      label: "GL Transactions" },
+        { group: 'General Ledger',    href: "/dashboard/finance/account-movement",                 icon: Activity,        label: "Account Movement" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/receipt",                 icon: ArrowDownRight,  label: "Simplified Receipt" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/payment",                 icon: ArrowUpRight,    label: "Simplified Payment" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/gl-invoice",              icon: FileBarChart,    label: "GL Invoice" },
+        { group: 'General Ledger',    href: "/dashboard/finance/vouchers/gl-bill",                 icon: FileText,        label: "GL Bill" },
+
+        // Receivables
+        { group: 'Receivables',       href: "/dashboard/finance/ar",                               icon: Users,           label: "AR Dashboard" },
+        { group: 'Receivables',       href: "/dashboard/finance/ar/invoice",                       icon: Receipt,         label: "Customer Invoice" },
+        { group: 'Receivables',       href: "/dashboard/finance/ar/receipt",                       icon: HandCoins,       label: "Customer Receipt" },
+        { group: 'Receivables',       href: "/dashboard/finance/ar/credit-note",                   icon: RotateCcw,       label: "Credit Note" },
+        { group: 'Receivables',       href: "/dashboard/finance/ar/allocation",                    icon: ArrowLeftRight,  label: "Allocation" },
+        { group: 'Receivables',       href: "/dashboard/finance/ar/write-off",                     icon: XCircle,         label: "Write-Off" },
+        { group: 'Receivables',       href: "/dashboard/finance/ar/statement",                     icon: FileText,        label: "Customer Statement" },
+
+        // Payables
+        { group: 'Payables',          href: "/dashboard/finance/ap",                               icon: Truck,           label: "AP Dashboard" },
+        { group: 'Payables',          href: "/dashboard/finance/ap/invoice",                       icon: Receipt,         label: "Supplier Invoice" },
+        { group: 'Payables',          href: "/dashboard/finance/ap/payment",                       icon: CreditCard,      label: "Supplier Payment" },
+        { group: 'Payables',          href: "/dashboard/finance/ap/batch",                         icon: Layers,          label: "Batch Payment Run" },
+        { group: 'Payables',          href: "/dashboard/finance/ap/debit-note",                    icon: RotateCcw,       label: "Debit Note" },
+        { group: 'Payables',          href: "/dashboard/finance/ap/allocation",                    icon: ArrowLeftRight,  label: "Allocation" },
+        { group: 'Payables',          href: "/dashboard/finance/ap/statement",                     icon: FileText,        label: "Supplier Statement" },
+
+        // Cash & Bank
+        { group: 'Cash & Bank',       href: "/dashboard/finance/bank/deposit",                     icon: ArrowDownRight,  label: "Cash Deposit" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/bank/withdrawal",                  icon: ArrowUpRight,    label: "Cash Withdrawal" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/bank/transfer",                    icon: ArrowLeftRight,  label: "Bank Transfer" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/bank-reconciliation",              icon: Scale,           label: "Bank Reconciliation" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/bank-reconciliation/browser",      icon: Search,          label: "Recon Browser" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/cheque-book",                      icon: CreditCard,      label: "Cheque Book Stock" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/cheque-opening",                   icon: FileText,        label: "Cheque Opening" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/cash-denomination",                icon: Calculator,      label: "Cash Denomination" },
+        { group: 'Cash & Bank',       href: "/dashboard/finance/reconciliation-cutoff",            icon: Lock,            label: "Recon Cutoff" },
+
+        // Fixed Assets
+        { group: 'Fixed Assets',      href: "/dashboard/finance/assets",                           icon: Boxes,           label: "Asset Register" },
+        { group: 'Fixed Assets',      href: "/dashboard/finance/assets/categories",                icon: Tag,             label: "Categories" },
+        { group: 'Fixed Assets',      href: "/dashboard/finance/assets/acquisition",               icon: Plus,            label: "Acquisition" },
+        { group: 'Fixed Assets',      href: "/dashboard/finance/assets/depreciation",              icon: TrendingDown,    label: "Depreciation Run" },
+        { group: 'Fixed Assets',      href: "/dashboard/finance/assets/disposal",                  icon: XCircle,         label: "Disposal" },
+
+        // Budgeting
+        { group: 'Budgeting',         href: "/dashboard/finance/budgets",                          icon: FileBarChart,    label: "Budget Setup" },
+        { group: 'Budgeting',         href: "/dashboard/finance/budgets/upload",                   icon: Upload,          label: "Excel Upload" },
+        { group: 'Budgeting',         href: "/dashboard/finance/budgets/variance",                 icon: TrendingUp,      label: "Budget vs Actual" },
+
+        // Tax & Statutory
+        { group: 'Tax & Statutory',   href: "/dashboard/finance/tax/sales-tax",                    icon: Receipt,         label: "Sales Tax Return" },
+        { group: 'Tax & Statutory',   href: "/dashboard/finance/tax/wht",                          icon: FileText,        label: "WHT Certificate" },
+        { group: 'Tax & Statutory',   href: "/dashboard/finance/reports/sales-tax-register",       icon: BookOpen,        label: "Sales Tax Register" },
+        { group: 'Tax & Statutory',   href: "/dashboard/finance/reports/wht-statement",            icon: BookOpen,        label: "WHT Statement" },
+
+        // Donations
+        { group: 'Donations',         href: "/dashboard/finance/donations/donors",                 icon: Users,           label: "Donor Registry" },
+        { group: 'Donations',         href: "/dashboard/finance/donations/types",                  icon: Tag,             label: "Donation Types (Funds)" },
+        { group: 'Donations',         href: "/dashboard/finance/donations/collect",                icon: HandCoins,       label: "Donation Collection" },
+        { group: 'Donations',         href: "/dashboard/finance/donations/pledges",                icon: Heart,           label: "Pledges" },
+        { group: 'Donations',         href: "/dashboard/finance/reports/donation-collector",       icon: FileText,        label: "Collector Detail" },
+        { group: 'Donations',         href: "/dashboard/finance/reports/donation-summary",         icon: FileBarChart,    label: "Collective Summary" },
+        { group: 'Donations',         href: "/dashboard/finance/reports/zakat-register",           icon: BookMarked,      label: "Zakat Register" },
+        { group: 'Donations',         href: "/dashboard/finance/reports/donor-statement",          icon: FileText,        label: "Donor Statement" },
+
+        // Reports
+        { group: 'Statements',        href: "/dashboard/finance/reports/trial-balance",            icon: Scale,           label: "Trial Balance" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/pnl",                      icon: TrendingUp,      label: "Profit & Loss" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/balance-sheet",            icon: Scale,           label: "Balance Sheet" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/cash-flow",                icon: Banknote,        label: "Cash Flow" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/ar-ageing",                icon: Clock,           label: "AR Ageing" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/ap-ageing",                icon: Clock,           label: "AP Ageing" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/cash-book",                icon: BookOpen,        label: "Cash Book" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/bank-book",                icon: BookOpen,        label: "Bank Book" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/asset-schedule",           icon: Layers,          label: "Fixed Asset Schedule" },
+        { group: 'Statements',        href: "/dashboard/finance/reports/budget-variance",          icon: Target,          label: "Budget Variance" },
       ]
     },
 
@@ -480,7 +584,7 @@ export default function DashboardLayout({
                                   : section.label === 'sales' ? 'Sales'
                                   : section.label === 'returns' ? 'Returns'
                                   : section.label === 'finance' ? 'Finance'
-                                  : section.label === 'finance_donations' ? 'Finance & Donations'
+                                  : section.label === 'finance_donations' ? 'Donations Module'
                                   : section.label === 'qurbani' ? 'Qurbani Management'
                                   : section.label === 'reports' ? 'Reports'
                                   : section.label === 'admin' ? 'Admin'
@@ -497,19 +601,30 @@ export default function DashboardLayout({
                         
                         {isExpanded && (
                           <div className="ml-4 mt-1 space-y-1">
-                            {section.items.map((subItem) => (
-                              <SidebarMenuItem key={subItem.href}>
-                                <Link href={subItem.href} className="w-full">
-                                  <SidebarMenuButton 
-                                    isActive={pathname === subItem.href || pathname.startsWith(subItem.href + '/')}
-                                    className="text-sm pl-6"
-                                  >
-                                    {React.createElement(subItem.icon, { className: "h-3 w-3" })}
-                                    <span>{subItem.label}</span>
-                                  </SidebarMenuButton>
-                                </Link>
-                              </SidebarMenuItem>
-                            ))}
+                            {section.items.map((subItem, idx) => {
+                              const prevGroup = idx > 0 ? section.items[idx - 1].group : undefined;
+                              const showHeader = subItem.group && subItem.group !== prevGroup;
+                              return (
+                                <React.Fragment key={subItem.href}>
+                                  {showHeader && (
+                                    <div className="pl-6 pt-2 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/70">
+                                      {subItem.group}
+                                    </div>
+                                  )}
+                                  <SidebarMenuItem>
+                                    <Link href={subItem.href} className="w-full">
+                                      <SidebarMenuButton
+                                        isActive={pathname === subItem.href || pathname.startsWith(subItem.href + '/')}
+                                        className="text-sm pl-6"
+                                      >
+                                        {React.createElement(subItem.icon, { className: "h-3 w-3" })}
+                                        <span>{subItem.label}</span>
+                                      </SidebarMenuButton>
+                                    </Link>
+                                  </SidebarMenuItem>
+                                </React.Fragment>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -596,6 +711,7 @@ export default function DashboardLayout({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <GlobalSearchTrigger />
               <ThemeToggle />
               <Button variant="ghost" size="icon" className="rounded-full relative">
                 <Bell className="h-5 w-5" />

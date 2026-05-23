@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 ALWAYS RUN BEFORE DEPLOY 🚨
+
+**Before any session ends or any commit/push that the user is about to deploy:**
+1. `npm run build` MUST succeed — this catches the same errors Vercel will catch on deploy. A passing `tsc --noEmit` is NOT enough; Next.js does additional checks during `build` (especially around `useSearchParams`, `dynamic = 'force-dynamic'`, dynamic imports, and server/client component boundaries).
+2. If the build fails, fix every error before reporting the work as done. Common failure modes on this repo:
+   - `useSearchParams()` without a `<Suspense>` boundary → wrap the page in `<Suspense>` or set `export const dynamic = 'force-dynamic'`.
+   - Client-only imports leaking into server components.
+   - Mismatched module re-exports after file renames/moves.
+3. Only after `npm run build` exits cleanly should the work be considered shippable. The user has been bitten by Vercel build failures before — this check is non-negotiable.
+
 ## Project Overview
 
 Rahah24 ERP is a comprehensive Islamic educational institution management system built for Jamia Binoria Aalamia. It's a Next.js 15.3.3 application with multiple business modules including restaurant management, academic (madrasa), events (shadi lawn), and fitness (gym time).

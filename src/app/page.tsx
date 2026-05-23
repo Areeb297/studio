@@ -2,508 +2,403 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Shield, TrendingUp, Package, ShoppingCart, Factory, UtensilsCrossed,
-  Heart, Wallet, Users, FileText, Settings, Check, User, Lock,
-  Info, Linkedin, Twitter, Github, Phone, Mail, Zap, BarChart3,
-  ArrowRight, Eye, Target, MessageSquare, DollarSign, Globe
-} from "lucide-react";
-
-// ─── Module Data ──────────────────────────────────────────────────────────────
+  Heart, Wallet, FileText, Settings, Check, User, Lock,
+  Eye, EyeOff, Linkedin, Twitter, Github, ArrowRight, Sparkles,
+  Activity, Layers, Banknote, ChevronRight,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 const modules = [
-  {
-    icon: Package,
-    iconBg: "bg-teal-100",
-    iconColor: "text-teal-600",
-    title: "Smart Inventory",
-    desc: "Complete warehouse management with batch tracking and FEFO (First Expired, First Out) logic.",
-    features: ["Multi-warehouse Support", "Stock Audit & Variances", "Low Stock Alerts"],
-  },
-  {
-    icon: ShoppingCart,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-    title: "Advanced Procurement",
-    desc: "Streamlined purchasing workflow from Requisition (PR) to Goods Receipt (GRN).",
-    features: ["Approval Workflows", "Supplier Management", "Purchase Returns"],
-  },
-  {
-    icon: Factory,
-    iconBg: "bg-orange-100",
-    iconColor: "text-orange-500",
-    title: "Production & BOM",
-    desc: "Detailed recipe management and Bill of Materials for accurate cost calculation.",
-    features: ["Yield Management", "Work Order Planning", "Raw Material Consumption"],
-  },
-  {
-    icon: UtensilsCrossed,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
-    title: "Restaurant POS & Operations",
-    desc: "Real-time sales, kitchen display, and loyalty cards for dine-in, takeaway, and delivery.",
-    features: ["KOT & Kitchen Display", "Loyalty Cards (Silver/Gold)", "Table Management"],
-  },
-  {
-    icon: Heart,
-    iconBg: "bg-rose-100",
-    iconColor: "text-rose-600",
-    title: "Donation & Welfare",
-    desc: "Cash and in-kind donation management with Qurbani booking and transparent donor reporting.",
-    features: ["Donor History & Receipts", "Qurbani Allocation", "In-Kind Tracking"],
-  },
-  {
-    icon: Wallet,
-    iconBg: "bg-violet-100",
-    iconColor: "text-violet-600",
-    title: "Integrated Finance",
-    desc: "Real-time General Ledger integration for accurate financial position monitoring.",
-    features: ["Chart of Accounts", "AP / AR Aging", "Profit & Loss Reports"],
-  },
-  {
-    icon: Users,
-    iconBg: "bg-indigo-100",
-    iconColor: "text-indigo-600",
-    title: "HR & Staff Management",
-    desc: "Staff lifecycle management from appointment to payroll, attendance, and performance.",
-    features: ["Biometric Attendance", "Leave Management", "KPI Evaluations"],
-  },
-  {
-    icon: FileText,
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
-    title: "Sales & Invoicing",
-    desc: "Manage customer orders, deliveries, and tax-compliant invoicing efficiently.",
-    features: ["Sales Quotations", "Delivery Challans", "Sales Returns"],
-  },
-  {
-    icon: Settings,
-    iconBg: "bg-gray-100",
-    iconColor: "text-gray-600",
-    title: "System Control",
-    desc: "Robust administrative tools for user management, roles, and system integrity.",
-    features: ["Dynamic RBAC", "Audit Trails", "Data Import Utility"],
-  },
+  { icon: Wallet,           bg: 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300',          title: 'Integrated Finance',  desc: 'Chart of Accounts · AR / AP · Bank reconciliation · Trial Balance · P&L · Cash Flow.', tag: 'New in v8.0' },
+  { icon: Heart,            bg: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300',          title: 'Donations',           desc: 'Donor registry, Zakat / Sadqah / Mosque funds, pledges, statutory registers, donor statements.' },
+  { icon: Package,          bg: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',          title: 'Smart Inventory',     desc: 'Multi-warehouse, batch tracking, FEFO, low-stock alerts.' },
+  { icon: ShoppingCart,     bg: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300',  title: 'Advanced Procurement', desc: 'PR → PO → GRN with three-level approvals and supplier management.' },
+  { icon: Factory,          bg: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',      title: 'Production & BOM',    desc: 'Recipe management, BOM costing, work-order planning, yield management.' },
+  { icon: UtensilsCrossed,  bg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', title: 'Restaurant POS',   desc: 'Real-time orders, kitchen display, loyalty cards, dine-in / takeaway / delivery.' },
 ];
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+const processSteps = [
+  { icon: ShoppingCart, num: 1, title: 'Procure',  desc: 'Requisitions and POs to stock up materials.' },
+  { icon: Factory,      num: 2, title: 'Process',  desc: 'Convert raw materials to finished goods.' },
+  { icon: UtensilsCrossed, num: 3, title: 'Sell',  desc: 'Fulfil orders and generate tax-compliant invoices.' },
+  { icon: TrendingUp,   num: 4, title: 'Report',   desc: 'Real-time financial statements and analytics.' },
+];
 
-export default function LoginPage() {
+export default function LoginLandingPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('admin@rahah24.com');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [show, setShow] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => router.push('/dashboard'), 600);
+    setLoading(true);
+    setTimeout(() => router.push('/portal'), 700);
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans">
-
-      {/* ── Navbar ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-teal-600 flex items-center justify-center shrink-0">
-              <span className="text-white font-extrabold text-lg">R</span>
-            </div>
-            <span className="font-bold text-lg text-gray-900">Rahah24 ERP</span>
+    <div className="min-h-screen bg-background">
+      {/* Nav */}
+      <nav className="fixed top-0 inset-x-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
+          <Link href="#" className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 text-white font-bold text-lg flex items-center justify-center shadow-lg shadow-primary/20">R</div>
+            <span className="font-bold text-base tracking-tight">Rahah24 ERP</span>
+          </Link>
+          <div className="hidden lg:flex items-center gap-2 text-sm">
+            <Link href="#features"  className="px-3 py-1.5 rounded-md font-semibold text-slate-700 dark:text-slate-300 hover:text-primary">Platform</Link>
+            <Link href="#process"   className="px-3 py-1.5 rounded-md font-semibold text-slate-700 dark:text-slate-300 hover:text-primary">How it works</Link>
+            <Link href="#solutions" className="px-3 py-1.5 rounded-md font-semibold text-slate-700 dark:text-slate-300 hover:text-primary">Solutions</Link>
           </div>
-          {/* Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#modules" className="hover:text-teal-600 transition-colors">Platform</a>
-            <a href="#how" className="hover:text-teal-600 transition-colors">How it Works</a>
-            <a href="#modules" className="hover:text-teal-600 transition-colors">Solutions</a>
-          </nav>
-          {/* CTA */}
-          <button
-            onClick={() => document.getElementById('login-card')?.scrollIntoView({ behavior: 'smooth' })}
-            className="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold transition-colors"
-          >
-            Client Portal
-          </button>
+          <Link href="#login">
+            <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white">Client Portal</Button>
+          </Link>
         </div>
-      </header>
+      </nav>
 
-      {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <section className="bg-gray-50 py-20 lg:py-28" id="how">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
+      {/* Hero */}
+      <section id="login" className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 overflow-hidden">
+        {/* radial glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-amber-500/10 blur-3xl" />
+        </div>
+        {/* dot grid */}
+        <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none" />
 
-          {/* Left — Headline */}
-          <div className="space-y-8">
-            {/* Badge */}
-            <span className="inline-flex items-center gap-1.5 border border-teal-300 text-teal-700 text-xs font-semibold px-3 py-1.5 rounded-full bg-teal-50">
-              <Zap className="h-3.5 w-3.5" />
-              Enterprise Version 9.0 Live
-            </span>
+        <div className="container mx-auto px-4 lg:px-8 relative">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Hero copy */}
+            <div className="lg:col-span-7">
+              <span className="inline-flex items-center gap-2 bg-primary/10 text-primary border border-primary/20 text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1.5 rounded-full mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
+                  <span className="relative rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                Enterprise v8.0 · Live
+              </span>
 
-            <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight">
-              Unified Control for<br />
-              <span className="text-teal-600">Intelligent Operations</span>
-            </h1>
+              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-[1.05] mb-6">
+                Unified control for{' '}
+                <span className="bg-gradient-to-r from-primary via-teal-500 to-teal-400 bg-clip-text text-transparent">
+                  intelligent operations
+                </span>
+              </h1>
 
-            <p className="text-lg text-gray-500 max-w-md leading-relaxed">
-              Rahah24 integrates advanced inventory forecasting, procurement automation, restaurant POS,
-              donation management, and financial reporting into a single, secure cloud platform.
-            </p>
+              <p className="text-lg text-muted-foreground max-w-xl mb-8 leading-relaxed">
+                Rahah24 integrates advanced inventory, procurement, financial reporting, and donations
+                into a single, secure cloud platform — built for Pakistani enterprises and charitable trusts.
+              </p>
 
-            {/* Mini feature cards */}
-            <div className="flex flex-wrap gap-3">
-              {[
-                { icon: Shield,    label: "Enterprise Grade",  sub: "RBAC Security" },
-                { icon: TrendingUp,label: "Real-time Data",    sub: "Instant Analytics" },
-                { icon: BarChart3, label: "AI Insights",       sub: "Smart Forecasting" },
-              ].map(f => (
-                <div key={f.label} className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
-                  <f.icon className="h-5 w-5 text-teal-600 shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">{f.label}</p>
-                    <p className="text-xs text-gray-500">{f.sub}</p>
+              {/* Trust stats — photo style cards */}
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { icon: Shield,    title: 'Enterprise Grade', sub: 'RBAC + Account Security' },
+                  { icon: Activity,  title: 'Real-time Data',   sub: 'Instant analytics' },
+                  { icon: Layers,    title: '78 Modules',       sub: 'Across 11 sub-systems' },
+                ].map(s => (
+                  <div key={s.title} className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3 hover:-translate-y-0.5 hover:border-primary/30 transition-all shadow-sm">
+                    <span className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                      <s.icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <div className="font-bold text-sm">{s.title}</div>
+                      <div className="text-xs text-muted-foreground">{s.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Login card */}
+            <div className="lg:col-span-5">
+              <div className="relative">
+                {/* gradient top stripe */}
+                <div className="absolute -top-px inset-x-6 h-1 bg-gradient-to-r from-primary via-teal-400 to-emerald-300 rounded-full" />
+
+                <div className="bg-card border border-border rounded-2xl shadow-xl shadow-primary/5 p-8 relative overflow-hidden">
+                  {/* corner blob */}
+                  <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-primary/8 blur-3xl pointer-events-none" />
+
+                  <div className="relative">
+                    {/* Brand + secure pill */}
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary to-teal-600 text-white font-bold text-xl flex items-center justify-center shadow-lg shadow-primary/25">R</div>
+                        <div>
+                          <div className="font-bold text-base">Rahah24 ERP</div>
+                          <div className="text-[10px] uppercase tracking-[0.12em] font-semibold text-muted-foreground">Enterprise Portal</div>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900">
+                        <Shield className="h-3 w-3" /> Encrypted
+                      </span>
+                    </div>
+
+                    <h2 className="text-2xl font-bold mb-1">Welcome back</h2>
+                    <p className="text-sm text-muted-foreground mb-6">Sign in to access your operations workspace.</p>
+
+                    <form onSubmit={submit} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Username or email</label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="admin@rahah24.com"
+                            className="pl-10 h-12 text-sm font-medium"
+                            autoComplete="username"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Password</label>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type={show ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="pl-10 pr-10 h-12 text-sm font-medium"
+                            autoComplete="current-password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShow(s => !s)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                          >
+                            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-sm">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox checked={remember} onCheckedChange={(v) => setRemember(!!v)} />
+                          <span className="text-muted-foreground text-xs">Remember username</span>
+                        </label>
+                        <Link href="#" className="text-primary font-semibold text-xs hover:underline">
+                          Forgot password?
+                        </Link>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full h-12 bg-gradient-to-r from-primary to-teal-600 hover:from-teal-700 hover:to-primary text-white shadow-lg shadow-primary/25 font-semibold text-sm"
+                      >
+                        {loading ? (
+                          <span className="flex items-center gap-2">
+                            <span className="h-4 w-4 rounded-full border-2 border-white/50 border-t-white animate-spin" />
+                            Signing in…
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            Sign in securely
+                            <ArrowRight className="h-4 w-4" />
+                          </span>
+                        )}
+                      </Button>
+                    </form>
+
+                    <div className="mt-6 pt-4 border-t border-border flex items-center justify-center gap-4 text-[11px] font-semibold text-muted-foreground">
+                      <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-primary" /> SSL</span>
+                      <span className="text-border">·</span>
+                      <span className="flex items-center gap-1"><FileText className="h-3 w-3 text-primary" /> Audit logged</span>
+                      <span className="text-border">·</span>
+                      <span className="flex items-center gap-1"><Check className="h-3 w-3 text-primary" /> RBAC</span>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* Stats row */}
-            <div className="flex flex-wrap gap-8 pt-2">
-              {[
-                { n: "9+",    l: "Integrated Modules" },
-                { n: "500+",  l: "Active Users" },
-                { n: "99.9%", l: "Uptime SLA" },
-                { n: "24/7",  l: "Support" },
-              ].map(s => (
-                <div key={s.l}>
-                  <p className="text-2xl font-extrabold text-teal-600">{s.n}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{s.l}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right — Login Card */}
-          <div id="login-card">
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 max-w-sm mx-auto">
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Sign In</h2>
-              <p className="text-sm text-gray-500 mb-6">Secure access for authorized personnel only.</p>
-
-              <form onSubmit={handleLogin} className="space-y-4">
-                {/* Username */}
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Username / Email"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
-                {/* Password */}
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  />
-                </div>
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-lg text-sm transition-colors"
-                >
-                  {isLoading ? 'Signing in...' : 'Access Dashboard'}
-                </button>
-              </form>
-
-              {/* Demo hint */}
-              <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-gray-400">
-                <Info className="h-3.5 w-3.5" />
-                <span>Demo: <strong className="text-gray-600">admin</strong> / <strong className="text-gray-600">123</strong></span>
-              </div>
-
-              {/* Quick login chips */}
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-[11px] text-gray-400 mb-2 text-center">Quick demo access</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {[
-                    { label: "Admin",    email: "admin@rahah24.com",    pass: "Admin123" },
-                    { label: "Manager",  email: "manager@rahah24.com",  pass: "Manager123" },
-                    { label: "Finance",  email: "finance@rahah24.com",  pass: "Finance123" },
-                  ].map(u => (
-                    <button key={u.label}
-                      onClick={() => { setUsername(u.email); setPassword(u.pass); }}
-                      className="text-[11px] px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-teal-400 hover:text-teal-600 transition-colors">
-                      {u.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Modules Suite ──────────────────────────────────────────────────── */}
-      <section className="py-20 bg-white" id="modules">
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Heading */}
-          <div className="text-center mb-14">
-            <p className="text-xs font-bold uppercase tracking-widest text-teal-600 mb-3">System Capabilities</p>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4">Complete Modules Suite</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-base">
-              A fully integrated ecosystem designed to handle every aspect of your business — from procurement to profitability, donations to distribution.
-            </p>
-          </div>
-
-          {/* Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {modules.map(m => (
-              <div key={m.title}
-                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md hover:border-teal-200 transition-all duration-200 group">
-                <div className={`w-12 h-12 rounded-xl ${m.iconBg} flex items-center justify-center mb-4`}>
-                  <m.icon className={`h-6 w-6 ${m.iconColor}`} />
-                </div>
-                <h3 className="font-bold text-gray-900 text-base mb-2">{m.title}</h3>
-                <p className="text-sm text-gray-500 mb-4 leading-relaxed">{m.desc}</p>
-                <ul className="space-y-1.5">
-                  {m.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-gray-600">
-                      <Check className="h-4 w-4 text-teal-500 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+      {/* Metrics strip */}
+      <section className="relative py-14 bg-gradient-to-br from-primary to-teal-900 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-1/3 w-96 h-96 rounded-full bg-teal-400 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-emerald-400 blur-3xl" />
         </div>
-      </section>
-
-      {/* ── Why Rahah24 ────────────────────────────────────────────────────── */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-teal-600 mb-2">Why Choose Us</p>
-            <h2 className="text-3xl font-extrabold text-gray-900">Built for Jamia Binoria & Beyond</h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="container mx-auto px-4 lg:px-8 relative">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             {[
-              { icon: Shield,    title: "100% Secure",          desc: "End-to-end encryption and zero-trust access control" },
-              { icon: Zap,       title: "AI-Powered",           desc: "Predictive forecasting and smart alerts built-in" },
-              { icon: Users,     title: "Multi-Role Access",    desc: "9 user roles with granular permission matrices" },
-              { icon: BarChart3, title: "Comprehensive Reports",desc: "16+ report types across all modules" },
-            ].map(f => (
-              <div key={f.title} className="bg-white border border-gray-200 rounded-2xl p-5 text-center hover:shadow-sm transition-all">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center mx-auto mb-3">
-                  <f.icon className="h-5 w-5 text-teal-600" />
+              { num: '500+',  label: 'Locations' },
+              { num: '99.9%', label: 'Uptime SLA' },
+              { num: '24×7',  label: 'Support' },
+              { num: '8.0',   label: 'Latest release' },
+            ].map(m => (
+              <div key={m.label}>
+                <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-br from-white to-teal-200 bg-clip-text text-transparent tracking-tight">
+                  {m.num}
                 </div>
-                <h4 className="font-bold text-sm text-gray-900 mb-1">{f.title}</h4>
-                <p className="text-xs text-gray-500">{f.desc}</p>
+                <div className="text-xs uppercase tracking-[0.12em] font-semibold text-white/70 mt-1">
+                  {m.label}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Vision & Mission ───────────────────────────────────────────────── */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-500 text-xs font-medium px-3 py-1.5 rounded-full bg-white mb-4">
-              <Target className="h-3.5 w-3.5" /> Our Purpose
-            </span>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900">Vision &amp; Mission of RAHAH24</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {/* Vision */}
-            <div className="bg-white border border-teal-100 rounded-2xl p-8 hover:shadow-md transition-all">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
-                  <Eye className="h-5 w-5 text-teal-600" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">Vision Statement</h3>
-              </div>
-              <p className="text-gray-500 leading-relaxed text-sm">
-                To become the leading AI-enabled digital ecosystem that empowers organizations in welfare, education,
-                financial, and food/business related sectors to operate with <strong className="text-gray-700">transparency, efficiency, and ease</strong> —
-                eliminating manual workload, reducing errors, and driving smart, data-backed decisions.
-              </p>
-            </div>
-            {/* Mission */}
-            <div className="bg-white border border-teal-100 rounded-2xl p-8 hover:shadow-md transition-all">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center">
-                  <Target className="h-5 w-5 text-teal-600" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">Mission Statement</h3>
-              </div>
-              <p className="text-gray-500 leading-relaxed text-sm">
-                RAHAH24 aims to deliver a <strong className="text-gray-700">unified, secure, and scalable management platform</strong> that
-                streamlines financial, operational, and administrative workflows — providing intelligent AI insights and alerts,
-                supporting restaurants, welfare, education, and financial sectors, and ensuring real-time data integrity
-                for informed decisions.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Pricing ─────────────────────────────────────────────────────────── */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-500 text-xs font-medium px-3 py-1.5 rounded-full bg-gray-50 mb-4">
-              <DollarSign className="h-3.5 w-3.5" /> Pricing Information
-            </span>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-gray-900 mb-3">Flexible Solutions Tailored to Your Needs</h2>
-            <p className="text-gray-500 max-w-xl mx-auto text-sm">
-              Every business is unique. Our pricing is customized based on your specific requirements, scale, and modules needed.
+      {/* Modules grid */}
+      <section id="features" className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="text-center mb-12 max-w-2xl mx-auto">
+            <span className="eyebrow">System capabilities</span>
+            <h2 className="text-3xl lg:text-5xl font-bold tracking-tight mt-3 mb-4">Complete modules suite</h2>
+            <p className="text-muted-foreground">
+              A fully integrated ecosystem — every aspect of your business from procurement to profitability,
+              with a finance module finally able to close the books in minutes.
             </p>
           </div>
 
-          <div className="max-w-2xl mx-auto bg-white border border-gray-200 rounded-2xl shadow-sm p-10">
-            <div className="text-center mb-8">
-              <div className="w-14 h-14 bg-teal-50 border border-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="h-7 w-7 text-teal-600" />
-              </div>
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Get a Personalized Quote</h3>
-              <p className="text-gray-500 text-sm">Contact our sales team to discuss your requirements and receive a custom pricing proposal tailored to your organization.</p>
-            </div>
-
-            {/* Contact box */}
-            <div className="bg-teal-50 rounded-xl p-6 text-center mb-8">
-              <p className="text-teal-700 font-bold mb-1">Contact Sales</p>
-              <p className="text-gray-500 text-sm mb-4">For pricing information, please contact us at:</p>
-              <a href="mailto:sales@rahah24.com"
-                className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-colors">
-                <MessageSquare className="h-4 w-4" /> sales@rahah24.com
-              </a>
-              <p className="text-xs text-gray-400 mt-3">Our team typically responds within 24 hours</p>
-            </div>
-
-            {/* Three features */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {[
-                { label: "Custom Modules",   sub: "Choose only what you need" },
-                { label: "Flexible Scaling", sub: "Grow at your own pace" },
-                { label: "Transparent Costs",sub: "No hidden fees" },
-              ].map(f => (
-                <div key={f.label} className="text-center">
-                  <div className="w-8 h-8 bg-teal-50 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Check className="h-4 w-4 text-teal-600" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {modules.map(m => (
+              <Link href={m.title === 'Integrated Finance' ? '/dashboard/finance' : '#'} key={m.title}>
+                <div className="group bg-card border border-border rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden cursor-pointer h-full">
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-start justify-between mb-4">
+                    <span className={cn('h-12 w-12 rounded-xl flex items-center justify-center', m.bg)}>
+                      <m.icon className="h-5 w-5" />
+                    </span>
+                    <span className="h-8 w-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                      <ChevronRight className="h-4 w-4" />
+                    </span>
                   </div>
-                  <p className="text-xs font-bold text-gray-900">{f.label}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{f.sub}</p>
+                  <h3 className="font-bold text-lg mb-2">{m.title}</h3>
+                  <p className="text-sm text-muted-foreground">{m.desc}</p>
+                  {m.tag && (
+                    <span className="inline-flex items-center gap-1 mt-4 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+                      <Sparkles className="h-3 w-3" /> {m.tag}
+                    </span>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="text-center mt-8">
-            <p className="text-sm text-gray-400 mb-4">Interested in learning more about our solutions?</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <button onClick={() => document.getElementById('login-card')?.scrollIntoView({ behavior: 'smooth' })}
-                className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                <Globe className="h-4 w-4" /> Try Demo Version
-              </button>
-              <button className="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                <MessageSquare className="h-4 w-4" /> Schedule Consultation
-              </button>
-            </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA ────────────────────────────────────────────────────────────── */}
-      <section className="bg-gray-900 py-20">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4">
-            Ready to optimize your operations?
+      {/* Process */}
+      <section id="process" className="py-20">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="eyebrow">How it works</span>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mt-3">Seamless workflow</h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {processSteps.map((s, i) => (
+              <div key={s.num} className="text-center relative">
+                <div className="relative inline-flex">
+                  <span className="h-16 w-16 rounded-2xl bg-gradient-to-br from-white to-teal-50 dark:from-teal-950 dark:to-slate-900 border-2 border-teal-300/40 text-primary flex items-center justify-center shadow-lg shadow-primary/10">
+                    <s.icon className="h-7 w-7" />
+                  </span>
+                  <span className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center border-2 border-background">
+                    {s.num}
+                  </span>
+                </div>
+                <h4 className="font-bold mt-4 mb-1">{s.title}</h4>
+                <p className="text-xs text-muted-foreground max-w-[180px] mx-auto">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section id="solutions" className="py-20 relative overflow-hidden bg-slate-950 text-white">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-10 left-10 w-96 h-96 rounded-full bg-teal-500 blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-amber-500 blur-3xl" />
+        </div>
+        <div className="container mx-auto px-4 lg:px-8 text-center relative">
+          <span className="inline-flex items-center gap-2 bg-white/10 text-teal-200 border border-white/20 text-[11px] font-bold uppercase tracking-[0.12em] px-3 py-1.5 rounded-full mb-6">
+            <Sparkles className="h-3 w-3" /> Get started today
+          </span>
+          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight mb-4">
+            Ready to optimise your{' '}
+            <span className="bg-gradient-to-r from-teal-300 to-emerald-200 bg-clip-text text-transparent">operations?</span>
           </h2>
-          <p className="text-gray-400 mb-8 text-base">
-            Join over 500+ locations using Rahah24 to drive efficiency and growth.
+          <p className="text-white/70 max-w-xl mx-auto mb-8">
+            Join 500+ locations using Rahah24 to drive efficiency, close their books with confidence, and accelerate growth.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button className="px-6 py-3 rounded-lg border border-white text-white text-sm font-semibold hover:bg-white hover:text-gray-900 transition-colors">
-              Schedule Demo
-            </button>
-            <button
-              onClick={() => document.getElementById('login-card')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-6 py-3 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-sm font-semibold transition-colors flex items-center gap-2">
-              Get Started <ArrowRight className="h-4 w-4" />
-            </button>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link href="#login">
+              <Button size="lg" className="bg-gradient-to-r from-teal-500 to-primary hover:from-primary hover:to-teal-700 shadow-lg shadow-primary/40">
+                Sign in to portal
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Button size="lg" variant="outline" className="bg-white/5 border-white/20 text-white hover:bg-white/10">
+              Schedule a demo
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* ── Footer ─────────────────────────────────────────────────────────── */}
-      <footer className="bg-gray-950 py-14">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-10 mb-10">
-            {/* Brand */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center">
-                  <span className="text-white font-extrabold text-sm">R</span>
-                </div>
-                <span className="font-bold text-white">Rahah24 ERP</span>
+      {/* Footer */}
+      <footer className="bg-slate-950 text-slate-300 py-12 border-t border-white/5">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-teal-600 text-white font-bold text-lg flex items-center justify-center">R</div>
+                <span className="font-bold text-base text-white">Rahah24 ERP</span>
               </div>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                The comprehensive enterprise resource planning solution designed for modern hospitality, welfare, and retail businesses.
+              <p className="text-xs text-slate-400 max-w-xs">
+                The comprehensive ERP solution for modern hospitality, retail, and charitable operations in Pakistan.
               </p>
-              <div className="flex gap-3">
-                {[Linkedin, Twitter, Github].map((Icon, i) => (
-                  <div key={i} className="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center hover:bg-gray-700 cursor-pointer transition-colors">
-                    <Icon className="h-4 w-4 text-gray-400" />
-                  </div>
-                ))}
+              <div className="flex gap-3 mt-4">
+                <Link href="#" className="text-slate-400 hover:text-white"><Linkedin className="h-4 w-4" /></Link>
+                <Link href="#" className="text-slate-400 hover:text-white"><Twitter className="h-4 w-4" /></Link>
+                <Link href="#" className="text-slate-400 hover:text-white"><Github className="h-4 w-4" /></Link>
               </div>
             </div>
-
-            {/* Platform */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Platform</h4>
-              <ul className="space-y-2.5">
-                {["Inventory Management", "Procurement", "Restaurant POS", "Financials", "Donations & Welfare", "Security (RBAC)"].map(l => (
-                  <li key={l}><a href="#" className="text-sm text-gray-400 hover:text-teal-400 transition-colors">{l}</a></li>
-                ))}
+              <h4 className="text-white font-bold text-sm mb-3">Platform</h4>
+              <ul className="space-y-2 text-xs">
+                <li><Link href="#" className="hover:text-white">Inventory</Link></li>
+                <li><Link href="#" className="hover:text-white">Procurement</Link></li>
+                <li><Link href="/dashboard/finance" className="hover:text-white">Finance</Link></li>
+                <li><Link href="/dashboard/finance/donations/collect" className="hover:text-white">Donations</Link></li>
               </ul>
             </div>
-
-            {/* Company */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-2.5">
-                {["About Us", "Case Studies", "Careers", "Contact"].map(l => (
-                  <li key={l}><a href="#" className="text-sm text-gray-400 hover:text-teal-400 transition-colors">{l}</a></li>
-                ))}
+              <h4 className="text-white font-bold text-sm mb-3">Company</h4>
+              <ul className="space-y-2 text-xs">
+                <li><Link href="#" className="hover:text-white">About</Link></li>
+                <li><Link href="#" className="hover:text-white">Careers</Link></li>
+                <li><Link href="#" className="hover:text-white">Contact</Link></li>
               </ul>
             </div>
-
-            {/* Contact */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Contact Us</h4>
-              <ul className="space-y-3">
-                <li className="flex items-center gap-2 text-sm text-gray-400"><Mail className="h-4 w-4 text-teal-500" /> enterprise@rahah24.com</li>
-                <li className="flex items-center gap-2 text-sm text-gray-400"><Phone className="h-4 w-4 text-teal-500" /> +92 (21) 111-RAHAH</li>
-              </ul>
+              <h4 className="text-white font-bold text-sm mb-3">Contact</h4>
+              <p className="text-xs text-slate-400">enterprise@rahah24.com</p>
+              <p className="text-xs text-slate-400 mt-1">+92 21 35555 0199</p>
+              <p className="text-xs text-slate-400 mt-2">Korangi, Karachi, Pakistan</p>
             </div>
           </div>
-
-          <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-500">
-            © 2026 Rahah24 ERP Systems. All rights reserved. · Privacy Policy · Terms of Service
+          <div className="border-t border-white/10 pt-6 text-center text-xs text-slate-500">
+            © 2026 Rahah24 ERP. All rights reserved.
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

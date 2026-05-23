@@ -1,277 +1,207 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { CheckCircle, XCircle, Upload, Download, AlertCircle, DollarSign, RefreshCw, Building2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { format } from "date-fns";
+import {
+  Upload, RefreshCw, CheckCircle2, AlertTriangle, ArrowLeftRight,
+  Lock, FileText, Banknote, Scale, Search, ArrowRight,
+} from 'lucide-react';
+import { PageShell } from '@/components/finance/page-shell';
+import { KpiCard } from '@/components/finance/kpi-card';
+import { SectionHeader } from '@/components/finance/section-header';
+import { StatusBadge } from '@/components/finance/status-badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatPKR } from '@/utils/accounting';
+import { cn } from '@/lib/utils';
 
-const bankTransactions = [
-  { id: 1, date: '2025-02-01', description: 'Customer Payment - INV-001', amount: 45000, type: 'CREDIT', matched: true, glEntry: 'JE-2025-010' },
-  { id: 2, date: '2025-02-02', description: 'Vendor Payment - ABC Suppliers', amount: -85000, type: 'DEBIT', matched: true, glEntry: 'JE-2025-011' },
-  { id: 3, date: '2025-02-03', description: 'Utility Bill Payment', amount: -30000, type: 'DEBIT', matched: false, glEntry: null },
-  { id: 4, date: '2025-02-04', description: 'Bank Charges', amount: -500, type: 'DEBIT', matched: false, glEntry: null },
-  { id: 5, date: '2025-02-05', description: 'Customer Deposit', amount: 75000, type: 'CREDIT', matched: true, glEntry: 'JE-2025-012' },
-];
-
-const glTransactions = [
-  { id: 1, date: '2025-02-01', description: 'Payment from Customer', amount: 45000, type: 'CREDIT', matched: true, bankTx: 1 },
-  { id: 2, date: '2025-02-02', description: 'Vendor Payment', amount: -85000, type: 'DEBIT', matched: true, bankTx: 2 },
-  { id: 3, date: '2025-02-05', description: 'Customer Deposit', amount: 75000, type: 'CREDIT', matched: true, bankTx: 5 },
-  { id: 4, date: '2025-02-06', description: 'Salary Payment', amount: -120000, type: 'DEBIT', matched: false, bankTx: null },
-  { id: 5, date: '2025-02-07', description: 'Office Rent', amount: -20000, type: 'DEBIT', matched: false, bankTx: null },
-];
-
-const formatPKR = (amount: number) => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency: 'PKR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+type Line = {
+  id: string;
+  date: string;
+  amount: number;        // signed
+  ref: string;
+  desc: string;
+  matched: boolean;
 };
 
-export default function BankReconciliationPage() {
-  const [selectedBank, setSelectedBank] = useState('HBL');
+const initialStatement: Line[] = [
+  { id: 'b1', date: '2026-05-05', amount:  35_000, ref: 'GVC-2606',  desc: 'GREEN VALLEY CATERING',     matched: true  },
+  { id: 'b2', date: '2026-05-07', amount: -12_500, ref: 'KMT-1801',  desc: 'KARACHI MEAT TRADERS',      matched: true  },
+  { id: 'b3', date: '2026-05-08', amount:  -1_200, ref: 'CHG-2705',  desc: 'BANK CHARGES — SMS',        matched: false },
+  { id: 'b4', date: '2026-05-12', amount:  50_000, ref: 'KM-22019',  desc: 'K. MIRZA — DONATION',       matched: true  },
+  { id: 'b5', date: '2026-05-15', amount:   -800,  ref: 'CHG-1503',  desc: 'BANK CHARGES — STMT FEE',   matched: false },
+  { id: 'b6', date: '2026-05-20', amount: -80_000, ref: 'CH-10228',  desc: 'CHEQUE — KARACHI MEAT',     matched: true  },
+];
 
-  const bankBalance = 350000;
-  const glBalance = 210000;
-  const matchedTransactions = bankTransactions.filter(t => t.matched).length + glTransactions.filter(t => t.matched).length;
-  const unmatchedTransactions = bankTransactions.filter(t => !t.matched).length + glTransactions.filter(t => !t.matched).length;
-  const difference = bankBalance - glBalance;
+const initialSystem: Line[] = [
+  { id: 's1', date: '2026-05-06', amount:  35_000, ref: 'BRV-0007',  desc: 'Receipt — GVC',             matched: true  },
+  { id: 's2', date: '2026-05-08', amount: -12_500, ref: 'BPV-0008',  desc: 'Payment — KMT',             matched: true  },
+  { id: 's3', date: '2026-05-12', amount:  50_000, ref: 'BRV-0006',  desc: 'Donation — Zakat K. Mirza', matched: true  },
+  { id: 's4', date: '2026-05-22', amount: -78_500, ref: 'BPV-0011',  desc: 'Utility bill — K-Electric (uncleared)', matched: false },
+  { id: 's5', date: '2026-05-20', amount: -80_000, ref: 'BPV-0010',  desc: 'KMT cheque #10228',         matched: true  },
+];
+
+export default function BankReconciliationPage() {
+  const [bank, setBank] = useState('1002');
+  const [statement, setStatement] = useState(initialStatement);
+  const [system, setSystem]       = useState(initialSystem);
+
+  const unMatchedStmt = statement.filter(l => !l.matched);
+  const unMatchedSys  = system.filter(l => !l.matched);
+
+  const stmtBalance = statement.reduce((a, l) => a + l.amount, 0);
+  const sysBalance  = system.reduce((a, l) => a + l.amount, 0);
+  const diff = Math.abs(stmtBalance - sysBalance);
+  const ready = unMatchedStmt.length === 0 && unMatchedSys.length === 0;
+
+  const markMatched = (id: string, side: 'stmt' | 'sys') => {
+    if (side === 'stmt') setStatement(prev => prev.map(l => l.id === id ? { ...l, matched: true } : l));
+    else setSystem(prev => prev.map(l => l.id === id ? { ...l, matched: true } : l));
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">Bank Reconciliation</h1>
-        <p className="text-muted-foreground">Reconcile bank statements with general ledger entries</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bank Balance</CardTitle>
-            <Building2 className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatPKR(bankBalance)}</div>
-            <p className="text-xs text-muted-foreground">Per bank statement</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">GL Balance</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatPKR(glBalance)}</div>
-            <p className="text-xs text-muted-foreground">Per books</p>
-          </CardContent>
-        </Card>
-
-        <Card className={difference === 0 ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Difference</CardTitle>
-            <AlertCircle className={`h-4 w-4 ${difference === 0 ? 'text-green-600' : 'text-yellow-600'}`} />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${difference === 0 ? 'text-green-700' : 'text-yellow-700'}`}>
-              {formatPKR(Math.abs(difference))}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {difference === 0 ? 'Reconciled ✓' : 'To be reconciled'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unmatched Items</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{unmatchedTransactions}</div>
-            <p className="text-xs text-muted-foreground">{matchedTransactions} matched</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="flex gap-2">
-          <Select value={selectedBank} onValueChange={setSelectedBank}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
+    <PageShell
+      eyebrow="Cash & Bank · Reconciliation"
+      title="Bank Reconciliation"
+      description="Match bank statement lines to system entries. Auto-match handles 80–90%; drag-match the rest. Lock the period when zero unmatched."
+      breadcrumb={[{ label: 'Cash & Bank' }, { label: 'Bank Reconciliation' }]}
+      actions={
+        <>
+          <Button variant="outline" size="sm"><Upload className="mr-1.5 h-3.5 w-3.5" /> Upload statement</Button>
+          <Button variant="outline" size="sm"><RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Re-auto-match</Button>
+          <Button size="sm" disabled={!ready}>
+            <Lock className="mr-1.5 h-3.5 w-3.5" /> Reconcile {ready ? '' : `· ${unMatchedStmt.length + unMatchedSys.length} unmatched`}
+          </Button>
+        </>
+      }
+      kpis={
+        <>
+          <KpiCard label="Statement balance" value={formatPKR(stmtBalance)} tone="info" icon={Banknote} hint="Per uploaded CSV" />
+          <KpiCard label="System balance"    value={formatPKR(sysBalance)}  tone="accent" icon={FileText} />
+          <KpiCard label="Difference"        value={diff === 0 ? 'Reconciled' : formatPKR(diff)} tone={diff === 0 ? 'success' : 'warning'} icon={Scale} />
+          <KpiCard label="Unmatched"         value={unMatchedStmt.length + unMatchedSys.length} tone={ready ? 'success' : 'danger'} icon={ready ? CheckCircle2 : AlertTriangle} />
+        </>
+      }
+    >
+      <Card className="p-4 mb-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">Bank account</div>
+          <Select value={bank} onValueChange={setBank}>
+            <SelectTrigger className="w-[280px]"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="HBL">HBL - Main Account</SelectItem>
-              <SelectItem value="MCB">MCB - Secondary</SelectItem>
-              <SelectItem value="UBL">UBL - Payroll</SelectItem>
+              <SelectItem value="1002">1002 · Bank — HBL Current</SelectItem>
+              <SelectItem value="1003">1003 · Bank — MCB Savings</SelectItem>
+              <SelectItem value="1004">1004 · Bank — UBL USD</SelectItem>
             </SelectContent>
           </Select>
-          <Input type="date" className="w-48" defaultValue={format(new Date(), 'yyyy-MM-dd')} />
+          <div className="text-xs text-muted-foreground ml-auto">
+            Period: 01 May – 31 May 2026 · Cutoff: 30 Apr 2026 (locked)
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline"><Upload className="h-4 w-4 mr-2" />Import Statement</Button>
-          <Button variant="outline"><Download className="h-4 w-4 mr-2" />Export</Button>
-          <Button><RefreshCw className="h-4 w-4 mr-2" />Auto-Match</Button>
-        </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Bank Statement Transactions</CardTitle>
-            <CardDescription>Transactions from bank ({bankTransactions.length})</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40px]"></TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {bankTransactions.map((tx) => (
-                    <TableRow key={tx.id} className={tx.matched ? "bg-green-50" : ""}>
-                      <TableCell>
-                        <Checkbox checked={tx.matched} />
-                      </TableCell>
-                      <TableCell>{format(new Date(tx.date), 'MMM dd')}</TableCell>
-                      <TableCell className="text-sm">{tx.description}</TableCell>
-                      <TableCell className={`text-right font-mono ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPKR(tx.amount)}
-                      </TableCell>
-                      <TableCell>
-                        {tx.matched ? (
-                          <Badge variant="default" className="bg-green-100 text-green-800">
-                            <CheckCircle className="h-3 w-3 mr-1" />Matched
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">Unmatched</Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell colSpan={3} className="font-bold">Bank Balance</TableCell>
-                    <TableCell className="text-right font-bold">{formatPKR(bankBalance)}</TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </div>
-          </CardContent>
+        {/* Bank statement side */}
+        <Card className="p-4">
+          <SectionHeader
+            eyebrow={`${statement.length} lines · ${unMatchedStmt.length} unmatched`}
+            title="Bank statement (uploaded CSV)"
+          />
+          <ul className="space-y-2">
+            {statement.map(l => (
+              <li
+                key={l.id}
+                className={cn(
+                  'flex items-center gap-3 p-3 rounded-lg border transition-colors',
+                  l.matched ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900'
+                            : 'bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900',
+                )}
+              >
+                <span className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md shrink-0',
+                  l.matched ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white',
+                )}>
+                  {l.matched ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{l.date}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">{l.ref}</span>
+                  </div>
+                  <div className="font-semibold text-sm truncate">{l.desc}</div>
+                </div>
+                <div className={cn(
+                  'tabular-nums font-bold text-sm shrink-0',
+                  l.amount < 0 ? 'text-rose-700' : 'text-emerald-700',
+                )}>
+                  {l.amount < 0 ? `(${formatPKR(Math.abs(l.amount))})` : formatPKR(l.amount)}
+                </div>
+                {!l.matched && (
+                  <Button variant="outline" size="sm" className="text-xs h-7 shrink-0" onClick={() => markMatched(l.id, 'stmt')}>
+                    Post as JV
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>General Ledger Transactions</CardTitle>
-            <CardDescription>Transactions from GL ({glTransactions.length})</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40px]"></TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {glTransactions.map((tx) => (
-                    <TableRow key={tx.id} className={tx.matched ? "bg-green-50" : ""}>
-                      <TableCell>
-                        <Checkbox checked={tx.matched} />
-                      </TableCell>
-                      <TableCell>{format(new Date(tx.date), 'MMM dd')}</TableCell>
-                      <TableCell className="text-sm">{tx.description}</TableCell>
-                      <TableCell className={`text-right font-mono ${tx.type === 'CREDIT' ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatPKR(tx.amount)}
-                      </TableCell>
-                      <TableCell>
-                        {tx.matched ? (
-                          <Badge variant="default" className="bg-green-100 text-green-800">
-                            <CheckCircle className="h-3 w-3 mr-1" />Matched
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary">Unmatched</Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell colSpan={3} className="font-bold">GL Balance</TableCell>
-                    <TableCell className="text-right font-bold">{formatPKR(glBalance)}</TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </div>
-          </CardContent>
+        {/* System side */}
+        <Card className="p-4">
+          <SectionHeader
+            eyebrow={`${system.length} lines · ${unMatchedSys.length} unmatched`}
+            title="System (unmatched ledger entries)"
+          />
+          <ul className="space-y-2">
+            {system.map(l => (
+              <li
+                key={l.id}
+                className={cn(
+                  'flex items-center gap-3 p-3 rounded-lg border transition-colors',
+                  l.matched ? 'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900'
+                            : 'bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900',
+                )}
+              >
+                <span className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md shrink-0',
+                  l.matched ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white',
+                )}>
+                  {l.matched ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">{l.date}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground">{l.ref}</span>
+                  </div>
+                  <div className="font-semibold text-sm truncate">{l.desc}</div>
+                </div>
+                <div className={cn(
+                  'tabular-nums font-bold text-sm shrink-0',
+                  l.amount < 0 ? 'text-rose-700' : 'text-emerald-700',
+                )}>
+                  {l.amount < 0 ? `(${formatPKR(Math.abs(l.amount))})` : formatPKR(l.amount)}
+                </div>
+                {!l.matched && (
+                  <Button variant="outline" size="sm" className="text-xs h-7 shrink-0" onClick={() => markMatched(l.id, 'sys')}>
+                    Mark outstanding
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
         </Card>
       </div>
 
-      <Card className="bg-blue-50 border-blue-200">
-        <CardHeader>
-          <CardTitle>Reconciliation Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span>Bank Statement Balance:</span>
-              <span className="font-bold">{formatPKR(bankBalance)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span className="ml-4">Less: Outstanding Checks</span>
-              <span>{formatPKR(0)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span className="ml-4">Add: Deposits in Transit</span>
-              <span>{formatPKR(0)}</span>
-            </div>
-            <div className="border-t pt-2 flex justify-between">
-              <span>Adjusted Bank Balance:</span>
-              <span className="font-bold">{formatPKR(bankBalance)}</span>
-            </div>
-            <div className="mt-4 flex justify-between">
-              <span>General Ledger Balance:</span>
-              <span className="font-bold">{formatPKR(glBalance)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span className="ml-4">Add: Bank Service Charges</span>
-              <span>{formatPKR(500)}</span>
-            </div>
-            <div className="border-t pt-2 flex justify-between">
-              <span>Adjusted GL Balance:</span>
-              <span className="font-bold">{formatPKR(glBalance + 500)}</span>
-            </div>
-            <div className="mt-4 border-t pt-2 flex justify-between">
-              <span className="font-bold">Difference:</span>
-              <span className={`font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatPKR(Math.abs(difference))}
-              </span>
-            </div>
+      <Card className="p-4 mt-4 bg-blue-50/40 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+        <div className="flex items-start gap-3 text-xs text-blue-900 dark:text-blue-200">
+          <ArrowLeftRight className="h-4 w-4 shrink-0 mt-0.5" />
+          <div>
+            <strong>Tip · drag to match.</strong> Auto-match flags pairs within ±2 days and ±Rs 50 — anything else gets dragged left→right.
+            Statement lines with no system counterpart usually become JVs (bank charges, interest); system lines with no statement counterpart stay <em>Outstanding</em> for next month.
           </div>
-        </CardContent>
+        </div>
       </Card>
-    </div>
+    </PageShell>
   );
 }
